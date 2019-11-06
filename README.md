@@ -1,6 +1,8 @@
 # KARLY64 
 Chess engine written in C++11
 
+Version 0.1.0 (Windows only)
+
 A 64-bit, mostly-UCI-compliant, AB minimax engine with a very simple quiescence search. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine was written completely from scratch. And although a rather useless metric, the engine evaluates, on average, about 3 million positions per second.
 
 Play it [here](https://lichess.org/@/karly64)! Lichess account needed (free).
