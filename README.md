@@ -23,9 +23,10 @@ Everything else in the engine is pretty standard stuff you can find on the chess
     - Quiescence/Capture search
     - Weak UCI implementation (good enough for most GUIs)
   - Planned
-    - Transposition table with zobrist keys
+    - Transposition table
     - More advanced quiescence search and draw detection
     - Multithreading capabilites
+    - More complete adherence to UCI protocol
     - Many more optimizations in general 
     
    
