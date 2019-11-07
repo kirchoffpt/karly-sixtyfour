@@ -2199,6 +2199,7 @@ int chess_pos::eval()
 	int material_sum, material_diff;
 	int p,n,b,r,q,P,N,B,R,Q;
 	int i,j,k,white,black,wking,bking;
+	int woffense, boffense;
 	U64 temp;
 
 	if(get_num_moves()<=0){
@@ -2234,7 +2235,11 @@ int chess_pos::eval()
 	eval += 32*(signed int(__popcnt64(MLUT.get_move_mask(BLACK,bking)&controlled_squares[WHITE])) - signed int(__popcnt64(MLUT.get_move_mask(WHITE,wking)&controlled_squares[BLACK])));
 
 	eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
-	//eval += (signed int(__popcnt64(target_squares[WHITE] & ~controlled_squares[BLACK])) - signed int(__popcnt64(target_squares[BLACK] & ~controlled_squares[WHITE])));
+	
+	woffense = 2*int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
+	boffense = 2*int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
+
+	eval += 16*(woffense-boffense);
 
 	for(i=1;i<white;i++){
 		eval += signed int(max(__popcnt64(pl[WHITE][i].targets),6));
