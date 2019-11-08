@@ -8,106 +8,106 @@
 using namespace std;
 
 void perft(chess_pos* node, int depth, long long* n){
-	node->generate_moves();
-	if(depth == 1){
-		*n += node->get_num_moves();
-		return;
-	}
-	while(node->pop_and_add()){
-		perft(node->next, depth-1, n);
-	}
-	return;
+  node->generate_moves();
+  if(depth == 1){
+    *n += node->get_num_moves();
+    return;
+  }
+  while(node->pop_and_add()){
+    perft(node->next, depth-1, n);
+  }
+  return;
 }
 
 int main(int argc, char *argv[]){
-	int i,j,x,n_root_moves;
-	chess_pos* rootpos, *node_ptrs[MAX_DEPTH];
-	unsigned short move;
-	int depth;
-	int to_move;
-	long long k = 0, total_nodes = 0;
-	clock_t cl;     //initializing a clock type
-	int test_depth;
-	float t = 0, dt = 0;
-	int num_trials, num_failed = 0;
-	long long test_nodes;
-	bool passed = false;
-	string test_fen, skip;
-	ifstream infile (FILENAME, ifstream::in);
+  int i,j,x,n_root_moves;
+  chess_pos* rootpos, *node_ptrs[MAX_DEPTH];
+  unsigned short move;
+  int depth;
+  int to_move;
+  long long k = 0, total_nodes = 0;
+  clock_t cl;     //initializing a clock type
+  int test_depth;
+  float t = 0, dt = 0;
+  int num_trials, num_failed = 0;
+  long long test_nodes;
+  bool passed = false;
+  string test_fen, skip;
+  ifstream infile (FILENAME, ifstream::in);
 
-	if(argc > 1){
-		num_trials = 1;
-		test_depth = atoi(argv[1]);
-		test_fen = argv[2];
-	} else {
-		infile >> num_trials;
-	}
+  if(argc > 1){
+    num_trials = 1;
+    test_depth = atoi(argv[1]);
+    test_fen = argv[2];
+  } else {
+    infile >> num_trials;
+  }
 
-	i = MAX_DEPTH-1;
-	node_ptrs[i--] = new chess_pos;
-	for(i;i>=0;i--){
-		node_ptrs[i] = new chess_pos;
-		node_ptrs[i]->next = node_ptrs[i+1];
-	}
-
-
+  i = MAX_DEPTH-1;
+  node_ptrs[i--] = new chess_pos;
+  for(i;i>=0;i--){
+    node_ptrs[i] = new chess_pos;
+    node_ptrs[i]->next = node_ptrs[i+1];
+  }
 
 
-	cout << "trials: " << num_trials << endl;
-	for(j=0;j<num_trials;j++){
-		if(argc == 1){
-			getline(getline(infile, skip, '"'), test_fen, '"');
-			infile >> test_depth;
-			infile >> test_nodes;
-		}
-		passed = false;
-		//cout << test_fen << endl;
-		rootpos = new chess_pos(test_fen);
-		rootpos->next = node_ptrs[0];
-		rootpos->generate_moves();
-		if(argc > 1){
-			for(x=0;x<rootpos->get_num_moves();x++){
-				print_move(rootpos->pos_move_list.get_move(x));
-				cout << endl;
-			}
-		}
-		for(i=1;i<=test_depth;i++){
-		    cl = clock();   //starting time of clock
 
-			perft(rootpos, i, &k);
 
-			cl = clock() - cl;
+  cout << "trials: " << num_trials << endl;
+  for(j=0;j<num_trials;j++){
+    if(argc == 1){
+      getline(getline(infile, skip, '"'), test_fen, '"');
+      infile >> test_depth;
+      infile >> test_nodes;
+    }
+    passed = false;
+    //cout << test_fen << endl;
+    rootpos = new chess_pos(test_fen);
+    rootpos->next = node_ptrs[0];
+    rootpos->generate_moves();
+    if(argc > 1){
+      for(x=0;x<rootpos->get_num_moves();x++){
+        print_move(rootpos->pos_move_list.get_move(x));
+        cout << endl;
+      }
+    }
+    for(i=1;i<=test_depth;i++){
+        cl = clock();   //starting time of clock
 
-			dt = cl/(double)CLOCKS_PER_SEC;
+      perft(rootpos, i, &k);
 
-			t += dt;
+      cl = clock() - cl;
 
-			if(argc > 1){
-				cout << "depth: " << i << "	nodes:" << k << "	time: " << dt;
-				cout << endl;
-			}
+      dt = cl/(double)CLOCKS_PER_SEC;
 
-			total_nodes += k;
-			if(i == test_depth && k == test_nodes) passed = true;
-			k = 0;
-		}
-		if(argc > 1) break;
-		if(passed){
-			cout << ".";
-		} else {
-			cout << "!";
-			num_failed++;
-		}
-		delete rootpos;
-	}
+      t += dt;
 
-	cout << endl;
-	if(argc == 1) cout << (num_trials-num_failed) << " / " << num_trials << " PASSED " << endl;
+      if(argc > 1){
+        cout << "depth: " << i << " nodes:" << k << " time: " << dt;
+        cout << endl;
+      }
 
-	cout << "time: " << t << endl;
-	cout << "kNPS: " << float(total_nodes)/(1000*t) << endl;
+      total_nodes += k;
+      if(i == test_depth && k == test_nodes) passed = true;
+      k = 0;
+    }
+    if(argc > 1) break;
+    if(passed){
+      cout << ".";
+    } else {
+      cout << "!";
+      num_failed++;
+    }
+    delete rootpos;
+  }
 
-	infile.close();
+  cout << endl;
+  if(argc == 1) cout << (num_trials-num_failed) << " / " << num_trials << " PASSED " << endl;
 
-	return 0;
+  cout << "time: " << t << endl;
+  cout << "kNPS: " << float(total_nodes)/(1000*t) << endl;
+
+  infile.close();
+
+  return 0;
 }
