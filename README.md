@@ -10,7 +10,7 @@ Play it [here](https://lichess.org/@/karly64)! Lichess account needed (free).
 ### Features
 
 #### Move Generation
-Features a novel legal-move generation algorithm that keeps track of moves for both sides instead of only the side to move. Doing so actually allows for *faster* (compared to the previous side-to-move only implementation; see `chess_pos::generate_moves()` and `chess_pos::generate_moves_deprecated()`) move generation as the moves for many pieces need not be regenerated. Much more importantly, as most of time in a search is spent on evaluation, the wealth of information this method provides allows for fast and simple mobility based evaluations at the leaf nodes. 
+Features a novel legal-move generation algorithm that keeps track of moves for both sides instead of only the side to move. Doing so actually allows for *faster* (compared to the previous side-to-move only implementation; see `chess_pos::generate_moves()` and `chess_pos::generate_moves_deprecated()`) move generation as the moves for many pieces need not be regenerated. Much more importantly, as most of time in a search is spent on evaluation, the wealth of information this method provides allows for fast and easy mobility and square-control based evaluations at the leaf nodes. 
 
 Note that this move generation method is more experimental and not strictly better. Although unlikely, it may prove to be cumbersome in the long run due to the lack of an unmake move function. However, it does seem to provide a lot more opportunities for optimizations.
 
