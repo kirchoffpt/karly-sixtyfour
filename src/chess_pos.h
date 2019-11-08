@@ -52,6 +52,7 @@ class chess_pos {
 	U64 captures; //enemy pieces that may be captured
 	int last_move_check_evasion;
 	int last_move_capture;
+	int evaluation;
 	U64 changed_squares;
 	U64 last_move_to_and_from;
 	U64 controlled_squares[2];

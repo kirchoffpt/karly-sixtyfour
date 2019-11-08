@@ -244,7 +244,7 @@ int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, i
 		if(node->captures > 0){
 			/////
 			//node->print_pos(true);
-			return quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->eval(),SCORE_LO);
+			return quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
 		}
 		if(node->last_move_check_evasion || node->in_check){
 			/////

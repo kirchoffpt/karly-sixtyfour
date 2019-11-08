@@ -2248,5 +2248,6 @@ int chess_pos::eval()
 		eval -= signed int(max(__popcnt64(pl[BLACK][i].targets),6));
 	}
 
-	return EVAL_GRAIN*(eval/EVAL_GRAIN);
+	this->evaluation = EVAL_GRAIN*(eval/EVAL_GRAIN);
+	return this->evaluation;
 }
