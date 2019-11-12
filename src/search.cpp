@@ -73,15 +73,13 @@ void search_handler::search(){
 	n_root_moves = rootpos->get_num_moves();
 	to_move_sign = ((!rootpos->to_move)*2-1);
 
-	fflush(stdout);
-
     tt = 0;
     nodes_searched = 0;
 	for(depth=min(MAX_AB_DEPTH,1);depth <= MAX_AB_DEPTH;depth++){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "depth " << depth << "/" << MIN_DEPTH << endl;
+		cout << "depth " << depth << "/" << MIN_DEPTH << "\n";
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((33<<SRC_SHIFT) + (40<<DST_SHIFT) != move) continue;
@@ -109,8 +107,8 @@ void search_handler::search(){
 			cout << float(score)/100.0;
 			cout << "	time: " <<  t;
 			if(t > 0.005) cout << "	kNPS: " << (0.001*(nodes_searched-k))/t;
-			cout << endl;
-
+			cout << "\n";
+			
 			if(score*to_move_sign > top_score){
 				top_move = move;
 				top_score = score*to_move_sign;
@@ -120,14 +118,16 @@ void search_handler::search(){
 				goto exit_minimax_loop;
 			}
 		}
-		cout << "\n";
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(tt > 0.33 && depth >= MIN_DEPTH) break;
 	}
+
 	exit_minimax_loop:
 
 	cout << "info score cp " << top_score << " nodes " << nodes_searched << " depth " << depth;
 	cout << " time " << int(tt*1000) << " nps " << int(nodes_searched/tt) << "\n";
+
+	fflush(stdout);
 
 	// cout << endl;
 	// cout << "top_move: ";
@@ -157,7 +157,7 @@ void search_handler::search(){
 
 void search_handler::stop(){
 	if(!is_searching) return;
-	cout << "bestmove " << move_itos(best_move) << "\n";
+	cout << "bestmove " << move_itos(best_move) << endl;
 	is_searching = FALSE;
 	return;
 }
@@ -244,6 +244,7 @@ int search_handler::quiesce(chess_pos* node, int min_or_max, int a, int b, int d
 
 int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, int b){
 	nodes_searched++;
+	__assume(is_searching);
 	if(!is_searching) return 0; 
 	node->generate_moves();
 	if(depth == 0){
