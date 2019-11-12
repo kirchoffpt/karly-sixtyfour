@@ -1,4 +1,6 @@
 
+#define VERSION "v0.1.1"
+
 #define DEBUG 0
 
 //DEBUG 1- fast assertions 

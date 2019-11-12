@@ -18,8 +18,6 @@ uciengine.obj : $(SRC_DIR)/uciengine.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/che
 	cl /c $(SRC_DIR)/uciengine.cpp $(CFLAGS) 
 search.obj :  $(SRC_DIR)/search.cpp  $(SRC_DIR)/search.h  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h
 	cl /c  $(SRC_DIR)/search.cpp $(CFLAGS) 
-play.obj :  $(SRC_DIR)/play.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h
-	cl /c  $(SRC_DIR)/play.cpp $(CFLAGS) 
 mct.obj :  $(SRC_DIR)/mct.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h
 	cl /c  $(SRC_DIR)/mct.cpp $(CFLAGS) 
 chess_pos.obj :  $(SRC_DIR)/chess_pos.cpp  $(SRC_DIR)/chess_pos.h  $(SRC_DIR)/constants.h

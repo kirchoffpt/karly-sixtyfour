@@ -51,25 +51,24 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 
 int main(int argc, char *argv[]){
 	string cmd, token;
+	ofstream ofs;
 	chess_pos *rootpos = new chess_pos(STARTPOS);
 	search_handler *searcher = new search_handler(rootpos);
 	time_t system_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
 
 	rootpos->generate_moves();
 
-
-	ofstream ofs (FILEOUT, ofstream::app);
-	ofs << endl;
-	ofs << "////////////////////////////////////////////" << endl;
-	ofs << ctime(&system_time);
-	ofs << "////////////////////////////////////////////" << endl;
+	if(DEBUG){
+		ofs = ofstream(FILEOUT, ofstream::app);
+		ofs << endl << ctime(&system_time) << endl;
+	}
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
 		ofs << cmd << endl;
 		is >> token;
 		if(token == "uci"){
-			cout << "id name karly64\n";
+			cout << "id name karly64 " << VERSION << "\n";
 			cout << "id author Paul Kirchoff\n";
 			cout << "uciok\n";
 		} else if(token == "isready"){
@@ -77,7 +76,7 @@ int main(int argc, char *argv[]){
 		} else if(token == "position"){
 			uci_position(is, rootpos);
 		} else if(token == "go"){
-			searcher->search();
+			searcher->go();
 		} else if(token == "stop"){
 			searcher->stop();
 		} else if(token == "quit"){

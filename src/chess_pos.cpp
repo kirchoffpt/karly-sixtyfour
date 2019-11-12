@@ -1548,22 +1548,14 @@ U64 chess_pos::create_pawn_pushes(U64 pawn_loc, int side)
 	U64 b = occ[0] | occ[1];
 
 	if(side){
-		if(pawn_loc & RANK_7){
-			if((b << 8) & pawn_loc){
-				return (pawn_loc>>8);
-			} else {
-				return (pawn_loc>>16)*257;
-			}
+		if(!((b << 8) & pawn_loc)&&(pawn_loc & RANK_7)){
+			return (pawn_loc>>16)*257;
 		} else {
 			return (pawn_loc>>8);
 		}
 	} else {
-		if(pawn_loc & RANK_2){
-			if((b >> 8) & pawn_loc){
-				return pawn_loc*256;
-			} else {
-				return pawn_loc*65792;
-			}
+		if(!((b >> 8) & pawn_loc)&&(pawn_loc & RANK_2)){
+			return pawn_loc*65792;
 		} else {
 			return pawn_loc*256;
 		}
@@ -2236,10 +2228,10 @@ int chess_pos::eval()
 
 	eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 	
-	woffense = 2*int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
-	boffense = 2*int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
+	woffense = int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
+	boffense = int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
 
-	eval += 16*(woffense-boffense);
+	eval += 8*(woffense-boffense);
 
 	for(i=1;i<white;i++){
 		eval += signed int(max(__popcnt64(pl[WHITE][i].targets),6));

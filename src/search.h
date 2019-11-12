@@ -26,6 +26,7 @@ class search_handler{
 	public:
 	search_handler(chess_pos* rootpos);
 	void set_time(int wt, int wi, int bt, int bi, int movestogo);
+	void go(); //launches search() threads
 	void reset();
 	void search(); 
 	void stop();

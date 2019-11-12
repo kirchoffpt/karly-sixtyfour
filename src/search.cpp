@@ -32,12 +32,9 @@ void search_handler::reset(){
 	return;	
 }
 
-void search_handler::set_time(int wt, int wi, int bt, int bi, int mtg){
-	movestogo = mtg;
-	wtime = wt;
-	winc = wi;
-	btime = bt;
-	binc = bi;
+void search_handler::go(){
+	thread search_thread(&search_handler::search,this);
+	search_thread.detach();
 	return;	
 }
 
@@ -73,6 +70,7 @@ void search_handler::search(){
 	n_root_moves = rootpos->get_num_moves();
 	to_move_sign = ((!rootpos->to_move)*2-1);
 
+	fflush(stdout);
 
     tt = 0;
     nodes_searched = 0;
@@ -80,7 +78,7 @@ void search_handler::search(){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		//cout << "----------d" << depth << endl;
+		cout << "depth " << depth << "/" << MIN_DEPTH << endl;
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((33<<SRC_SHIFT) + (40<<DST_SHIFT) != move) continue;
@@ -99,15 +97,15 @@ void search_handler::search(){
 			tt += t;
 			move_scores[i] = score*to_move_sign;
 
-			// print_move(move);
-			// cout << "	score: ";
-			// if(score > 0){
-			// 	cout << "+";
-			// }
-			// cout << float(score)/100.0;
-			// cout << "	time: " <<  t;
-			// if(t > 0.005) cout << "	kNPS: " << (0.001*(nodes_searched-k))/t;
-			// cout << endl;
+			cout << move_itos(move);
+			cout << "	score: ";
+			if(score > 0){
+				cout << "+";
+			}
+			cout << float(score)/100.0;
+			cout << "	time: " <<  t;
+			if(t > 0.005) cout << "	kNPS: " << (0.001*(nodes_searched-k))/t;
+			cout << endl;
 
 			if(score*to_move_sign > top_score){
 				top_move = move;
@@ -117,7 +115,7 @@ void search_handler::search(){
 				goto exit_minimax_loop;
 			}
 		}
-		//cout << endl;
+		cout << "\n";
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(tt > 0.33 && depth >= MIN_DEPTH) break;
 	}
@@ -314,5 +312,16 @@ int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b
     }
     return a;
 }
+
+
+void search_handler::set_time(int wt, int wi, int bt, int bi, int mtg){
+	movestogo = mtg;
+	wtime = wt;
+	winc = wi;
+	btime = bt;
+	binc = bi;
+	return;	
+}
+
 
 
