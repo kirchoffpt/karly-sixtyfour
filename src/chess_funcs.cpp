@@ -154,3 +154,22 @@ int get_ray_dir(int a, int b) //a,b indexes
 	return -1;
 }
 
+U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int depth)
+{
+	U64 fill = king_loc;
+	U64 temp, done_sq = 0;
+	unsigned long idx;
+	
+	for(depth;depth>0;depth--){
+		temp = fill &~ done_sq;
+		done_sq |= temp;
+		while(_BitScanForward64(&idx, temp)){
+			temp ^= ll(1) << idx;
+			fill |= mlut->get_move_mask(KING,idx);
+		}
+		fill &= ~enemy_control;
+	}
+	return fill;
+}
+
+

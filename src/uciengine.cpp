@@ -8,7 +8,6 @@
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 #define FILEOUT "uci_input_log.txt"
-#define QUOTATION_MARK '"'
 
 using namespace std;
 
@@ -22,8 +21,7 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 		fenstring = STARTPOS;
 	} else if(token == "fen"){
 		is >> token;
-		while(token.back() != QUOTATION_MARK && is){
-			is >> s;
+		while(is >> s && s != "moves"){
 			token.append(" "+s);
 		}
 		fenstring = token;
@@ -34,7 +32,7 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 	rootpos->generate_moves();
 	rootpos->sort_piece_list();
 	//cout << token << endl;
-	if(is >> token && token == "moves"){
+	if(s == "moves" || (is >> token && token == "moves")){
 		while(is >> token){
 			strcpy(move_string, token.c_str());
 			move = rootpos->pos_move_list.get_move_from_string(move_string);
@@ -75,6 +73,7 @@ int main(int argc, char *argv[]){
 			cout << "readyok\n";
 		} else if(token == "position"){
 			uci_position(is, rootpos);
+			rootpos->print_pos(false);
 		} else if(token == "go"){
 			searcher->go();
 		} else if(token == "stop"){

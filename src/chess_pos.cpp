@@ -2218,26 +2218,35 @@ int chess_pos::eval()
 	material_diff = P_MAT*(-p+P)+N_MAT*(-n+N)+B_MAT*(-b+B)+R_MAT*(-r+R)+Q_MAT*(-q+Q);
 	eval += material_diff;
 
-	eval += (material_sum/7500)*(MLUT.get_piece_square_king(wking) - MLUT.get_piece_square_king(63 - bking));
+	if(material_diff >= 3*P_MAT && material_sum <= 2*Q_MAT){
 
-	eval += 12*(signed int(__popcnt64(castlable_rooks & RANK_1))-signed int(__popcnt64(castlable_rooks & RANK_8)));
+		eval -= 32*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
+		eval += 32*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
 
-	eval += (signed int(__popcnt64(controlled_squares[WHITE] & CENTER)) - signed int(__popcnt64(controlled_squares[BLACK] & CENTER)));
+	} else {
 
-	eval += 32*(signed int(__popcnt64(MLUT.get_move_mask(BLACK,bking)&controlled_squares[WHITE])) - signed int(__popcnt64(MLUT.get_move_mask(WHITE,wking)&controlled_squares[BLACK])));
+		eval += (material_sum/7500)*(MLUT.get_piece_square_king(wking) - MLUT.get_piece_square_king(63 - bking));
 
-	eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
-	
-	woffense = int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
-	boffense = int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
+		eval += 12*(signed int(__popcnt64(castlable_rooks & RANK_1))-signed int(__popcnt64(castlable_rooks & RANK_8)));
 
-	eval += 8*(woffense-boffense);
+		eval += (signed int(__popcnt64(controlled_squares[WHITE] & CENTER)) - signed int(__popcnt64(controlled_squares[BLACK] & CENTER)));
 
-	for(i=1;i<white;i++){
-		eval += signed int(max(__popcnt64(pl[WHITE][i].targets),6));
-	}
-	for(i=1;i<black;i++){
-		eval -= signed int(max(__popcnt64(pl[BLACK][i].targets),6));
+		eval += 32*(signed int(__popcnt64(MLUT.get_move_mask(BLACK,bking)&controlled_squares[WHITE])) - signed int(__popcnt64(MLUT.get_move_mask(WHITE,wking)&controlled_squares[BLACK])));
+
+		eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
+		
+		woffense = int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
+		boffense = int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
+
+		eval += 8*(woffense-boffense);
+
+		for(i=1;i<white;i++){
+			eval += signed int(max(__popcnt64(pl[WHITE][i].targets),6));
+		}
+		for(i=1;i<black;i++){
+			eval -= signed int(max(__popcnt64(pl[BLACK][i].targets),6));
+		}
+
 	}
 
 	this->evaluation = EVAL_GRAIN*(eval/EVAL_GRAIN);
