@@ -19,6 +19,7 @@ class search_handler{
 	unsigned long long nodes_limit;
 	bool infinite;
 	////
+	bool is_searching;
 	unsigned short best_move;
 	unsigned short ponder_move; //move that we think the enemy will play after ours
 	unsigned long long nodes_searched;

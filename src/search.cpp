@@ -29,10 +29,13 @@ void search_handler::reset(){
 	ponder_move = 0;
 	nodes_searched = 0;
 	depth_searched = 0;
+	is_searching = FALSE;
 	return;	
 }
 
 void search_handler::go(){
+	if(is_searching) return;
+	is_searching = TRUE;
 	thread search_thread(&search_handler::search,this);
 	search_thread.detach();
 	return;	
@@ -87,6 +90,7 @@ void search_handler::search(){
 			k = nodes_searched;
 			cl = clock(); 
 			score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
+			if(!is_searching) return; 
 			if(rootpos->to_move){
 				beta = min(beta, score);
 			} else {
@@ -110,6 +114,7 @@ void search_handler::search(){
 			if(score*to_move_sign > top_score){
 				top_move = move;
 				top_score = score*to_move_sign;
+				best_move = top_move;
 			}
 			if(top_score >= CHECKMATE){
 				goto exit_minimax_loop;
@@ -145,13 +150,15 @@ void search_handler::search(){
 	}
 
 	best_move = top_move;
-	stop();
+	if(is_searching) stop();
 	return;
 }
 
 
 void search_handler::stop(){
+	if(!is_searching) return;
 	cout << "bestmove " << move_itos(best_move) << "\n";
+	is_searching = FALSE;
 	return;
 }
 
@@ -237,6 +244,7 @@ int search_handler::quiesce(chess_pos* node, int min_or_max, int a, int b, int d
 
 int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, int b){
 	nodes_searched++;
+	if(!is_searching) return 0; 
 	node->generate_moves();
 	if(depth == 0){
 		if(node->captures > 0){
