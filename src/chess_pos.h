@@ -37,7 +37,7 @@ struct piece_list_struct
 
 class chess_pos {
 	public:
-	int id;
+	unsigned short id;
 	piece_list_struct pl[2][MAX_PIECES_PER_SIDE];
 	U64 pin_rays[2][8]; //8 for each king, 0-7, E,SE,S,SW,W,NW,N,NE
 	U64 pieces[2][6]; 
@@ -45,6 +45,7 @@ class chess_pos {
 	int piece_at[64]; //undefined if no piece on idx! use piece_at_idx() instead
 	U64 ep_target_square;
 	U64 castlable_rooks;
+	z_key zobrist_key;
 	int to_move; // '0' or '1'
 	int in_check; //0 not in check. 1 in check. 2 double check.
 	//-----------------------------
@@ -72,6 +73,7 @@ class chess_pos {
 	void print_pos(bool);
 	void dump_pos(ofstream& ofile); //for debugging
 	void init_piece_list();
+	void init_zobrist();
 	void generate_moves(); 
 	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
 	void init_targets(int side);

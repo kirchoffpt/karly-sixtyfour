@@ -1,6 +1,5 @@
 #include "chess_moves_lut.h"
 
-
 #define INCLUDE_CENTER false
 
 const ll ray_NwSe = 0x8040201008040201; // '\'
@@ -60,6 +59,21 @@ chess_mask_LUT::chess_mask_LUT() {
 	int i,j,k,x,y,z;
 	int shift;
 	ll temp = 0, temp2, ab;
+
+	std::random_device rd;
+  	std::mt19937_64 gen(rd());
+  	std::uniform_int_distribution<unsigned long long> dis;
+
+	//ZOBRIST
+	zobrist_black_to_move = dis(gen);
+	for(i=0;i<2;i++){
+		for(j=0;j<6;j++){
+			for(k=0;k<64;k++){
+				zobrist_piece[i][j][k] = dis(gen);
+			}
+		}
+	}
+
 
 	//PAWN ATTACK WHITE
 	for(i=0;i<64;i++){
@@ -422,4 +436,14 @@ int chess_mask_LUT::get_piece_square_pawn(int index)
 int chess_mask_LUT::get_piece_square_king(int index)
 {
 	return piece_square_king[index];
+}
+
+ll chess_mask_LUT::get_zobrist_piece(int side, int piece_type, int idx)
+{
+	return zobrist_piece[side][piece_type][idx];
+}
+
+ll chess_mask_LUT::get_zobrist_btm()
+{
+	return zobrist_black_to_move;
 }

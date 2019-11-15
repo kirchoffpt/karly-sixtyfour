@@ -2,6 +2,7 @@
 #define CHESS_MOVES_LUT_H
 
 #include <map>
+#include <random>
 #include "constants.h"
 
 #ifndef ll
@@ -37,6 +38,8 @@ class chess_mask_LUT {
 	int piece_square_pawn[64];
 	int piece_square_king[64];
 	std::map<ll,ll> sliding_rays;
+	z_key zobrist_piece[2][6][64];
+	z_key zobrist_black_to_move;
 
 public:
 
@@ -53,6 +56,8 @@ public:
 	ll get_en_passant_attackers(int index);
 	int get_piece_square_pawn(int index);
 	int get_piece_square_king(int index);
+	ll get_zobrist_piece(int side, int piece_type, int idx);
+	ll get_zobrist_btm();
 };
 
 

@@ -39,6 +39,7 @@ chess_pos::chess_pos(){
 	last_move_capture = 0;
 	changed_squares = 0;
 	last_move_to_and_from = 0;
+	zobrist_key = 0;
 
 	return;
 }
@@ -70,6 +71,7 @@ void chess_pos::copy_pos(chess_pos* source_pos){
 
 	occ[WHITE] = source_pos->occ[WHITE];
 	occ[BLACK] = source_pos->occ[BLACK];
+	zobrist_key = source_pos->zobrist_key;
 	ep_target_square = source_pos->ep_target_square;
 	castlable_rooks = source_pos->castlable_rooks; 
 	to_move = source_pos->to_move;
@@ -231,6 +233,8 @@ void chess_pos::load_new_fen(string FEN)
 
 	init_piece_list();
 	sort_piece_list();
+	init_zobrist();
+
 	return;
 }
 
@@ -352,6 +356,27 @@ U64 chess_pos::prune_blocked_moves(int piece_type, int move_mask_center_idx, U64
 
 	return actual_blockers;
 
+}
+
+void chess_pos::init_zobrist()
+{
+	int i, side;
+	int p_type, idx;
+
+	zobrist_key = 0;
+
+	for(side=WHITE;side<=BLACK;side++){
+		for(i=0;i<__popcnt64(occ[side]);i++){
+			p_type = pl[side][i].piece_type;
+			idx = bit_to_idx(pl[side][i].loc);
+			zobrist_key ^= MLUT.get_zobrist_piece(side, p_type, idx);
+		}
+	}
+	zobrist_key ^= z_key(ep_target_square);
+	zobrist_key ^= z_key(castlable_rooks);
+	if(to_move) zobrist_key ^= MLUT.get_zobrist_btm();
+
+	return;
 }
 
 void chess_pos::init_piece_list()
@@ -1495,10 +1520,22 @@ void chess_pos::generate_moves()
 	controlled_squares[!to_move] = enem_ctrl;
 	target_squares[to_move] = ally_targ;
 	target_squares[!to_move] = enem_targ;
-	captures = ally_targ & occ[!to_move] & ~pieces[!to_move][PAWN];
+	captures = ally_targ & occ[!to_move];
 	changed_squares = 0;
 	last_move_to_and_from = 0;
 
+	//rudimentary move ordering
+	//put captures first in line to be popped
+	if(ENABLE_INTERNAL_MOVE_ORDERING){
+		j = get_num_moves();
+		for(i=j-1;i>=0;i--){
+			if((U64(1)<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
+				pos_move_list.swap_moves(i,(j--)-1);
+			} 
+		}
+	}	
+
+	if(EXCLUDE_PAWNS_FROM_CAPTURE_MASK) captures &= ~pieces[!to_move][PAWN];
 
 	// print_bitboard(ally_ctrl);
 	// print_bitboard(enem_ctrl);
@@ -1896,12 +1933,18 @@ void chess_pos::add_move(unsigned short move)
 	int piece_type = piece_at[src_idx];
 	//cout << idx_to_coord(src_idx) << " " << idx_to_coord(dst_idx);
 
+	zobrist_key ^= z_key(ep_target_square);
+	zobrist_key ^= z_key(castlable_rooks);
+	zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,src_idx);
+	zobrist_key ^= MLUT.get_zobrist_btm();
+
 	if(DEBUG){
 		assert(src_square != dst_square);
 	}
 
 	if(dst_square & occ[!to_move]){
 		last_move_capture = 1;
+		zobrist_key ^= MLUT.get_zobrist_piece(!to_move,piece_at[dst_idx],dst_idx);
 	} else {
 		last_move_capture = 0;
 	}
@@ -1909,6 +1952,7 @@ void chess_pos::add_move(unsigned short move)
 	ep_target_square = 0;
 	
 	if((move & SPECIAL_MASK) == 0){
+		zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,dst_idx);
 		changed_squares = src_square | dst_square;
 		last_move_to_and_from = changed_squares;
 		occ[to_move] ^= (dst_square | src_square);
@@ -1946,6 +1990,7 @@ void chess_pos::add_move(unsigned short move)
 		occ[!to_move] &= ~dst_square;
 		pieces[to_move][piece_type] ^= src_square;
 		piece_type = (move & PROMO_MASK) + PROMO_TO_PIECE;
+		zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,dst_idx);
 		pieces[to_move][piece_type] ^= dst_square;
 		pieces[!to_move][piece_at[dst_idx]] &= ~(dst_square);
 		piece_at[dst_idx] = piece_type;
@@ -1953,20 +1998,24 @@ void chess_pos::add_move(unsigned short move)
 			castlable_rooks &= ~dst_square;
 		}
 	} else if((move & SPECIAL_MASK) == ENPAS){
+		zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,dst_idx);
 		changed_squares = src_square | dst_square;
 		last_move_to_and_from = changed_squares;
 		occ[to_move] ^= (dst_square | src_square);
-		piece_at[dst_idx] = piece_type;
-		pieces[to_move][piece_type] ^= (dst_square | src_square);
+		piece_at[dst_idx] =PAWN;
+		pieces[to_move][PAWN] ^= (dst_square | src_square);
 		if(to_move){
-			dst_square <<= 8; 
+			dst_square <<= 8;
+			zobrist_key ^= MLUT.get_zobrist_piece(!to_move,PAWN,dst_idx+8); 
 		} else {
-			dst_square >>= 8; 
+			dst_square >>= 8;
+			zobrist_key ^= MLUT.get_zobrist_piece(!to_move,PAWN,dst_idx-8); 
 		}
 		changed_squares |= dst_square;
-		pieces[!to_move][piece_at[dst_idx]] &= ~(dst_square);
+		pieces[!to_move][PAWN] &= ~(dst_square);
 		occ[!to_move] &= ~dst_square;
 	} else if((move & SPECIAL_MASK) == CASTL){
+		zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,dst_idx);
 		if(src_square > dst_square){
 			//king side
 			if(to_move){
@@ -1979,6 +2028,8 @@ void chess_pos::add_move(unsigned short move)
 				piece_at[KSCB_ROOK_IDX] = ROOK;
 				piece_at[KSCB_KING_IDX] = KING;
 				pl[BLACK][0].loc = KSCB_KING_SQUARE;
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,bit_to_idx(dst_square));
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,KSCB_ROOK_IDX);
 			} else {
 				dst_square = KSCW_CHANGED_SQUARES & castlable_rooks;
 				changed_squares = KSCW_CHANGED_SQUARES;
@@ -1989,6 +2040,8 @@ void chess_pos::add_move(unsigned short move)
 				piece_at[KSCW_ROOK_IDX] = ROOK;
 				piece_at[KSCW_KING_IDX] = KING;
 				pl[WHITE][0].loc = KSCW_KING_SQUARE;
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,bit_to_idx(dst_square));
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,KSCW_ROOK_IDX);
 			}
 		} else {
 			//queen side
@@ -2002,6 +2055,8 @@ void chess_pos::add_move(unsigned short move)
 				piece_at[QSCB_ROOK_IDX] = ROOK;
 				piece_at[QSCB_KING_IDX] = KING;
 				pl[BLACK][0].loc = QSCB_KING_SQUARE;
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,bit_to_idx(dst_square));
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,QSCB_ROOK_IDX);
 			} else {
 				dst_square = QSCW_CHANGED_SQUARES & castlable_rooks;
 				changed_squares = QSCW_CHANGED_SQUARES;
@@ -2012,6 +2067,8 @@ void chess_pos::add_move(unsigned short move)
 				piece_at[QSCW_ROOK_IDX] = ROOK;
 				piece_at[QSCW_KING_IDX] = KING;
 				pl[WHITE][0].loc = QSCW_KING_SQUARE;
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,bit_to_idx(dst_square));
+				zobrist_key ^= MLUT.get_zobrist_piece(to_move,ROOK,QSCW_ROOK_IDX);
 			}
 		}
 		if(to_move){
@@ -2023,6 +2080,10 @@ void chess_pos::add_move(unsigned short move)
 
 	last_move_check_evasion = in_check;
 	to_move = !to_move;
+
+	zobrist_key ^= z_key(ep_target_square);
+	zobrist_key ^= z_key(castlable_rooks);
+
 	return;
 }
 
@@ -2086,6 +2147,7 @@ void chess_pos::print_pos(bool basic)
 	} else {
 		cout << idx_to_coord(bit_to_idx(ep_target_square)) << endl;
 	}
+	cout << "zobrist: " << zobrist_key;
 	cout << endl;
 	return;
 }
@@ -2218,10 +2280,10 @@ int chess_pos::eval()
 	material_diff = P_MAT*(-p+P)+N_MAT*(-n+N)+B_MAT*(-b+B)+R_MAT*(-r+R)+Q_MAT*(-q+Q);
 	eval += material_diff;
 
-	if(material_diff >= 3*P_MAT && material_sum <= 2*Q_MAT){
+	if(material_diff >= 5*P_MAT && material_sum <= 2*Q_MAT){
 
-		eval -= 32*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
-		eval += 32*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
+		eval -= 8*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
+		eval += 8*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
 
 	} else {
 
@@ -2232,8 +2294,6 @@ int chess_pos::eval()
 		eval += (signed int(__popcnt64(controlled_squares[WHITE] & CENTER)) - signed int(__popcnt64(controlled_squares[BLACK] & CENTER)));
 
 		eval += 32*(signed int(__popcnt64(MLUT.get_move_mask(BLACK,bking)&controlled_squares[WHITE])) - signed int(__popcnt64(MLUT.get_move_mask(WHITE,wking)&controlled_squares[BLACK])));
-
-		eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 		
 		woffense = int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
 		boffense = int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
@@ -2248,6 +2308,8 @@ int chess_pos::eval()
 		}
 
 	}
+
+	eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 
 	this->evaluation = EVAL_GRAIN*(eval/EVAL_GRAIN);
 	return this->evaluation;
