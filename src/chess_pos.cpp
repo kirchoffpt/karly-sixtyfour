@@ -2282,8 +2282,9 @@ int chess_pos::eval()
 
 	if(material_diff >= 5*P_MAT && material_sum <= 2*Q_MAT){
 
-		eval -= 8*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
-		eval += 8*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
+		eval -= 4*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
+		eval += 4*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
+		eval += -material_diff/(P_MAT/2)*board_dist(wking,bking);
 
 	} else {
 

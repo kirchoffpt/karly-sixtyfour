@@ -172,4 +172,13 @@ U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int d
 	return fill;
 }
 
+int board_dist(int idx1, int idx2){
+	int x,y;
+
+	x = abs(idx1%8-idx2%8);
+	y = abs(idx1/8-idx2/8);
+
+	return x + y;
+}
+
 

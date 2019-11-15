@@ -6,6 +6,8 @@
 #define MIN_DEPTH 5
 #define MAX_Q_DEPTH 24
 
+#define PVS_SEARCH FALSE // experimental. as opposed to regular minimax. this option will probably be removed in the future
+
 using namespace std;
 
 search_handler::search_handler(chess_pos* pos){
@@ -86,14 +88,20 @@ void search_handler::search(){
 			rootpos->next->copy_pos(rootpos);
 			rootpos->next->add_move(move);
 			k = nodes_searched;
-			cl = clock(); 
-			score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
-			if(!is_searching) return; 
-			if(rootpos->to_move){
-				beta = min(beta, score);
-			} else {
+			cl = clock();
+			if(PVS_SEARCH){ 
+				score = -pvs(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
 				alpha = max(alpha, score);
+				score *= to_move_sign;
+			} else {
+				score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
+				if(rootpos->to_move){
+					beta = min(beta, score);
+				} else {
+					alpha = max(alpha, score);
+				}
 			}
+			if(!is_searching) return; 
 			cl = clock() - cl;
 			t = cl/(double)CLOCKS_PER_SEC;
 			tt += t;
@@ -291,9 +299,16 @@ int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, i
 }
 
 int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b){
+	nodes_searched++;
     node->generate_moves();
 	if(depth == 0){
-		nodes_searched++;
+		if(node->captures > 0){
+			if(min_or_max){
+				return -quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
+			} else {
+				return quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
+			}
+		}
 		if(min_or_max){
 			return -node->eval();
 		} else {
@@ -306,7 +321,6 @@ int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b
 		a = max(a, eval);
         if(a >= b) return a;
 	} else {
-		nodes_searched++;
 		if(min_or_max){
 			return -node->mate_eval();
 		} else {
