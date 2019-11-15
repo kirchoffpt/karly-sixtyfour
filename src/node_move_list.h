@@ -28,6 +28,7 @@ public:
 	void sort_moves_by_scores(int* score_list);
 	unsigned short get_move_from_string(char* move_string);
 	void randomize_move_order();
+	void swap_moves(int idx1, int idx2);
 };
 
 

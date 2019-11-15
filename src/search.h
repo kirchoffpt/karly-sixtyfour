@@ -9,6 +9,7 @@ using namespace std;
 
 class search_handler{
 	chess_pos* rootpos;
+	public:
 	//// UCI settings
 	unsigned short moves[MAX_MOVES_IN_POS];
 	int num_moves;
@@ -24,7 +25,6 @@ class search_handler{
 	unsigned short ponder_move; //move that we think the enemy will play after ours
 	unsigned long long nodes_searched;
 	int depth_searched;
-	public:
 	search_handler(chess_pos* rootpos);
 	void set_time(int wt, int wi, int bt, int bi, int movestogo);
 	void go(); //launches search() threads

@@ -47,6 +47,32 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 	//rootpos->print_pos(true);
 }
 
+void uci_go(istringstream& is, search_handler* searcher){
+	string token;
+	int i;
+
+	while(is >> token){
+		if(token == "wtime"){
+			is >> i;
+			searcher->wtime = i;
+		} else if(token == "btime"){
+			is >> i;
+			searcher->btime = i;
+		} else if(token == "winc"){
+			is >> i;
+			searcher->winc = i;
+		} else if(token == "binc"){
+			is >> i;
+			searcher->binc = i;
+		}
+	}
+
+	searcher->go();
+
+	return;
+}
+
+
 int main(int argc, char *argv[]){
 	string cmd, token;
 	ofstream ofs;
@@ -75,7 +101,7 @@ int main(int argc, char *argv[]){
 			uci_position(is, rootpos);
 			rootpos->print_pos(false);
 		} else if(token == "go"){
-			searcher->go();
+			uci_go(is, searcher);
 		} else if(token == "stop"){
 			searcher->stop();
 		} else if(token == "quit"){

@@ -160,3 +160,10 @@ void node_move_list::randomize_move_order(){
 	}
 	return;
 }
+
+void node_move_list::swap_moves(int idx1, int idx2){
+	unsigned short move_temp = moves[idx1];
+	moves[idx1] = moves[idx2];
+	moves[idx2] = move_temp;
+	return; 
+}

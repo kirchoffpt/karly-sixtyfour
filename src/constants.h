@@ -14,6 +14,11 @@
 #define R_MAT	1289
 #define Q_MAT	2529
 
+#define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
+#define ENABLE_INTERNAL_MOVE_ORDERING TRUE // speeds up search but should set to false for best perft results in mct.exe
+
+typedef unsigned long long z_key;
+
 ////////////////////////////////////////////
 //below values should not be changed lightly
 ////////////////////////////////////////////
@@ -136,3 +141,7 @@
 #define NW_DIR	5
 #define N_DIR 	6
 #define NE_DIR	7 
+
+#define PVNODE 0 
+#define ALLNODE 1	
+#define CUTNODE 2
