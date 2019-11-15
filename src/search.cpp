@@ -6,7 +6,7 @@
 #define MIN_DEPTH 5
 #define MAX_Q_DEPTH 24
 
-#define PVS_SEARCH FALSE // experimental. as opposed to regular minimax. this option will probably be removed in the future
+#define PVS_SEARCH TRUE // experimental. as opposed to regular minimax. this option will probably be removed in the future
 
 using namespace std;
 
@@ -84,13 +84,13 @@ void search_handler::search(){
 		cout << "depth " << depth << "/" << MIN_DEPTH << "\n";
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
-			//if((33<<SRC_SHIFT) + (40<<DST_SHIFT) != move) continue;
+			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
 			rootpos->next->add_move(move);
 			k = nodes_searched;
 			cl = clock();
 			if(PVS_SEARCH){ 
-				score = -pvs(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
+				score = -pvs(rootpos->next, depth-1,!rootpos->to_move, -beta, -alpha);
 				alpha = max(alpha, score);
 				score *= to_move_sign;
 			} else {
@@ -304,7 +304,7 @@ int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b
 	if(depth == 0){
 		if(node->captures > 0){
 			if(min_or_max){
-				return -quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
+				return-quiesce(node,min_or_max,-b,-a,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
 			} else {
 				return quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
 			}
