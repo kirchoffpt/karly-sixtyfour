@@ -3,7 +3,7 @@ Chess engine written in C++11
 
 Version 0.1.1 (Windows only)
 
-A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence search. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine was written completely from scratch and is meant to be a hobby project. The goal is to eventually get above 2000 elo on the [CCRL rating list](https://www.computerchess.org.uk/ccrl/4040/). Karly64 is not currently on the rating list at it still missing some necessary elements to make it competitive. Karly64 currently generates 50 million to 100 million moves per second and evaluates 2 million to 6 million positions per second but usually does not search past depth 6 (3 moves) in the midgame.
+A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence search. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine was written completely from scratch and is meant to be a hobby project. The goal is to eventually get above 2000 elo on the [CCRL rating list](https://www.computerchess.org.uk/ccrl/4040/). Karly64 is not currently on the rating list at it still missing some necessary elements to make it competitive. Karly64 currently generates 50 million to 100 million moves per second and evaluates 2 million to 6 million positions per second but usually does not search past depth 6 (3 moves not counting quiescence search) in the midgame.
 
 Play it [here](https://lichess.org/@/karly64)! Lichess account needed (free).
 
@@ -18,8 +18,8 @@ Note that this move generation method is more experimental and not strictly bett
 Everything else in the engine is pretty standard stuff you can find on the chess programming wiki, but here are current and planned implementations.
   - Current
     - Bitboards (64 bit board representations)
-    - Legal move generation (as opposed to pseudo-legal)
-    - Alpha beta minimax search w/ iterative deepening
+    - Fast legal move generation (as opposed to pseudo-legal)
+    - Alpha-beta minimax search w/ iterative deepening
     - Quiescence/Capture search
     - Weak UCI implementation (good enough for most GUIs)
   - Planned
