@@ -1,3 +1,4 @@
+TARGET = karly64_0
 SRC_DIR = ./src
 CFLAGS = /EHsc /O2
 
@@ -8,10 +9,10 @@ test : mct.exe
 mct.exe uciengine.exe : chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj
 
 uciengine.exe : uciengine.obj  search.obj
-	cl uciengine.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj search.obj
+	cl /Fe"./$(TARGET).exe" uciengine.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj search.obj
 
 mct.exe : mct.obj 
-	cl mct.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj
+	cl /Fe"./perft.exe" mct.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj
 
 
 uciengine.obj : $(SRC_DIR)/uciengine.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h

@@ -51,7 +51,9 @@ int main(int argc, char *argv[]){
 	}
 
 
-
+	if(ENABLE_INTERNAL_MOVE_ORDERING){
+		cout << "Note: Compiled with internal move ordering. Results are slow." << endl;
+	}
 
 	cout << "trials: " << num_trials << endl;
 	for(j=0;j<num_trials;j++){
@@ -93,7 +95,7 @@ int main(int argc, char *argv[]){
 		}
 		if(argc > 1) break;
 		if(passed){
-			cout << ".";
+			cout << "-";
 		} else {
 			cout << "!";
 			num_failed++;
@@ -105,7 +107,7 @@ int main(int argc, char *argv[]){
 	if(argc == 1) cout << (num_trials-num_failed) << " / " << num_trials << " PASSED " << endl;
 
 	cout << "time: " << t << endl;
-	cout << "kNPS: " << float(total_nodes)/(1000*t) << endl;
+	cout << "millions of moves per sec: " << float(total_nodes)/(1000000*t) << endl;
 
 	infile.close();
 
