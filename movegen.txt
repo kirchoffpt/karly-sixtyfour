@@ -1,0 +1,39 @@
+Here is the basic algorithm used for move generation.
+Note that the current implementation in chess_pos.cpp leaves quite a bit to be desired.
+Also note that this method makes unmaking moves a pointless endeavor. This method spends
+about 20% of its time on just copying positions.
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+load white king position 
+if squares changed in a pin ray, find the new pin ray for that direction
+see which pieces are actually pinned on the rays and store locations of actual pins
+
+check for special case of en passant pin
+we do not check for the bishop variant of this pin because that position cannot arise from a series of legal moves
+
+load black king position.
+save pin rays if last move moved to or from a pin ray 
+see which pieces are actually pinned on the rays
+if the last move was a king move, pin rays are regenerated in all directions
+
+iterate through white non-king pieces
+generate moves if last move changed them or the piece is in a new white king pin ray
+if the piece is not there its been captured. remove it from the list
+
+iterate through black non-king pieces, 
+generate moves if last move changed them or the piece is in a black king pin ray 
+OR if piece is flagged as pinned but not in pin ray
+if the piece is not there its been promoted/castled, change accordingly
+
+generate black king ctrl squares
+
+see if any pawns or knights are checking the white king. sliders were checked during the pin checks
+
+generate white king moves using compiled squares controlled by black
+
+load moves for white into list 
+if in check only load king moves and moves on the check ray 
+if double check stop after the king moves
+if not in check add castling moves
