@@ -5,7 +5,7 @@ Version 0.1.1 (Windows only)
 
 A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence search. It is quite strong at the moment considering how basic it is. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
-Play it [here](https://lichess.org/@/karly64)! Lichess account needed (free).
+**Play it [here](https://lichess.org/@/karly64)!** Lichess account needed (free).
 
 ### Features
 
