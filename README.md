@@ -14,7 +14,7 @@ Features a novel legal-move generation algorithm that effectively generates move
 
 The move generator is currently about half as fast as the *very* quick [qperft](https://home.hccnet.nl/h.g.muller/perft.c) by H.G. Muller (nearly 200 million moves per second) but the current implementation of Karly64's move generator still leaves a lot of obvious opportunities for optimizations. This generator is also pulling double duty for evaluation's sake.
 
-It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) if anyone wants ideas from it.
+It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) (or see the current implementation in `chess_pos::generate_moves()` in [chess_pos.cpp](./src/chess_pos.cpp)) if anyone wants ideas from it.
 
 #### Everything Else
 Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations.
