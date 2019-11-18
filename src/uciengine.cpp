@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void uci_position(istringstream& is, chess_pos* rootpos){
+void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
 	string token, s, fenstring = STARTPOS;
 	char move_string[5];
 	unsigned short move = 0;
@@ -28,9 +28,11 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 	} else {
 		return;
 	}
+	searcher->past_positions.clear();
 	rootpos->load_new_fen(fenstring);
 	rootpos->generate_moves();
 	rootpos->sort_piece_list();
+	searcher->past_positions.push_back(rootpos->zobrist_key);
 	//cout << token << endl;
 	if(s == "moves" || (is >> token && token == "moves")){
 		while(is >> token){
@@ -40,6 +42,7 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 				rootpos->add_move(move);
 				rootpos->generate_moves();
 				rootpos->sort_piece_list();
+				searcher->past_positions.push_back(rootpos->zobrist_key);
 			}
 		}
 	}
@@ -50,23 +53,29 @@ void uci_position(istringstream& is, chess_pos* rootpos){
 void uci_go(istringstream& is, search_handler* searcher){
 	string token;
 	int i;
+	search_options uci_s = {0};
 
 	while(is >> token){
 		if(token == "wtime"){
 			is >> i;
-			searcher->wtime = i;
+			uci_s.time[WHITE] = i;
 		} else if(token == "btime"){
 			is >> i;
-			searcher->btime = i;
+			uci_s.time[BLACK] = i;
 		} else if(token == "winc"){
 			is >> i;
-			searcher->winc = i;
+			uci_s.inc[WHITE] = i;
 		} else if(token == "binc"){
 			is >> i;
-			searcher->binc = i;
+			uci_s.inc[BLACK] = i;
+		}
+		 else if(token == "movetime"){
+			is >> i;
+			uci_s.movetime = i;
 		}
 	}
 
+	searcher->uci_s = uci_s;
 	searcher->go();
 
 	return;
@@ -98,7 +107,7 @@ int main(int argc, char *argv[]){
 		} else if(token == "isready"){
 			cout << "readyok\n";
 		} else if(token == "position"){
-			uci_position(is, rootpos);
+			uci_position(is, rootpos, searcher);
 			rootpos->print_pos(false);
 		} else if(token == "go"){
 			uci_go(is, searcher);

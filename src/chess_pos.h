@@ -56,7 +56,7 @@ class chess_pos {
 	int evaluation;
 	U64 changed_squares;
 	U64 last_move_to_and_from;
-	U64 controlled_squares[2];
+	U64 ctrl[2];
 	U64 target_squares[2];
 	node_move_list pos_move_list;
 	chess_pos* next; //next node

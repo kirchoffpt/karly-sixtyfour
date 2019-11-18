@@ -3,8 +3,9 @@
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
 #define MAX_AB_DEPTH 24
-#define MIN_DEPTH 5
+#define MIN_DEPTH 3
 #define MAX_Q_DEPTH 24
+#define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
 
 #define PVS_SEARCH TRUE // experimental. as opposed to regular minimax. this option will probably be removed in the future
 
@@ -12,21 +13,14 @@ using namespace std;
 
 search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
+	rootpos->id = 0;
 	reset();
 	return;
 }
 
 void search_handler::reset(){
-	num_moves = 0;
-	ponder = 0;
-	wtime = btime = 0;
-	winc = binc = 0;
-	movestogo = 0;
-	depth_limit = 0;
-	nodes_limit = 0;
-	mate = 0;
-	movetime = 0;
-	infinite = FALSE;
+	std::memset(&uci_s, 0, sizeof(search_options));
+	past_positions.clear();
 	best_move = 0;
 	ponder_move = 0;
 	nodes_searched = 0;
@@ -38,9 +32,27 @@ void search_handler::reset(){
 void search_handler::go(){
 	if(is_searching) return;
 	is_searching = TRUE;
+	int i;
+	for(i=0;i<past_positions.size();i++){
+		cout << past_positions[i] << endl;
+	}
 	thread search_thread(&search_handler::search,this);
 	search_thread.detach();
 	return;	
+}
+
+void search_handler::max_timer(int ms){
+	Sleep(ms);
+	stop();
+}
+
+bool search_handler::is_threefold_repetition(const z_key position){
+	int i, count = 1;
+	for(i=0;i<past_positions.size();i++){
+		if(past_positions[i] == position) count++;
+	}
+	if(count >= 3) return true;
+	return false;
 }
 
 void search_handler::search(){
@@ -48,7 +60,7 @@ void search_handler::search(){
 	int i,j,n_root_moves;
 	int to_move_sign;
 	int score, top_score, alpha, beta;
-	chess_pos* node_ptrs[MAX_AB_DEPTH+MAX_Q_DEPTH+1];
+	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move, top_move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
 	int depth;
@@ -57,23 +69,48 @@ void search_handler::search(){
 	float t, tt;
 	char move_string[5];
 	clock_t cl;     //initializing a clock type
+	float target_time, max_time, t1, t2;
+	std::chrono::steady_clock::time_point start, end;
 
-	i = MAX_AB_DEPTH+MAX_Q_DEPTH;
+	i = MAX_DEPTH;
 	node_ptrs[i--] = new chess_pos;
 	for(i;i>=0;i--){
 		node_ptrs[i] = new chess_pos;
 		node_ptrs[i]->next = node_ptrs[i+1];
-		node_ptrs[i]->id = i; 
 	}
 	rootpos->next = node_ptrs[0];
 	node_ptrs[0]->prev = rootpos;
-	for(i=1;i<=MAX_AB_DEPTH+MAX_Q_DEPTH;i++){
+	for(i=1;i<=MAX_DEPTH;i++){
 		node_ptrs[i]->prev = node_ptrs[i-1];
+	}
+	for(i=0;i<MAX_DEPTH+1;i++){
+		node_ptrs[i]->id = i+1;
 	}
 
 	rootpos->generate_moves();
 	n_root_moves = rootpos->get_num_moves();
-	to_move_sign = ((!rootpos->to_move)*2-1);
+
+	if(n_root_moves == 1){
+		best_move = rootpos->pos_move_list.pop_move();
+		stop();
+	}
+
+	to_move = rootpos->to_move;
+	to_move_sign = ((!to_move)*2-1);
+
+	t1 = float(uci_s.time[to_move]);
+	t2 = float(uci_s.time[!to_move]);
+	target_time = max(t1/64 , t1 - 1.1*t2);
+
+	if(uci_s.movetime > 0){
+		max_time = uci_s.movetime;
+	} else {
+		max_time = max((t2-t1)/10 , t1 - 0.9*t2);
+	}
+
+	best_move = rootpos->pos_move_list.get_random_move();
+	thread timer_thread(&search_handler::max_timer,this,int(max_time));
+	timer_thread.detach();
 
     tt = 0;
     nodes_searched = 0;
@@ -81,61 +118,60 @@ void search_handler::search(){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "depth " << depth << "/" << MIN_DEPTH << "\n";
+		cout << "d " << depth << "/" << MIN_DEPTH << "\n";
 		for(i=n_root_moves-1;i>=0;i--){
+			if(tt > target_time && depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
 			move = rootpos->pos_move_list.get_move(i);
 			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
 			rootpos->next->add_move(move);
-			k = nodes_searched;
-			cl = clock();
-			if(PVS_SEARCH){ 
-				score = -pvs(rootpos->next, depth-1,!rootpos->to_move, -beta, -alpha);
-				alpha = max(alpha, score);
-				score *= to_move_sign;
+			if(is_threefold_repetition(rootpos->zobrist_key)){
+				score = 0;
+				nodes_searched++;
 			} else {
-				score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
-				if(rootpos->to_move){
-					beta = min(beta, score);
-				} else {
+				k = nodes_searched;
+				start = std::chrono::steady_clock::now();
+				if(PVS_SEARCH){ 
+					score = -pvs(rootpos->next, depth-1,!rootpos->to_move, -beta, -alpha);
 					alpha = max(alpha, score);
+					score *= to_move_sign;
+				} else {
+					score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
+					if(rootpos->to_move){
+						beta = min(beta, score);
+					} else {
+						alpha = max(alpha, score);
+					}
 				}
+				if(!is_searching) return; 
+				end = std::chrono::steady_clock::now();
+				t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+				tt += t;
 			}
-			if(!is_searching) return; 
-			cl = clock() - cl;
-			t = cl/(double)CLOCKS_PER_SEC;
-			tt += t;
 			move_scores[i] = score*to_move_sign;
-
-			cout << move_itos(move);
-			cout << "	score: ";
-			if(score > 0){
-				cout << "+";
-			}
-			cout << float(score)/100.0;
-			cout << "	time: " <<  t;
-			if(t > 0.005) cout << "	kNPS: " << (0.001*(nodes_searched-k))/t;
-			cout << "\n";
 			
 			if(score*to_move_sign > top_score){
 				top_move = move;
 				top_score = score*to_move_sign;
 				best_move = top_move;
 			}
+
+			if(depth >= 4){
+			cout << "info score cp " << top_score << " nodes " << nodes_searched << " depth " << depth;
+			cout << " time " << int(tt) << " nps " << 1000*int(nodes_searched/tt) << endl;
+			}
+
 			if(top_score >= CHECKMATE){
 				goto exit_minimax_loop;
 			}
 		}
+		if(top_score <= -CHECKMATE){
+			break;
+		}
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
-		if(tt > 0.33 && depth >= MIN_DEPTH) break;
 	}
 
 	exit_minimax_loop:
-
-	cout << "info score cp " << top_score << " nodes " << nodes_searched << " depth " << depth;
-	cout << " time " << int(tt*1000) << " nps " << int(nodes_searched/tt) << "\n";
-
-	fflush(stdout);
 
 	// cout << endl;
 	// cout << "top_move: ";
@@ -300,7 +336,11 @@ int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, i
 
 int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b){
 	nodes_searched++;
+	__assume(is_searching);
+	if(!is_searching) return 0; 
+
     node->generate_moves();
+
 	if(depth == 0){
 		if(node->captures > 0){
 			if(min_or_max){
@@ -335,16 +375,3 @@ int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b
     }
     return a;
 }
-
-
-void search_handler::set_time(int wt, int wi, int bt, int bi, int mtg){
-	movestogo = mtg;
-	wtime = wt;
-	winc = wi;
-	btime = bt;
-	binc = bi;
-	return;	
-}
-
-
-

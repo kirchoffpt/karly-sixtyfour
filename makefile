@@ -1,4 +1,4 @@
-TARGET = karly64_0
+TARGET = karly64
 SRC_DIR = ./src
 CFLAGS = /EHsc /O2
 
