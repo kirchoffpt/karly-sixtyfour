@@ -108,7 +108,6 @@ int main(int argc, char *argv[]){
 			cout << "readyok\n";
 		} else if(token == "position"){
 			uci_position(is, rootpos, searcher);
-			rootpos->print_pos(false);
 		} else if(token == "go"){
 			uci_go(is, searcher);
 		} else if(token == "stop"){

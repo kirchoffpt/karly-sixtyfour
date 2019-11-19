@@ -32,17 +32,13 @@ void search_handler::reset(){
 void search_handler::go(){
 	if(is_searching) return;
 	is_searching = TRUE;
-	int i;
-	for(i=0;i<past_positions.size();i++){
-		cout << past_positions[i] << endl;
-	}
 	thread search_thread(&search_handler::search,this);
 	search_thread.detach();
 	return;	
 }
 
 void search_handler::max_timer(int ms){
-	Sleep(ms);
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 	stop();
 }
 
@@ -65,6 +61,7 @@ void search_handler::search(){
 	int move_scores[MAX_MOVES_IN_POS] = {0};
 	int depth;
 	int to_move;
+	string info_str;
 	long long k = 0;
 	float t, tt;
 	char move_string[5];
@@ -118,7 +115,7 @@ void search_handler::search(){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "d " << depth << "/" << MIN_DEPTH << "\n";
+		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
 		for(i=n_root_moves-1;i>=0;i--){
 			if(tt > target_time && depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
 			move = rootpos->pos_move_list.get_move(i);
@@ -143,7 +140,6 @@ void search_handler::search(){
 						alpha = max(alpha, score);
 					}
 				}
-				if(!is_searching) return; 
 				end = std::chrono::steady_clock::now();
 				t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 				tt += t;
@@ -156,10 +152,20 @@ void search_handler::search(){
 				best_move = top_move;
 			}
 
+			if(!is_searching) return; 
+
 			if(depth >= 4){
-			cout << "info score cp " << top_score << " nodes " << nodes_searched << " depth " << depth;
-			cout << " time " << int(tt) << " nps " << 1000*int(nodes_searched/tt) << endl;
+				info_str = "info score cp " + to_string(top_score);
+				info_str += " nodes " + to_string(nodes_searched);
+				info_str +=  " depth " + to_string(depth);
+				if(tt > 50){
+				info_str += " time " + to_string(int(tt));
+				info_str +=  " nps " + to_string(1000*int(nodes_searched/tt));
+				}
+				cout << info_str + "\n";
 			}
+
+			fflush(stdout);
 
 			if(top_score >= CHECKMATE){
 				goto exit_minimax_loop;
@@ -201,7 +207,8 @@ void search_handler::search(){
 
 void search_handler::stop(){
 	if(!is_searching) return;
-	cout << "bestmove " << move_itos(best_move) << endl;
+	cout << "bestmove " + move_itos(best_move) + "\n";
+	fflush(stdout);
 	is_searching = FALSE;
 	return;
 }
