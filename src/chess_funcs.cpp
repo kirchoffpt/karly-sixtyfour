@@ -168,11 +168,13 @@ U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int d
 			fill |= mlut->get_move_mask(KING,idx);
 		}
 		fill &= ~enemy_control;
+		if(fill == done_sq) break;
 	}
 	return fill;
 }
 
-int board_dist(int idx1, int idx2){
+int board_dist(int idx1, int idx2)
+{
 	int x,y;
 
 	x = abs(idx1%8-idx2%8);
@@ -180,5 +182,4 @@ int board_dist(int idx1, int idx2){
 
 	return x + y;
 }
-
 

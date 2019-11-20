@@ -167,3 +167,15 @@ void node_move_list::swap_moves(int idx1, int idx2){
 	moves[idx2] = move_temp;
 	return; 
 }
+
+bool node_move_list::move_to_front(unsigned short move){
+	int i = get_num_moves()-1;
+	if(moves[i--] == move) return true;
+	for(i;i>=0;i--){
+		if(move == moves[i]){
+			swap_moves(i,iterator);
+			return true;
+		}
+	}
+	return false;
+}

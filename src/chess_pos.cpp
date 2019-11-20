@@ -1516,8 +1516,8 @@ void chess_pos::generate_moves()
 		}
 	}
 
-	controlled_squares[to_move] = ally_ctrl;
-	controlled_squares[!to_move] = enem_ctrl;
+	ctrl[to_move] = ally_ctrl;
+	ctrl[!to_move] = enem_ctrl;
 	target_squares[to_move] = ally_targ;
 	target_squares[!to_move] = enem_targ;
 	captures = ally_targ & occ[!to_move];
@@ -2176,7 +2176,7 @@ void chess_pos::dump_pos(ofstream& ofs) //for debugging
 			ofs << pieces[i][j];
 		}
 		ofs << "occ" << occ[i];
-		ofs << "ctrl" << controlled_squares[i];
+		ofs << "ctrl" << ctrl[i];
 		ofs << "targ" << target_squares[i];
 	}
 	ofs << " capt" << captures;
@@ -2254,25 +2254,26 @@ int chess_pos::eval()
 	int p,n,b,r,q,P,N,B,R,Q;
 	int i,j,k,white,black,wking,bking;
 	int woffense, boffense;
+	int king_safety;
 	U64 temp;
 
 	if(get_num_moves()<=0){
 		return mate_eval();
 	}
 
-	p = signed int(__popcnt64(pieces[BLACK][PAWN]));
-	n = signed int(__popcnt64(pieces[BLACK][KNIGHT]));
-	b = signed int(__popcnt64(pieces[BLACK][BISHOP]));
-	r = signed int(__popcnt64(pieces[BLACK][ROOK]));
-	q = signed int(__popcnt64(pieces[BLACK][QUEEN]));
-	P = signed int(__popcnt64(pieces[WHITE][PAWN]));
-	N = signed int(__popcnt64(pieces[WHITE][KNIGHT]));
-	B = signed int(__popcnt64(pieces[WHITE][BISHOP]));
-	R = signed int(__popcnt64(pieces[WHITE][ROOK]));
-	Q = signed int(__popcnt64(pieces[WHITE][QUEEN]));
+	p = int(__popcnt64(pieces[BLACK][PAWN]));
+	n = int(__popcnt64(pieces[BLACK][KNIGHT]));
+	b = int(__popcnt64(pieces[BLACK][BISHOP]));
+	r = int(__popcnt64(pieces[BLACK][ROOK]));
+	q = int(__popcnt64(pieces[BLACK][QUEEN]));
+	P = int(__popcnt64(pieces[WHITE][PAWN]));
+	N = int(__popcnt64(pieces[WHITE][KNIGHT]));
+	B = int(__popcnt64(pieces[WHITE][BISHOP]));
+	R = int(__popcnt64(pieces[WHITE][ROOK]));
+	Q = int(__popcnt64(pieces[WHITE][QUEEN]));
 
-	white =  signed int(__popcnt64(occ[WHITE]));
-	black =  signed int(__popcnt64(occ[BLACK]));
+	white =  int(__popcnt64(occ[WHITE]));
+	black =  int(__popcnt64(occ[BLACK]));
 	wking = bit_to_idx(pieces[WHITE][KING]);
 	bking = bit_to_idx(pieces[BLACK][KING]);
 
@@ -2280,37 +2281,34 @@ int chess_pos::eval()
 	material_diff = P_MAT*(-p+P)+N_MAT*(-n+N)+B_MAT*(-b+B)+R_MAT*(-r+R)+Q_MAT*(-q+Q);
 	eval += material_diff;
 
-	if(material_diff >= 5*P_MAT && material_sum <= 2*Q_MAT){
+	if(abs(material_diff) >= 5*P_MAT && material_sum <= 2*Q_MAT){
 
-		eval -= 4*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],controlled_squares[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
-		eval += 4*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],controlled_squares[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
-		eval += -material_diff/(P_MAT/2)*board_dist(wking,bking);
+		eval -= 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],ctrl[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
+		eval += 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],ctrl[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
+		eval += -material_diff/(P_MAT)*board_dist(wking,bking);
 
 	} else {
 
-		eval += (material_sum/7500)*(MLUT.get_piece_square_king(wking) - MLUT.get_piece_square_king(63 - bking));
+		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
 
-		eval += 12*(signed int(__popcnt64(castlable_rooks & RANK_1))-signed int(__popcnt64(castlable_rooks & RANK_8)));
+		eval += int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
+		eval -= int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
 
-		eval += (signed int(__popcnt64(controlled_squares[WHITE] & CENTER)) - signed int(__popcnt64(controlled_squares[BLACK] & CENTER)));
+		woffense = int(__popcnt64(ctrl[WHITE]&occ[BLACK])) - int(__popcnt64(ctrl[BLACK]&occ[BLACK]));
+		boffense = int(__popcnt64(ctrl[BLACK]&occ[WHITE])) - int(__popcnt64(ctrl[WHITE]&occ[WHITE]));
 
-		eval += 32*(signed int(__popcnt64(MLUT.get_move_mask(BLACK,bking)&controlled_squares[WHITE])) - signed int(__popcnt64(MLUT.get_move_mask(WHITE,wking)&controlled_squares[BLACK])));
-		
-		woffense = int(__popcnt64(controlled_squares[WHITE]&occ[BLACK])) - int(__popcnt64(controlled_squares[BLACK]&occ[BLACK]));
-		boffense = int(__popcnt64(controlled_squares[BLACK]&occ[WHITE])) - int(__popcnt64(controlled_squares[WHITE]&occ[WHITE]));
-
-		eval += 8*(woffense-boffense);
+		eval += (woffense-boffense);
 
 		for(i=1;i<white;i++){
-			eval += signed int(max(__popcnt64(pl[WHITE][i].targets),6));
+			eval += int(max(__popcnt64(pl[WHITE][i].targets),6));
 		}
 		for(i=1;i<black;i++){
-			eval -= signed int(max(__popcnt64(pl[BLACK][i].targets),6));
+			eval -= int(max(__popcnt64(pl[BLACK][i].targets),6));
 		}
 
 	}
 
-	eval += 2*P_MAT*(signed int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - signed int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
+	eval += 2*P_MAT*(int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 
 	this->evaluation = EVAL_GRAIN*(eval/EVAL_GRAIN);
 	return this->evaluation;

@@ -1,5 +1,4 @@
 #include <cmath>
-#include <time.h>
 #include <Windows.h>
 #include <cstdio>
 #include <iomanip>

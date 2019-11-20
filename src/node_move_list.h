@@ -29,6 +29,7 @@ public:
 	unsigned short get_move_from_string(char* move_string);
 	void randomize_move_order();
 	void swap_moves(int idx1, int idx2);
+	bool move_to_front(unsigned short move);
 };
 
 
