@@ -97,12 +97,13 @@ void search_handler::search(){
 
 	t1 = float(uci_s.time[to_move]);
 	t2 = float(uci_s.time[!to_move]);
-	target_time = max(t1/64 , t1 - 1.1*t2);
+	target_time = max(t1/128 , t1 - 1.1*t2);
 
 	if(uci_s.movetime > 0){
 		max_time = uci_s.movetime;
 	} else {
-		max_time = max((t2-t1)/10 , t1 - 0.9*t2);
+		max_time = t1 - 0.98*t2;
+		if(max_time < 0) max_time = t1/64;
 	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
