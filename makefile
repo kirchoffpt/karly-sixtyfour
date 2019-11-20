@@ -8,8 +8,8 @@ test : mct.exe
 
 mct.exe uciengine.exe : chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj
 
-uciengine.exe : uciengine.obj  search.obj
-	cl /Fe"./$(TARGET).exe" uciengine.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj search.obj
+uciengine.exe : uciengine.obj  search.obj	ttable.obj
+	cl /Fe"./$(TARGET).exe" uciengine.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj search.obj ttable.obj
 
 mct.exe : mct.obj 
 	cl /Fe"./perft.exe" mct.obj chess_pos.obj chess_moves_lut.obj node_move_list.obj chess_funcs.obj
@@ -17,6 +17,8 @@ mct.exe : mct.obj
 
 uciengine.obj : $(SRC_DIR)/uciengine.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h
 	cl /c $(SRC_DIR)/uciengine.cpp $(CFLAGS) 
+ttable.obj : $(SRC_DIR)/ttable.cpp  $(SRC_DIR)/constants.h
+	cl /c $(SRC_DIR)/ttable.cpp $(CFLAGS) 
 search.obj :  $(SRC_DIR)/search.cpp  $(SRC_DIR)/search.h  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h
 	cl /c  $(SRC_DIR)/search.cpp $(CFLAGS) 
 mct.obj :  $(SRC_DIR)/mct.cpp  $(SRC_DIR)/constants.h  $(SRC_DIR)/chess_pos.h

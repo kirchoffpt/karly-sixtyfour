@@ -6,6 +6,7 @@
 #define MIN_DEPTH 3
 #define MAX_Q_DEPTH 24
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
+#define TABLE_SIZE 200000000
 
 #define PVS_SEARCH TRUE // experimental. as opposed to regular minimax. this option will probably be removed in the future
 
@@ -14,6 +15,9 @@ using namespace std;
 search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
 	rootpos->id = 0;
+	search_id = 0;
+	TT = new ttable;
+	TT->resize(TABLE_SIZE);
 	reset();
 	return;
 }
@@ -32,14 +36,17 @@ void search_handler::reset(){
 void search_handler::go(){
 	if(is_searching) return;
 	is_searching = TRUE;
+	search_id++;
+	TT->tt.clear();
+	TT->resize(TABLE_SIZE);
 	thread search_thread(&search_handler::search,this);
 	search_thread.detach();
 	return;	
 }
 
-void search_handler::max_timer(int ms){
+void search_handler::max_timer(int ms, int id){
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-	stop();
+	stop(id);
 }
 
 bool search_handler::is_threefold_repetition(const z_key position){
@@ -59,7 +66,6 @@ void search_handler::search(){
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move, top_move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
-	int depth;
 	int to_move;
 	string info_str;
 	long long k = 0;
@@ -89,7 +95,7 @@ void search_handler::search(){
 
 	if(n_root_moves == 1){
 		best_move = rootpos->pos_move_list.pop_move();
-		stop();
+		stop(search_id);
 	}
 
 	to_move = rootpos->to_move;
@@ -107,18 +113,18 @@ void search_handler::search(){
 	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
-	thread timer_thread(&search_handler::max_timer,this,int(max_time));
+	thread timer_thread(&search_handler::max_timer,this,int(max_time),search_id);
 	timer_thread.detach();
 
     tt = 0;
     nodes_searched = 0;
-	for(depth=min(MAX_AB_DEPTH,1);depth <= MAX_AB_DEPTH;depth++){
+	for(target_depth=min(MAX_AB_DEPTH,1);target_depth <= MAX_AB_DEPTH;target_depth++){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
+		cout << "d " +  to_string(target_depth) + "/" + to_string(MIN_DEPTH) + "\n";
 		for(i=n_root_moves-1;i>=0;i--){
-			if(tt > target_time && depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
+			if(tt > target_time && target_depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
 			move = rootpos->pos_move_list.get_move(i);
 			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
@@ -130,11 +136,11 @@ void search_handler::search(){
 				k = nodes_searched;
 				start = std::chrono::steady_clock::now();
 				if(PVS_SEARCH){ 
-					score = -pvs(rootpos->next, depth-1,!rootpos->to_move, -beta, -alpha);
+					score = -pvs(rootpos->next, target_depth-1,-to_move_sign, -beta, -alpha);
 					alpha = max(alpha, score);
 					score *= to_move_sign;
 				} else {
-					score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
+					score = minimax(rootpos->next, target_depth-1,!rootpos->to_move, alpha, beta);
 					if(rootpos->to_move){
 						beta = min(beta, score);
 					} else {
@@ -155,13 +161,15 @@ void search_handler::search(){
 
 			if(!is_searching) return; 
 
-			if(depth >= 4){
-				info_str = "info score cp " + to_string(top_score);
+			if(target_depth >= 4){
+				info_str = "info currmove " + move_itos(move);
+				info_str += " score cp " + to_string(top_score);
 				info_str += " nodes " + to_string(nodes_searched);
-				info_str +=  " depth " + to_string(depth);
+				info_str +=  " depth " + to_string(target_depth);
 				if(tt > 50){
 				info_str += " time " + to_string(int(tt));
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/tt));
+				//info_str += " hashfull " + to_string(TT->hashfull());
 				}
 				cout << info_str + "\n";
 			}
@@ -201,13 +209,13 @@ void search_handler::search(){
 	}
 
 	best_move = top_move;
-	if(is_searching) stop();
+	if(is_searching) stop(search_id);
 	return;
 }
 
 
-void search_handler::stop(){
-	if(!is_searching) return;
+void search_handler::stop(int id){
+	if(!is_searching || search_id != id) return;
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
 	is_searching = FALSE;
@@ -342,44 +350,64 @@ int search_handler::minimax(chess_pos* node, int depth, int min_or_max, int a, i
 	return eval;
 }
 
-int search_handler::pvs(chess_pos* node, int depth, int min_or_max, int a, int b){
+int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	nodes_searched++;
 	__assume(is_searching);
-	if(!is_searching) return 0; 
+	if(!is_searching) return 0;
+
+	int eval = SCORE_LO;
+	int a_cpy = a;
+	unsigned short move, b_move;
+	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth);
+	if(eval != SCORE_LO) return eval; 
 
     node->generate_moves();
+    if(b_move) node->pos_move_list.move_to_front(b_move);
 
 	if(depth == 0){
 		if(node->captures > 0){
-			if(min_or_max){
-				return-quiesce(node,min_or_max,-b,-a,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
+			if(color == -1){
+				return-quiesce(node,BLACK,-b,-a,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
 			} else {
-				return quiesce(node,min_or_max,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
+				return quiesce(node,WHITE,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
 			}
 		}
-		if(min_or_max){
-			return -node->eval();
-		} else {
-			return node->eval();
-		}
+		return color*node->eval();
 	}
-	int eval, eval_temp;
-	if(node->pop_and_add()){
-		eval = -pvs(node->next, depth - 1, !min_or_max, -b,-a);
+	if(b_move = node->pop_and_add()){
+		eval = -pvs(node->next, depth - 1, -color, -b,-a);
 		a = max(a, eval);
-        if(a >= b) return a;
+        if(a >= b) goto done;
 	} else {
-		if(min_or_max){
-			return -node->mate_eval();
-		} else {
-			return node->mate_eval();
-		}
+		return color*node->mate_eval();
 	}
-    while(node->pop_and_add()){
-    	eval = -pvs(node->next, depth - 1, !min_or_max, -a - 1, -a);
-        if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1,!min_or_max, -b, -eval);
-        a = max(a, eval);
+    while(move = node->pop_and_add()){
+    	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
+        if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+        if(eval >= a){
+        	a = eval;
+        	b_move = move;
+        }
         if(a >= b) break;
     }
+
+    done:
+
+    tt_entry entry;
+    entry.depth = depth;
+    entry.full_key = node->zobrist_key;
+    entry.score = a;
+    if(a <= a_cpy){
+    	entry.node_type = ALLNODE;
+    	entry.best_move = b_move;
+    } else if(a >= b){
+    	entry.node_type = CUTNODE;
+    	entry.best_move = b_move;
+    } else {
+    	entry.node_type = PVNODE;
+    	entry.best_move = b_move;
+    }
+    TT->place(node->zobrist_key, entry);
+
     return a;
 }

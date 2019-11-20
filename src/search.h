@@ -3,6 +3,7 @@
 
 #include "chess_pos.h"
 #include "constants.h"
+#include "ttable.h"
 #include <thread>
 #include <chrono>
 
@@ -31,12 +32,16 @@ class search_handler{
 	unsigned long long nodes_searched;
 	int depth_searched;
 	std::vector<z_key> past_positions;
+	ttable* TT;
+	int target_depth;
+	int search_id;
+
 	search_handler(chess_pos* rootpos);
 	void go(); //launches search() threads
 	void reset();
 	void search(); 
-	void stop();
-	void max_timer(int ms);
+	void stop(int id);
+	void max_timer(int ms, int id);
 	int quiesce(chess_pos* node, int min_or_max, int a, int b, int depth, int last_eval, int last_delta);
 	int minimax(chess_pos* node, int depth, int min_or_max, int a, int b);
 	int pvs(chess_pos* node, int depth, int min_or_max, int a, int b);

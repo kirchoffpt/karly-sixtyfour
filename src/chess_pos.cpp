@@ -2291,13 +2291,8 @@ int chess_pos::eval()
 
 		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
 
-		if(__popcnt64(ctrl[BLACK]|ctrl[WHITE]) > 48){
-			eval += int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
-			eval -= int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
-		} else {
-			eval += int(__popcnt64(flood_fill_king(pieces[WHITE][KING],ctrl[BLACK],&MLUT, 3) & pieces[WHITE][PAWN]));
-			eval -= int(__popcnt64(flood_fill_king(pieces[BLACK][KING],ctrl[WHITE],&MLUT, 3) & pieces[BLACK][PAWN]));
-		}
+		eval += int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
+		eval -= int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
 
 		woffense = int(__popcnt64(ctrl[WHITE]&occ[BLACK])) - int(__popcnt64(ctrl[BLACK]&occ[BLACK]));
 		boffense = int(__popcnt64(ctrl[BLACK]&occ[WHITE])) - int(__popcnt64(ctrl[WHITE]&occ[WHITE]));

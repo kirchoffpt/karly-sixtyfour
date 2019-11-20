@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
 		} else if(token == "go"){
 			uci_go(is, searcher);
 		} else if(token == "stop"){
-			searcher->stop();
+			searcher->stop(searcher->search_id);
 		} else if(token == "quit"){
 			break;
 		}
