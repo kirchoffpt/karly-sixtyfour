@@ -17,7 +17,7 @@ The move generator is currently about half as fast as the *very* quick [qperft](
 It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) (or see the current implementation in `chess_pos::generate_moves()` in [chess_pos.cpp](./src/chess_pos.cpp)) if anyone wants ideas from it.
 
 #### Evaluation
-Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). It's general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on minimizing the number of ways an enemy piece can get into the kings general area.
+Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). Its general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on minimizing the number of ways an enemy piece can get into the kings general area.
 
 Evaluation also uses flood fill algorithms for various king related evaluations. For example even the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
 
