@@ -21,9 +21,9 @@ Notably this engine does not and will not use any piece square tables (a very co
 
 Evaluation also uses flood fill algorithms for various king related evaluations. For example even the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
 
-The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes the search are going to have any notable effect on performance.
+The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes to the search (making it better at looking at critical lines) are going to have any notable effect on performance.
 
-That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between similar scoring moves.
+That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between moves that score similarly (or help with move ordering, but neural nets are probably way too slow for that). 
 
 #### Everything Else
 Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations.
