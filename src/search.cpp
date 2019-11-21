@@ -6,7 +6,7 @@
 #define MIN_DEPTH 5
 #define MAX_Q_DEPTH 24
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
-#define TABLE_SIZE 200000000
+#define TABLE_SIZE 400000000
 
 #define PVS_SEARCH TRUE // experimental. as opposed to regular minimax. this option will probably be removed in the future
 
@@ -38,8 +38,10 @@ void search_handler::go(){
 	if(is_searching) return;
 	is_searching = TRUE;
 	search_id++;
-	TT->tt.clear();
-	TT->resize(TABLE_SIZE);
+	if(CLEAR_TTABLE_BEFORE_SEARCH){
+		TT->tt.clear();
+		TT->resize(TABLE_SIZE);
+	}
 	thread search_thread(&search_handler::search,this);
 	search_thread.detach();
 	return;	
@@ -58,12 +60,41 @@ void search_handler::max_timer(int ms){
 	return;
 }
 
-bool search_handler::is_threefold_repetition(const z_key position){
-	int i, count = 1;
+int search_handler::num_repetitions(const z_key position){
+	int i, count = 0;
 	for(i=0;i<past_positions.size();i++){
 		if(past_positions[i] == position) count++;
 	}
-	if(count >= 3) return true;
+	return count;
+}
+
+bool search_handler::allows_threefold(const chess_pos* c1){
+	unsigned short move; 
+	tt_entry entry = {0};
+	chess_pos* p1 = new chess_pos;
+	chess_pos* p2 = new chess_pos;
+	*p1 = *const_cast<chess_pos*>(c1);
+	p1->next = p2;
+	p1->generate_moves();
+	while(move = p1->pop_and_add()){
+		if (num_repetitions(p2->zobrist_key) >= 2){
+			entry.full_key = p2->zobrist_key;
+			entry.node_type = PVNODE;
+			entry.depth = MAX_DEPTH;
+			entry.score = 0;
+			TT->place(p2->zobrist_key, entry);
+			//cout << "info string " << move_itos(move) << " will draw after " << move_itos(*p1-*rootpos) << endl;
+			break;
+		}
+	}
+	delete p1, p2;
+	return is_threefold(c1);
+}
+
+bool search_handler::is_threefold(const chess_pos* c1){
+	if (num_repetitions(c1->zobrist_key) >= 2){
+		return true;
+	}
 	return false;
 }
 
@@ -135,10 +166,10 @@ void search_handler::search(){
 		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
-			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
+			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
 			rootpos->next->add_move(move);
-			if(is_threefold_repetition(rootpos->next->zobrist_key)){
+			if(allows_threefold(rootpos->next)){
 				score = 0;
 				nodes_searched++;
 			} else {

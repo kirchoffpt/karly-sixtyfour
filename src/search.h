@@ -46,7 +46,9 @@ class search_handler{
 	int quiesce(chess_pos* node, int min_or_max, int a, int b, int depth, int last_eval, int last_delta);
 	int minimax(chess_pos* node, int depth, int min_or_max, int a, int b);
 	int pvs(chess_pos* node, int depth, int min_or_max, int a, int b);
-	bool is_threefold_repetition(z_key position);
+	int num_repetitions(const z_key position);
+	bool allows_threefold(const chess_pos* c1);
+	bool is_threefold(const chess_pos* c1);
 };
 
 #endif
