@@ -23,6 +23,8 @@ Evaluation also uses flood fill algorithms for various king related evaluations.
 
 The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes the search are going to have any notable effect on performance.
 
+That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between similar scoring moves.
+
 #### Everything Else
 Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations.
   - Current
