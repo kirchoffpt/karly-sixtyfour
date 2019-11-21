@@ -41,4 +41,4 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     
    
    
- ##### Named after my [friend](https://lichess.org/@/heatner) that is absolutely terrible at chess. He was honored.
+ ##### Named after my friend that is absolutely [terrible at chess](https://lichess.org/@/heatner). He was honored.
