@@ -41,8 +41,8 @@ class search_handler{
 	void go(); //launches search() threads
 	void reset();
 	void search(); 
-	void stop(int id);
-	void max_timer(int ms, int id);
+	void stop();
+	void max_timer(int ms);
 	int quiesce(chess_pos* node, int min_or_max, int a, int b, int depth, int last_eval, int last_delta);
 	int minimax(chess_pos* node, int depth, int min_or_max, int a, int b);
 	int pvs(chess_pos* node, int depth, int min_or_max, int a, int b);

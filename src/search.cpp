@@ -3,7 +3,7 @@
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
 #define MAX_AB_DEPTH 24
-#define MIN_DEPTH 3
+#define MIN_DEPTH 5
 #define MAX_Q_DEPTH 24
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
 #define TABLE_SIZE 200000000
@@ -45,9 +45,17 @@ void search_handler::go(){
 	return;	
 }
 
-void search_handler::max_timer(int ms, int id){
-	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-	stop(id);
+void search_handler::max_timer(int ms){
+	std::chrono::steady_clock::time_point start, end;
+	start = std::chrono::steady_clock::now();
+	end = std::chrono::steady_clock::now();
+	while(is_searching && 
+		std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() < ms){
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		end = std::chrono::steady_clock::now();
+	}
+	stop();
+	return;
 }
 
 bool search_handler::is_threefold_repetition(const z_key position){
@@ -96,7 +104,7 @@ void search_handler::search(){
 
 	if(n_root_moves == 1){
 		best_move = rootpos->pos_move_list.pop_move();
-		stop(search_id);
+		stop();
 	}
 
 	to_move = rootpos->to_move;
@@ -105,6 +113,7 @@ void search_handler::search(){
 	t1 = float(uci_s.time[to_move]);
 	t2 = float(uci_s.time[!to_move]);
 	target_time = max(t1/128 , t1 - 1.1*t2);
+	target_time = max(target_time, 333);
 
 	if(uci_s.movetime > 0){
 		max_time = uci_s.movetime;
@@ -114,7 +123,7 @@ void search_handler::search(){
 	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
-	thread timer_thread(&search_handler::max_timer,this,int(max_time),search_id);
+	thread timer_thread(&search_handler::max_timer,this,int(max_time));
 	timer_thread.detach();
 
     tt = 0;
@@ -125,7 +134,6 @@ void search_handler::search(){
 		beta =  SCORE_HI;
 		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
 		for(i=n_root_moves-1;i>=0;i--){
-			if(tt > target_time && depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
 			move = rootpos->pos_move_list.get_move(i);
 			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
@@ -192,6 +200,7 @@ void search_handler::search(){
 			break;
 		}
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
+		if(tt > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
 	}
 
 	exit_minimax_loop:
@@ -217,13 +226,13 @@ void search_handler::search(){
 	}
 
 	best_move = top_move;
-	if(is_searching) stop(search_id);
+	if(is_searching) stop();
 	return;
 }
 
 
-void search_handler::stop(int id){
-	if(!is_searching || search_id != id) return;
+void search_handler::stop(){
+	if(!is_searching) return;
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
 	is_searching = FALSE;

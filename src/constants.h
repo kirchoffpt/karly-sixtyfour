@@ -1,5 +1,5 @@
 
-#define VERSION "v0.2.0"
+#define VERSION "v0.2.2"
 
 #define DEBUG 0
 
@@ -13,7 +13,6 @@
 #define B_MAT	830
 #define R_MAT	1289
 #define Q_MAT	2529
-#define TOTAL_MAT P_MAT*16+N_MAT*4+B_MAT*4+R_MAT*4+Q_MAT*2
 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
 #define ENABLE_INTERNAL_MOVE_ORDERING TRUE // speeds up search but should set to false for best perft results in mct.exe
@@ -23,6 +22,8 @@
 ////////////////////////////////////////////
 
 typedef unsigned long long z_key;
+
+#define TOTAL_MAT P_MAT*16+N_MAT*4+B_MAT*4+R_MAT*4+Q_MAT*2
 
 #define MAX_PIECES_PER_SIDE 16
 #define MAX_MOVES_IN_GAME 256

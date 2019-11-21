@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;
 	}
-	
+
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
 		ofs << cmd << endl;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
 		} else if(token == "go"){
 			uci_go(is, searcher);
 		} else if(token == "stop"){
-			searcher->stop(searcher->search_id);
+			searcher->stop();
 		} else if(token == "quit"){
 			break;
 		}
