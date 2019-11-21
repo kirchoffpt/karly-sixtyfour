@@ -33,8 +33,9 @@ class search_handler{
 	int depth_searched;
 	std::vector<z_key> past_positions;
 	ttable* TT;
-	int target_depth;
+	int t_depth;
 	int search_id;
+	std::vector<unsigned short> pv_moves;
 
 	search_handler(chess_pos* rootpos);
 	void go(); //launches search() threads

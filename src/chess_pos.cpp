@@ -44,6 +44,34 @@ chess_pos::chess_pos(){
 	return;
 }
 
+unsigned short chess_pos::operator - (chess_pos const &c1){
+	int i;
+	unsigned short move; 
+	chess_pos* p1 = new chess_pos;
+	chess_pos* p2 = new chess_pos;
+	p1->next = p2;
+	p1->copy_pos(const_cast<chess_pos*>(&c1));
+	p1->generate_moves();
+	while(move = p1->pop_and_add()){
+		if (*p2 == *this) {
+			break;
+		}
+	}
+	delete p1, p2;
+	return move;
+}
+
+bool chess_pos::operator == (chess_pos const &c1){
+	int i,j;
+
+	for(i=0;i<2;i++){
+		for(j=0;j<6;j++){
+			if(c1.pieces[i][j] != this->pieces[i][j]) return false;
+		}
+	}
+	return true;
+}
+
 void chess_pos::copy_pos(chess_pos* source_pos){
 	int i,j,k;
 	U64 u;

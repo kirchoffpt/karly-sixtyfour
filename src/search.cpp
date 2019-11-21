@@ -16,6 +16,7 @@ search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
 	rootpos->id = 0;
 	search_id = 0;
+	pv_moves.reserve(MAX_DEPTH);
 	TT = new ttable;
 	TT->resize(TABLE_SIZE);
 	reset();
@@ -62,7 +63,7 @@ void search_handler::search(){
 	
 	int i,j,n_root_moves;
 	int to_move_sign;
-	int score, top_score, alpha, beta;
+	int score, top_score, alpha, beta, depth, sel_depth;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move, top_move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
@@ -118,13 +119,13 @@ void search_handler::search(){
 
     tt = 0;
     nodes_searched = 0;
-	for(target_depth=min(MAX_AB_DEPTH,1);target_depth <= MAX_AB_DEPTH;target_depth++){
+	for(depth=min(MAX_AB_DEPTH,1);depth <= MAX_AB_DEPTH;depth++){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "d " +  to_string(target_depth) + "/" + to_string(MIN_DEPTH) + "\n";
+		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
 		for(i=n_root_moves-1;i>=0;i--){
-			if(tt > target_time && target_depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
+			if(tt > target_time && depth > MIN_DEPTH && top_score > 0) goto exit_minimax_loop;
 			move = rootpos->pos_move_list.get_move(i);
 			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
@@ -136,11 +137,11 @@ void search_handler::search(){
 				k = nodes_searched;
 				start = std::chrono::steady_clock::now();
 				if(PVS_SEARCH){ 
-					score = -pvs(rootpos->next, target_depth-1,-to_move_sign, -beta, -alpha);
+					score = -pvs(rootpos->next, depth-1,-to_move_sign, -beta, -alpha);
 					alpha = max(alpha, score);
 					score *= to_move_sign;
 				} else {
-					score = minimax(rootpos->next, target_depth-1,!rootpos->to_move, alpha, beta);
+					score = minimax(rootpos->next, depth-1,!rootpos->to_move, alpha, beta);
 					if(rootpos->to_move){
 						beta = min(beta, score);
 					} else {
@@ -161,11 +162,18 @@ void search_handler::search(){
 
 			if(!is_searching) return; 
 
-			if(target_depth >= 4){
+			for(j=1;j<MAX_DEPTH;j++){
+				if(node_ptrs[j]->occ[0] == 0){
+					sel_depth = j-1;
+					break;
+				}
+			}
+			if(depth >= 4){
 				info_str = "info currmove " + move_itos(move);
 				info_str += " score cp " + to_string(top_score);
 				info_str += " nodes " + to_string(nodes_searched);
-				info_str +=  " depth " + to_string(target_depth);
+				info_str +=  " depth " + to_string(depth);
+				//info_str +=  " seldepth " + to_string(sel_depth);
 				if(tt > 50){
 				info_str += " time " + to_string(int(tt));
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/tt));

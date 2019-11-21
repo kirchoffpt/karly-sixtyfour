@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;
 	}
-
+	
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
 		ofs << cmd << endl;

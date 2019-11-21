@@ -34,7 +34,6 @@ struct piece_list_struct
 	U64 targets;  	//all possible move locations plus blocker locations
 };
 
-
 class chess_pos {
 	public:
 	unsigned short id;
@@ -86,6 +85,8 @@ class chess_pos {
 	int get_num_moves();
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
 	U64 create_pawn_pushes(U64 pawn_loc, int side);
+	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not fast.
+	bool operator == (chess_pos const &c1); //only checks pieces[] equivalency
 	void sort_piece_list(); //not meant to be fast. use only at very low depths. 
 							//helps speed up search and mostly remove ambiguities between uci position input methods (fen + added moves VS just a fen )
 

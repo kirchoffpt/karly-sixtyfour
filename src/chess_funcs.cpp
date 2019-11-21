@@ -104,6 +104,7 @@ void print_move(unsigned short move)
 string move_itos(unsigned short move)
 {
 	unsigned short x;
+	if(move == 0) return "0000";
 	string s = "";
 	s += idx_to_coord((move & SRC_MASK) >> SRC_SHIFT);
 	s += idx_to_coord((move & DST_MASK) >> DST_SHIFT);
