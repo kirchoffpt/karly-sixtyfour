@@ -138,7 +138,7 @@ void search_handler::search(){
 			//if((58<<SRC_SHIFT) + (50<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(rootpos);
 			rootpos->next->add_move(move);
-			if(is_threefold_repetition(rootpos->zobrist_key)){
+			if(is_threefold_repetition(rootpos->next->zobrist_key)){
 				score = 0;
 				nodes_searched++;
 			} else {
