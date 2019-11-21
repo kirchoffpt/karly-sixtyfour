@@ -16,6 +16,13 @@ The move generator is currently about half as fast as the *very* quick [qperft](
 
 It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) (or see the current implementation in `chess_pos::generate_moves()` in [chess_pos.cpp](./src/chess_pos.cpp)) if anyone wants ideas from it.
 
+#### Evaluation
+Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). It's general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on minimizing the number of ways an enemy piece can get into the kings general area.
+
+Evaluation also uses flood fill algorithms for various king related evaluations. For example even the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
+
+The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes the search are going to have any notable effect on performance.
+
 #### Everything Else
 Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations.
   - Current
@@ -23,13 +30,14 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Fast legal move generation (as opposed to pseudo-legal)
     - Principal variation search (minimax variant) w/ iterative deepening
     - Quiescence/Capture search
+    - Transposition table w/ Zobrist hashing
     - Weak UCI implementation (good enough for most GUIs)
   - Planned
-    - Transposition table
     - More advanced quiescence search and draw detection
     - Multithreading capabilities
     - More complete adherence to UCI protocol
     - Many more optimizations in general
+    - NOT endgame tablebases
     
    
    
