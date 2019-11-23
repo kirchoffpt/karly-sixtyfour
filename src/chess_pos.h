@@ -1,3 +1,13 @@
+/*
+This class holds all the information necessary for a chess postion
+and also acts a node in a search. These nodes should be manually connected via the next/prev
+pointers. A linked list of chess positions is used for a search.
+
+Always generate moves before evaluating or adding a move.
+*/
+
+
+
 #ifndef CHESS_POS_H
 #define CHESS_POS_H
 
@@ -36,7 +46,7 @@ struct piece_list_struct
 
 class chess_pos {
 	public:
-	unsigned short id;
+	unsigned short id; //should set to what depth this node will be
 	piece_list_struct pl[2][MAX_PIECES_PER_SIDE];
 	U64 pin_rays[2][8]; //8 for each king, 0-7, E,SE,S,SW,W,NW,N,NE
 	U64 pieces[2][6]; 
@@ -52,7 +62,7 @@ class chess_pos {
 	U64 captures; //enemy pieces that may be captured
 	int last_move_check_evasion;
 	int last_move_capture;
-	int evaluation;
+	int evaluation; //saves last static evaluation of position
 	U64 changed_squares;
 	U64 last_move_to_and_from;
 	U64 ctrl[2];
@@ -65,9 +75,9 @@ class chess_pos {
 	chess_pos();
 	void load_new_fen(string);
 	int is_quiet();
-	int eval();
+	int eval(); //moves must have been generated first
 	int mate_eval(); //moves must have been generated first
-	void add_move(unsigned short move); //make move at top of this positions move list
+	void add_move(unsigned short move); //moves must have been generated first
 	void add_move_to_next_node(unsigned short move); //copy this position into another and add move there
 	void print_pos(bool);
 	void dump_pos(ofstream& ofile); //for debugging
@@ -76,18 +86,18 @@ class chess_pos {
 	void generate_moves(); 
 	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
 	void init_targets(int side);
-	void copy_pos(chess_pos* source_pos); //purely the position and castling/enpassant rights
+	void copy_pos(chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
-	unsigned short pop_and_add(); //applies move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
+	unsigned short pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
 	unsigned short pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
 	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces
-	int get_num_moves();
+	int get_num_moves(); //undefined if used before move generation
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
 	U64 create_pawn_pushes(U64 pawn_loc, int side);
-	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not fast.
+	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //only checks pieces[] equivalency
-	void sort_piece_list(); //not meant to be fast. use only at very low depths. 
+	void sort_piece_list(); //not meant to be fast. use only at root. 
 							//helps speed up search and mostly remove ambiguities between uci position input methods (fen + added moves VS just a fen )
 
 };

@@ -68,6 +68,9 @@ bool chess_pos::operator == (chess_pos const &c1){
 			if(c1.pieces[i][j] != this->pieces[i][j]) return false;
 		}
 	}
+	if(c1.ep_target_square != this->ep_target_square) return false;
+	if(c1.castlable_rooks != this->castlable_rooks) return false;
+	if(c1.to_move != this->to_move) return false;
 	return true;
 }
 
