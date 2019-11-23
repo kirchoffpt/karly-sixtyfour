@@ -10,16 +10,16 @@ A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence searc
 ### Features
 
 #### Move Generation
-Features a novel legal-move generation algorithm that effectively generates moves for both sides on every ply. The method relies heavily on reusing information from previous positions making it non-memoryless and quite difficult to debug. But while *very* tedious to implement this method saves considerable time by only fully updating moves for pieces that were affected by the last move. And more importantly it makes symmetric evaluations based on mobility or controlled squares extremely fast and trivial to implement.
+Features a novel legal-move generation algorithm that effectively generates moves for both sides on every ply. The method relies heavily on reusing information from previous positions making it non-memoryless and quite difficult to debug. But while *very* tedious to implement this method saves considerable time by only fully updating moves for pieces that were affected by the last move. And much more importantly it makes symmetric evaluations based on mobility or controlled squares extremely fast and trivial to implement.
 
 The move generator is currently about half as fast as the *very* quick [qperft](https://home.hccnet.nl/h.g.muller/perft.c) by H.G. Muller (nearly 200 million moves per second) but the current implementation of Karly64's move generator still leaves a lot of obvious opportunities for optimizations. This generator is also pulling double duty for evaluation's sake.
 
 It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) (or see the current implementation in `chess_pos::generate_moves()` in [chess_pos.cpp](./src/chess_pos.cpp)) if anyone wants ideas from it.
 
 #### Evaluation
-Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). Its general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on minimizing the number of ways an enemy piece can get into the kings general area.
+Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). Its general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on attempting to minimize the number of ways an enemy piece can get into the king's general area.
 
-Evaluation also uses flood fill algorithms for various king related evaluations. For example even the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
+Evaluation also uses flood fill algorithms for various king-related evaluations. For example even if the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
 
 The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes to the search (making it better at looking at critical lines) are going to have any notable effect on performance.
 
