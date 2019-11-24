@@ -32,6 +32,7 @@ U64 ttable::resize(U64 n_bytes)
 
 void ttable::place(z_key z, tt_entry t)
 {
+	t.full_key = z;
 	tt[z & key_mask] = t;
 }
 
