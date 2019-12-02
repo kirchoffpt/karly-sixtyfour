@@ -351,7 +351,6 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	if(eval != SCORE_LO) return eval; 
 
     node->generate_moves();
-    if(node->killer_move) node->pos_move_list.move_to_front(node->killer_move);
     if(b_move) node->pos_move_list.move_to_front(b_move);
 
 	if(depth == 0){
@@ -386,12 +385,10 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     tt_entry entry;
     entry.depth = depth;
     entry.score = a;
-    entry.age = search_id;
-    if(a <= a_cpy){ 
+    if(a <= a_cpy){
     	entry.node_type = ALLNODE;
     	entry.best_move = b_move;
-    } else if(a >= b){ 
-		node->killer_move = b_move;
+    } else if(a >= b){
     	entry.node_type = CUTNODE;
     	entry.best_move = b_move;
     } else {

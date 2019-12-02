@@ -70,7 +70,6 @@ class chess_pos {
 	node_move_list pos_move_list;
 	chess_pos* next; //next node
 	chess_pos* prev; //prev node, for getting eval deltas
-	unsigned short killer_move = 0;
 
 	chess_pos(string);
 	chess_pos();
