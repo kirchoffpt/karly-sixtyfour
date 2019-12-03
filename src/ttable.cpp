@@ -21,8 +21,7 @@ ttable::ttable()
 U64 ttable::resize(U64 n_bytes)
 {
 	U64 n_elements = n_bytes/(sizeof(tt_entry));
-	n_elements = (1 << int(log2(n_elements)));
-	key_mask = n_elements - 1; //round down to nearest power of 2 and subtract 1
+	key_mask = n_elements;
 	tt.reserve(n_elements);
 	tt_entry invalid_entry = {0};
 	tt.resize(n_elements, invalid_entry);
@@ -33,12 +32,12 @@ U64 ttable::resize(U64 n_bytes)
 void ttable::place(z_key z, tt_entry t)
 {
 	t.full_key = z;
-	tt[z & key_mask] = t;
+	tt[z % key_mask] = t;
 }
 
 unsigned short ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth)
 {
-	z_key key = full_key & key_mask;
+	z_key key = full_key % key_mask;
 	if(tt[key].full_key == full_key){
 		if(int(tt[key].depth) >= depth){
 			switch(tt[key].node_type){

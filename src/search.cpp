@@ -6,7 +6,7 @@
 #define MIN_DEPTH 5
 #define MAX_Q_DEPTH 24
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
-#define TABLE_SIZE 400000000
+#define TABLE_SIZE 256E6
 
 using namespace std;
 
