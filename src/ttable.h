@@ -14,7 +14,7 @@ using namespace std;
 struct tt_entry{
 	z_key full_key;
 	int score;
-	int age;
+	unsigned short age;
 	unsigned short depth;
 	unsigned short best_move;
 	char node_type; //exact, upperbound, or lowerbound
@@ -27,7 +27,7 @@ class ttable {
 	U64 max_elements;
 	ttable();
 	U64 resize(U64 n_bytes); //returns number of available table entries
-	unsigned short find(z_key full_key, int* score, int* alpha, int* beta, int depth); //returns best move for position
+	unsigned short find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age); //returns best move for position
 	void place(z_key z, tt_entry t); 
 	int hashfull(); //returns valid elements per million, slow
 };

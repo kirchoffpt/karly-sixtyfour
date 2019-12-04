@@ -31,14 +31,17 @@ U64 ttable::resize(U64 n_bytes)
 
 void ttable::place(z_key z, tt_entry t)
 {
+	z_key key = z % key_mask;
+	tt_entry curr = tt[key];
+	if((curr.age >= t.age) && (curr.depth > t.depth)) return;
 	t.full_key = z;
-	tt[z % key_mask] = t;
+	tt[key] = t;
 }
 
-unsigned short ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth)
+unsigned short ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age)
 {
 	z_key key = full_key % key_mask;
-	if(tt[key].full_key == full_key){
+	if(tt[key].full_key == full_key && (age == tt[key].age)){
 		if(int(tt[key].depth) >= depth){
 			switch(tt[key].node_type){
 				case PVNODE:

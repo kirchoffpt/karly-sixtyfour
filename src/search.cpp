@@ -76,6 +76,7 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 	p1->generate_moves();
 	while(move = p1->pop_and_add()){
 		if (num_repetitions(p2->zobrist_key) >= 2){
+			entry.age = search_id;
 			entry.node_type = PVNODE;
 			entry.depth = MAX_DEPTH;
 			entry.score = 0;
@@ -145,6 +146,7 @@ void search_handler::search(){
 
 	if(uci_s.movetime > 0){
 		max_time = uci_s.movetime;
+		target_time = max_time;
 	} else {
 		max_time = t1 - 0.98*t2;
 		if(max_time < 0) max_time = t1/64;
@@ -347,7 +349,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	int eval = SCORE_LO;
 	int a_cpy = a;
 	unsigned short move, b_move;
-	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth);
+	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval; 
 
     node->generate_moves();
@@ -385,6 +387,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     tt_entry entry;
     entry.depth = depth;
     entry.score = a;
+    entry.age = search_id;
     if(a <= a_cpy){
     	entry.node_type = ALLNODE;
     	entry.best_move = b_move;

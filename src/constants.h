@@ -1,5 +1,5 @@
 
-#define VERSION "v0.2.3"
+#define VERSION "v0.2.4"
 
 #define DEBUG 0
 
@@ -14,7 +14,7 @@
 #define R_MAT	1289
 #define Q_MAT	2529
 
-#define CLEAR_TTABLE_BEFORE_SEARCH TRUE //set to true for now. reusing old entries doesnt work properly atm
+#define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
 #define ENABLE_INTERNAL_MOVE_ORDERING TRUE // speeds up search but should set to false for best perft results in mct.exe
 
