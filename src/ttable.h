@@ -14,8 +14,8 @@ using namespace std;
 struct tt_entry{
 	z_key full_key;
 	int score;
-	unsigned short age;
-	unsigned short depth;
+	short age;
+	short depth;
 	unsigned short best_move;
 	char node_type; //exact, upperbound, or lowerbound
 };
