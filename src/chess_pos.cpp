@@ -1554,17 +1554,6 @@ void chess_pos::generate_moves()
 	changed_squares = 0;
 	last_move_to_and_from = 0;
 
-	//rudimentary move ordering
-	//put captures first in line to be popped
-	if(ENABLE_INTERNAL_MOVE_ORDERING){
-		j = get_num_moves();
-		for(i=j-1;i>=0;i--){
-			if((U64(1)<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
-				pos_move_list.swap_moves(i,(j--)-1);
-			} 
-		}
-	}	
-
 	if(EXCLUDE_PAWNS_FROM_CAPTURE_MASK) captures &= ~pieces[!to_move][PAWN];
 
 	// print_bitboard(ally_ctrl);
@@ -1608,6 +1597,20 @@ void chess_pos::generate_moves()
 		}
 	}
 	return;
+}
+
+void chess_pos::order_moves()
+{
+	//rudimentary move ordering
+	//put captures first in line to be popped
+	int i,j;
+	j = get_num_moves();
+	for(i=j-1;i>=0;i--){
+		if((U64(1)<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
+			pos_move_list.swap_moves(i,(j--)-1);
+		} 
+	}
+	return;	
 }
 
 U64 chess_pos::create_pawn_pushes(U64 pawn_loc, int side)
@@ -2322,8 +2325,8 @@ int chess_pos::eval()
 
 		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
 
-		eval += int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
-		eval -= int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
+		eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
+		eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
 
 		woffense = int(__popcnt64(ctrl[WHITE]&occ[BLACK])) - int(__popcnt64(ctrl[BLACK]&occ[BLACK]));
 		boffense = int(__popcnt64(ctrl[BLACK]&occ[WHITE])) - int(__popcnt64(ctrl[WHITE]&occ[WHITE]));

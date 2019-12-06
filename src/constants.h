@@ -16,7 +16,6 @@
 
 #define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
-#define ENABLE_INTERNAL_MOVE_ORDERING TRUE // speeds up search but should set to false for best perft results in mct.exe
 
 ////////////////////////////////////////////
 //below values should not be changed lightly

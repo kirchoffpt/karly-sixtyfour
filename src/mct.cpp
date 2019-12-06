@@ -50,11 +50,6 @@ int main(int argc, char *argv[]){
 		node_ptrs[i]->next = node_ptrs[i+1];
 	}
 
-
-	if(ENABLE_INTERNAL_MOVE_ORDERING){
-		cout << "Note: Compiled with internal move ordering. Results are slow." << endl;
-	}
-
 	cout << "trials: " << num_trials << endl;
 	for(j=0;j<num_trials;j++){
 		if(argc == 1){

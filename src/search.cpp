@@ -319,7 +319,7 @@ int search_handler::quiesce(chess_pos* node, int min_or_max, int a, int b, int d
 		}
 	}
 
-
+	node->order_moves();
 	
 	if(min_or_max){
 		while(node->pop_and_add_capture() != 1){
@@ -349,11 +349,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	int eval = SCORE_LO;
 	int a_cpy = a;
 	unsigned short move, b_move;
-	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
-	if(eval != SCORE_LO) return eval; 
 
-    node->generate_moves();
-    if(b_move) node->pos_move_list.move_to_front(b_move);
+    node->generate_moves(); //must generate moves for eval
 
 	if(depth == 0){
 		if(node->captures > 0){
@@ -365,6 +362,12 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		}
 		return color*node->eval();
 	}
+
+	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
+	if(eval != SCORE_LO) return eval; 
+	node->order_moves();
+	if(b_move) node->pos_move_list.move_to_front(b_move);
+
 	if(b_move = node->pop_and_add()){
 		eval = -pvs(node->next, depth - 1, -color, -b,-a);
 		a = max(a, eval);

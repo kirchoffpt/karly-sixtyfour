@@ -59,7 +59,7 @@ class chess_pos {
 	int in_check; //0 not in check. 1 in check. 2 double check.
 	//-----------------------------
 	//------------------------------
-	U64 captures; //enemy pieces that may be captured
+	U64 captures; //enemy pieces that may be captured, currently does not count ep captures
 	int last_move_check_evasion;
 	int last_move_capture;
 	int evaluation; //saves last static evaluation of position
@@ -84,6 +84,7 @@ class chess_pos {
 	void init_piece_list();
 	void init_zobrist();
 	void generate_moves(); 
+	void order_moves();
 	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
 	void init_targets(int side);
 	void copy_pos(chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
