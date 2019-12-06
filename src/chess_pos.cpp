@@ -2285,6 +2285,7 @@ int chess_pos::eval()
 	int i,j,k,white,black,wking,bking;
 	int woffense, boffense;
 	int king_safety;
+	const int targ_mult[KING] = {1,2,2,2,1};
 	U64 temp;
 
 	if(get_num_moves()<=0){
@@ -2330,10 +2331,14 @@ int chess_pos::eval()
 		eval += (woffense-boffense);
 
 		for(i=1;i<white;i++){
-			eval += int(max(__popcnt64(pl[WHITE][i].targets),6));
+			j = pl[WHITE][i].piece_type;
+			if(j == PAWN) continue;
+			eval += int(__popcnt64(pl[WHITE][i].targets))*targ_mult[j];
 		}
 		for(i=1;i<black;i++){
-			eval -= int(max(__popcnt64(pl[BLACK][i].targets),6));
+			j = pl[BLACK][i].piece_type;
+			if(j == PAWN) continue;
+			eval -= int(__popcnt64(pl[BLACK][i].targets))*targ_mult[j];
 		}
 
 	}
