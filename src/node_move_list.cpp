@@ -168,7 +168,7 @@ void node_move_list::swap_moves(int idx1, int idx2){
 	return; 
 }
 
-bool node_move_list::move_to_front(unsigned short move){
+bool node_move_list::swap_to_front(unsigned short move){
 	int i = get_num_moves()-1;
 	if(moves[i--] == move) return true;
 	for(i;i>=0;i--){
@@ -178,4 +178,25 @@ bool node_move_list::move_to_front(unsigned short move){
 		}
 	}
 	return false;
+}
+
+bool node_move_list::move_to_front(unsigned short move){
+	int i = get_num_moves()-1;
+	if(moves[i--] == move) return true;
+	for(i;i>=0;i--){
+		if(move == moves[i]){
+			memcpy(moves+i,moves+i+1,sizeof(move)*(iterator-i));
+			moves[iterator] = move;
+			return true;
+		}
+	}
+	return false;
+}
+
+void node_move_list::print_moves(){
+	int i = get_num_moves()-1;
+	for(i;i>=0;i--){
+		cout << move_itos(moves[i]) << endl;
+	}
+	return;
 }

@@ -204,7 +204,7 @@ void search_handler::search(){
 				info_str += " nodes " + to_string(nodes_searched);
 				info_str +=  " depth " + to_string(depth);
 				//info_str +=  " seldepth " + to_string(sel_depth);
-				if(total_time > 50){
+				if(total_time > 10){
 				info_str += " time " + to_string(int(total_time));
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
 				//info_str += " hashfull " + to_string(total_time->hashfull());
@@ -366,7 +366,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval; 
 	node->order_moves();
-	if(b_move) node->pos_move_list.move_to_front(b_move);
+	if(b_move) node->pos_move_list.swap_to_front(b_move);
 
 	if(b_move = node->pop_and_add()){
 		eval = -pvs(node->next, depth - 1, -color, -b,-a);
