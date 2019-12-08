@@ -16,6 +16,7 @@
 
 #define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
+#define USE_OLD_TTABLE_BEST_MOVES FALSE //works fine but alters timings for tests/comparisons
 
 ////////////////////////////////////////////
 //below values should not be changed lightly
@@ -144,6 +145,6 @@ typedef unsigned long long z_key;
 #define N_DIR 	6
 #define NE_DIR	7 
 
-#define PVNODE 0 
-#define ALLNODE 1	
-#define CUTNODE 2
+#define PVNODE 2 
+#define CUTNODE 1
+#define ALLNODE 0	

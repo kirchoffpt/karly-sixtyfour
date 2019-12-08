@@ -3,6 +3,7 @@
 #include <stdlib.h> //rand
 #include <iostream>
 #include <ctime>
+#include "assert.h"
 #include "chess_funcs.h"
 
 #ifndef U64
@@ -182,11 +183,19 @@ bool node_move_list::swap_to_front(unsigned short move){
 
 bool node_move_list::move_to_front(unsigned short move){
 	int i = get_num_moves()-1;
+	int j, chksum = 0; //for debug since memcpy on overlapped objects is undefined
+	if(DEBUG){
+		for(j=0;j<=iterator;j++) chksum += moves[i];
+	}
 	if(moves[i--] == move) return true;
 	for(i;i>=0;i--){
 		if(move == moves[i]){
 			memcpy(moves+i,moves+i+1,sizeof(move)*(iterator-i));
 			moves[iterator] = move;
+			if(DEBUG){
+				for(j=0;j<=iterator;j++) chksum -= moves[i];
+				assert(chksum == 0);
+			}
 			return true;
 		}
 	}

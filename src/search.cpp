@@ -207,9 +207,9 @@ void search_handler::search(){
 				if(total_time > 10){
 				info_str += " time " + to_string(int(total_time));
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
-				//info_str += " hashfull " + to_string(total_time->hashfull());
+				//info_str += " hashfull " + to_string(TT->hashfull());
 				}
-				cout << info_str + "\n";
+				if(is_searching) cout << info_str + "\n";
 			}
 
 			fflush(stdout);
@@ -221,6 +221,8 @@ void search_handler::search(){
 		if(top_score <= -CHECKMATE){
 			break;
 		}
+		cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
+		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
 	}
@@ -255,8 +257,13 @@ void search_handler::search(){
 
 void search_handler::stop(){
 	if(!is_searching) return;
+
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
+
+	cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
+	fflush(stdout);
+
 	is_searching = FALSE;
 	return;
 }

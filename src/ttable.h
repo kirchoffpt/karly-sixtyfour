@@ -7,6 +7,8 @@
 
 #include "constants.h"
 #include <vector>
+#include <string>
+#include "chess_pos.h"
 
 
 using namespace std;
@@ -30,6 +32,7 @@ class ttable {
 	unsigned short find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age); //returns best move for position
 	void place(z_key z, tt_entry t); 
 	int hashfull(); //returns valid elements per million, slow
+	string extract_pv(const chess_pos* rpos, unsigned short first_move);
 };
 
 
