@@ -21,6 +21,7 @@ void print_bitboard(U64 board);
 void print_bitboard(U64 board, ofstream& ofs);
 bool is_sliding_piece(int piece_type);
 string piece_itos(int piece_type);
+string node_itos(int node_type);
 int bit_to_idx(U64 bitboard);
 void print_move(unsigned short move);
 string move_itos(unsigned short move);

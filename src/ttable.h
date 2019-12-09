@@ -33,6 +33,7 @@ class ttable {
 	void place(z_key z, tt_entry t); 
 	int hashfull(); //returns valid elements per million, slow
 	string extract_pv(const chess_pos* rpos, unsigned short first_move);
+	void dump_table(ostream &os);
 };
 
 

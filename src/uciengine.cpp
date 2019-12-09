@@ -68,10 +68,15 @@ void uci_go(istringstream& is, search_handler* searcher){
 		} else if(token == "binc"){
 			is >> i;
 			uci_s.inc[BLACK] = i;
-		}
-		 else if(token == "movetime"){
+		} else if(token == "movetime"){
 			is >> i;
 			uci_s.movetime = i;
+		} else if(token == "depth"){
+			is >> i;
+			uci_s.depth_limit = i;
+		} else if(token == "nodes"){
+			is >> i;
+			uci_s.nodes_limit = i;
 		}
 	}
 
@@ -112,11 +117,21 @@ int main(int argc, char *argv[]){
 			uci_go(is, searcher);
 		} else if(token == "stop"){
 			searcher->stop();
+		} else if(token == "ucinewgame"){
+			searcher->reset();
+		} else if(token == "showpos"){
+			rootpos->print_pos(false);
 		} else if(token == "quit"){
 			break;
+		} else if(token == "help"){
+			cout << "position [fen <fenstring> | startpos ]  moves <move1> .... <movei>" << endl;
+			cout << "go wtime <x> btime <y> depth <d> movetime <t>" << endl;
+			cout << "uci isready stop ucinewgame showpos quit" << endl;
 		}
 	}
 
+	delete rootpos;
+	delete searcher;
 	ofs.close();
 	return 0;
 }

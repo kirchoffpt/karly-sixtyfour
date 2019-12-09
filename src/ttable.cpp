@@ -67,7 +67,7 @@ int ttable::hashfull()
 {
 	U64 i, count = 0;
 	for(i=0;i<tt.size();i++){
-		if(tt[i].depth != 0) count++;
+		if(tt[i].age != 0) count++;
 	}
 	return count/(tt.size()/1000000);
 }
@@ -101,4 +101,21 @@ string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
 	delete pv_pos;
 
 	return pv;
+}
+
+void ttable::dump_table(ostream &os){
+	unsigned long long i;
+
+	for(i=0;i<key_mask;i++){
+		if(tt[i].age != 0){
+			os << hex << i;
+			os << dec << "	n: " << node_itos(tt[i].node_type);
+			os << "	s: " << tt[i].score;
+			os << "	b: " << move_itos(tt[i].best_move);
+			os << "	d: " << tt[i].depth;
+			os << "	a: " << tt[i].age;
+			os << endl;
+		}
+	}
+	return;
 }

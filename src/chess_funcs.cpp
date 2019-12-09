@@ -71,6 +71,18 @@ string piece_itos(int piece_type)
 	return "UNDEFINED_PIECE_TYPE";
 }
 
+string node_itos(int node_type)
+{
+	switch(node_type){
+		case PVNODE		:	return "P!";
+			break;
+		case ALLNODE 	:	return "A";
+			break;
+		case CUTNODE	:	return "C";
+	}
+	return "UNDEFINED_NODE_TYPE";
+}
+
 int bit_to_idx(U64 bitboard)
 {
 	unsigned long idx;

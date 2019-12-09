@@ -13,7 +13,7 @@ using namespace std;
 search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
 	rootpos->id = 0;
-	search_id = 0;
+	search_id = 0; //incrememt before searching
 	pv_moves.reserve(MAX_DEPTH);
 	TT = new ttable;
 	TT->resize(TABLE_SIZE);
@@ -24,10 +24,11 @@ search_handler::search_handler(chess_pos* pos){
 void search_handler::reset(){
 	std::memset(&uci_s, 0, sizeof(search_options));
 	past_positions.clear();
+	search_id = 0;
 	best_move = 0;
 	ponder_move = 0;
-	nodes_searched = 0;
-	depth_searched = 0;
+	TT->tt.clear();
+	TT->resize(TABLE_SIZE);
 	is_searching = FALSE;
 	return;	
 }
@@ -151,11 +152,14 @@ void search_handler::search(){
 		max_time = t1 - 0.98*t2;
 		if(max_time < 0) max_time = t1/64;
 	}
+	if(t1 <= 0 && uci_s.movetime <= 0){
+		max_time = target_time = FLT_MAX - 1;
+	} else {
+		thread timer_thread(&search_handler::max_timer,this,int(max_time));
+		timer_thread.detach();
+	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
-	thread timer_thread(&search_handler::max_timer,this,int(max_time));
-	timer_thread.detach();
-
     total_time = 0;
     nodes_searched = 0;
 	for(depth=min(MAX_AB_DEPTH,1);depth <= MAX_AB_DEPTH;depth++){
@@ -223,8 +227,10 @@ void search_handler::search(){
 		}
 		cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
+		TT->dump_table(cout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
-		if(total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
+		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
+		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_minimax_loop;
 	}
 
 	exit_minimax_loop:
