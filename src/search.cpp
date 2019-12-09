@@ -227,7 +227,6 @@ void search_handler::search(){
 		}
 		cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
-		TT->dump_table(cout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
 		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_minimax_loop;
