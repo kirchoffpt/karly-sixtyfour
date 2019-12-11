@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
 		ofs << cmd << endl;
-		is >> token;
+		if(!(is >> token)) continue;
 		if(token == "uci"){
 			cout << "id name karly64 " << VERSION << "\n";
 			cout << "id author Paul Kirchoff\n";

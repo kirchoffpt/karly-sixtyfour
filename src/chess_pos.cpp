@@ -56,7 +56,8 @@ unsigned short chess_pos::operator - (chess_pos const &c1){
 			break;
 		}
 	}
-	delete p1, p2;
+	delete p1;
+	delete p2;
 	return move;
 }
 

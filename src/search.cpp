@@ -86,7 +86,8 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 			break;
 		}
 	}
-	delete p1, p2;
+	delete p1;
+	delete p2;
 	return is_threefold(c1);
 }
 
@@ -194,7 +195,7 @@ void search_handler::search(){
 				best_move = top_move;
 			}
 
-			if(!is_searching) return; 
+			if(!is_searching) goto exit_minimax_loop; 
 
 			for(j=1;j<MAX_DEPTH;j++){
 				if(node_ptrs[j]->occ[0] == 0){
@@ -225,7 +226,7 @@ void search_handler::search(){
 		if(top_score <= -CHECKMATE){
 			break;
 		}
-		cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
+		//cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
@@ -263,10 +264,10 @@ void search_handler::search(){
 void search_handler::stop(){
 	if(!is_searching) return;
 
-	cout << "bestmove " + move_itos(best_move) + "\n";
+	cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 	fflush(stdout);
 
-	cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
+	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
 
 	is_searching = FALSE;
