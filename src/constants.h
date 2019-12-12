@@ -16,7 +16,7 @@
 
 #define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
-#define USE_OLD_TTABLE_BEST_MOVES FALSE //works fine but alters timings for tests/comparisons
+#define USE_OLD_TTABLE_BEST_MOVES TRUE //works fine but alters timings for tests/comparisons
 
 ////////////////////////////////////////////
 //below values should not be changed lightly

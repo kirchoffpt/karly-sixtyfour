@@ -104,7 +104,7 @@ void search_handler::search(){
 	int to_move_sign;
 	int score, top_score, alpha, beta, depth, sel_depth;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
-	unsigned short move, top_move;
+	unsigned short move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
 	int to_move;
 	string info_str;
@@ -133,11 +133,6 @@ void search_handler::search(){
 	rootpos->generate_moves();
 	n_root_moves = rootpos->get_num_moves();
 
-	if(n_root_moves == 1){
-		best_move = rootpos->pos_move_list.pop_move();
-		stop();
-	}
-
 	to_move = rootpos->to_move;
 	to_move_sign = ((!to_move)*2-1);
 
@@ -146,18 +141,24 @@ void search_handler::search(){
 	target_time = max(t1/128 , t1 - 1.1*t2);
 	target_time = max(target_time, 333);
 
-	if(uci_s.movetime > 0){
+	if(uci_s.movetime){
 		max_time = uci_s.movetime;
 		target_time = max_time;
 	} else {
 		max_time = t1 - 0.98*t2;
 		if(max_time < 0) max_time = t1/64;
 	}
+
 	if(t1 <= 0 && uci_s.movetime <= 0){
 		max_time = target_time = FLT_MAX - 1;
 	} else {
 		thread timer_thread(&search_handler::max_timer,this,int(max_time));
 		timer_thread.detach();
+	}
+
+	if(n_root_moves == 1){
+		best_move = rootpos->pos_move_list.pop_move();
+		goto exit_search;
 	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
@@ -190,12 +191,11 @@ void search_handler::search(){
 			move_scores[i] = score;
 			
 			if(score > top_score){
-				top_move = move;
+				best_move = move;
 				top_score = score;
-				best_move = top_move;
 			}
 
-			if(!is_searching) goto exit_minimax_loop; 
+			if(!is_searching) goto exit_search; 
 
 			for(j=1;j<MAX_DEPTH;j++){
 				if(node_ptrs[j]->occ[0] == 0){
@@ -220,7 +220,7 @@ void search_handler::search(){
 			fflush(stdout);
 
 			if(top_score >= CHECKMATE){
-				goto exit_minimax_loop;
+				goto exit_search;
 			}
 		}
 		if(top_score <= -CHECKMATE){
@@ -229,34 +229,18 @@ void search_handler::search(){
 		//cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
-		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_minimax_loop;
-		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_minimax_loop;
+		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_search;
+		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_search;
 	}
 
-	exit_minimax_loop:
-
-	// cout << endl;
-	// cout << "top_move: ";
-	// print_move(top_move);
-	// cout << endl;
-	// cout << "eval: ";
-	if(abs(top_score) >= CHECKMATE){
-		if(top_score >= CHECKMATE){
-			// cout << "#" << to_move_sign*(depth+1)/2 << endl;
-		} else {
-			// cout << "#" << -to_move_sign*(depth+1)/2 << endl;
-		}
-	} else {
-		// cout << to_move_sign*float(top_score)/100.0 << endl;
-	}
-	// cout << "total time: " <<  total_time << endl;
+	exit_search:
 
 	for(i=0;i<=MAX_DEPTH;i++){
 		delete node_ptrs[i];
 	}
 
-	best_move = top_move;
-	if(is_searching) stop();
+	if(is_searching && !uci_s.movetime) stop();
+
 	return;
 }
 
@@ -362,10 +346,11 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	int eval = SCORE_LO;
 	int a_cpy = a;
 	unsigned short move, b_move;
+	tt_entry entry;
 
     node->generate_moves(); //must generate moves for eval
 
-	if(depth == 0){
+	if(depth <= 0){
 		if(node->captures > 0){
 			if(color == -1){
 				return-quiesce(node,BLACK,-b,-a,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
@@ -400,19 +385,16 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
     done:
 
-    tt_entry entry;
     entry.depth = depth;
     entry.score = a;
     entry.age = search_id;
+    entry.best_move = b_move;
     if(a <= a_cpy){
     	entry.node_type = ALLNODE;
-    	entry.best_move = b_move;
     } else if(a >= b){
     	entry.node_type = CUTNODE;
-    	entry.best_move = b_move;
     } else {
     	entry.node_type = PVNODE;
-    	entry.best_move = b_move;
     }
     TT->place(node->zobrist_key, entry);
 
