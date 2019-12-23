@@ -108,6 +108,7 @@ void chess_pos::copy_pos(chess_pos* source_pos){
 	to_move = source_pos->to_move;
 	in_check = source_pos->in_check;
 	changed_squares = 0;
+	last_move_null = 0;
 
 	if(DEBUG){ 
 		assert(to_move == source_pos->to_move);
@@ -1957,6 +1958,21 @@ void chess_pos::generate_moves_deprecated()
 
 }
 
+int chess_pos::fwd_null_move(){
+	if(next == NULL) return 0;
+	if(in_check || __popcnt64(occ[to_move]) < 4 || last_move_null != 0) return 0;
+	next->copy_pos(this);
+	next->add_null_move();
+	return 1;
+}
+
+void chess_pos::add_null_move(){
+	zobrist_key ^= z_key(ep_target_square);
+	zobrist_key ^= MLUT.get_zobrist_btm();
+	to_move = !to_move; 
+	last_move_null = 1;
+	return;
+}
 
 void chess_pos::add_move(unsigned short move)
 {
@@ -1983,6 +1999,7 @@ void chess_pos::add_move(unsigned short move)
 		last_move_capture = 0;
 	}
 
+	last_move_null = 0;
 	ep_target_square = 0;
 	
 	if((move & SPECIAL_MASK) == 0){

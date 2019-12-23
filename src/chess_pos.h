@@ -70,7 +70,8 @@ class chess_pos {
 	node_move_list pos_move_list;
 	chess_pos* next; //next node
 	chess_pos* prev; //prev node, for getting eval deltas
-
+	int last_move_null = 0;
+	
 	chess_pos(string);
 	chess_pos();
 	void load_new_fen(string);
@@ -92,14 +93,16 @@ class chess_pos {
 	int piece_at_idx(int idx, int side); //returns -1 if none
 	unsigned short pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
 	unsigned short pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
+	int fwd_null_move();
+	void add_null_move();
 	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces
 	int get_num_moves(); //undefined if used before move generation
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
 	U64 create_pawn_pushes(U64 pawn_loc, int side);
 	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
-	void sort_piece_list(); //not meant to be fast. use only at root. 
-							//helps speed up search and mostly remove ambiguities between uci position input methods (fen + added moves VS just a fen )
+	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
+							
 
 };
 
