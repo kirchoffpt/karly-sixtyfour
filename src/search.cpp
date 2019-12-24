@@ -376,7 +376,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     while(move = node->pop_and_add()){
     	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
         if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
-        if(eval >= a){
+        if(eval > a){
         	a = eval;
         	b_move = move;
         }
