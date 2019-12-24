@@ -2241,6 +2241,23 @@ void chess_pos::dump_pos(ofstream& ofs) //for debugging
 	ofs << endl;
 }
 
+void chess_pos::print_line()
+{
+	chess_pos* a,b;
+	int depth = 0;
+	string os = "";
+	a = this;
+	while(a->prev != nullptr){
+		a = a->prev;
+		depth++;
+	}
+	while(depth-- > 0){
+		os += move_itos(*a->next - *a) + " ";
+		a = a->next;
+	}
+	cout << os << endl;
+}
+
 int chess_pos::is_material_draw()
 {
 	int i,j,k,n;

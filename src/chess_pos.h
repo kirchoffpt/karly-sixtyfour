@@ -81,6 +81,7 @@ class chess_pos {
 	void add_move(unsigned short move); //moves must have been generated first
 	void add_move_to_next_node(unsigned short move); //copy this position into another and add move there
 	void print_pos(bool);
+	void print_line();
 	void dump_pos(ofstream& ofile); //for debugging
 	void init_piece_list();
 	void init_zobrist();
