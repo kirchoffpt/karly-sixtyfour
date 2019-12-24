@@ -70,24 +70,21 @@ int search_handler::num_repetitions(const z_key position){
 bool search_handler::allows_threefold(const chess_pos* c1){
 	unsigned short move; 
 	tt_entry entry = {0};
-	chess_pos* p1 = new chess_pos;
-	chess_pos* p2 = new chess_pos;
-	*p1 = *const_cast<chess_pos*>(c1);
-	p1->next = p2;
-	p1->generate_moves();
-	while(move = p1->pop_and_add()){
-		if (num_repetitions(p2->zobrist_key) >= 2){
+	chess_pos p1, p2;
+	p1 = *const_cast<chess_pos*>(c1);
+	p1.next = &p2;
+	p1.generate_moves();
+	while(move = p1.pop_and_add()){
+		if (num_repetitions(p2.zobrist_key) >= 2){
 			entry.age = search_id;
 			entry.node_type = PVNODE;
 			entry.depth = MAX_DEPTH;
 			entry.score = 0;
-			TT->place(p2->zobrist_key, entry);
+			TT->place(p2.zobrist_key, entry);
 			//cout << "info string " << move_itos(move) << " will draw after " << move_itos(*p1-*rootpos) << endl;
 			break;
 		}
 	}
-	delete p1;
-	delete p2;
 	return is_threefold(c1);
 }
 
@@ -348,7 +345,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	unsigned short move, b_move;
 	tt_entry entry;
 
-    node->generate_moves(); //must generate moves for eval
+    node->generate_moves(); //must generate moves for eval;
 
 	if(depth <= 0){
 		if(node->captures > 0){

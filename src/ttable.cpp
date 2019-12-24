@@ -73,20 +73,20 @@ int ttable::hashfull()
 }
 
 string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
-	chess_pos* pv_pos = new chess_pos;
+	chess_pos pv_pos;
 	string pv = move_itos(first_move);
 	z_key key, hkey;
-	*pv_pos = *const_cast<chess_pos*>(rpos);
-	pv_pos->generate_moves();
-	pv_pos->add_move(first_move);
+	pv_pos = *const_cast<chess_pos*>(rpos);
+	pv_pos.generate_moves();
+	pv_pos.add_move(first_move);
 
 	while(true){
-		key = pv_pos->zobrist_key;
+		key = pv_pos.zobrist_key;
 		hkey = key % key_mask;
 		if(tt[hkey].full_key == key && tt[hkey].node_type == PVNODE){
-			pv_pos->generate_moves();
-			if(pv_pos->pos_move_list.swap_to_front(tt[hkey].best_move)){
-				pv_pos->add_move(tt[hkey].best_move);
+			pv_pos.generate_moves();
+			if(pv_pos.pos_move_list.swap_to_front(tt[hkey].best_move)){
+				pv_pos.add_move(tt[hkey].best_move);
 				pv += " " + move_itos(tt[hkey].best_move);
 			} else {
 				goto exit_pv_loop;
@@ -97,8 +97,6 @@ string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
 	}
 
 	exit_pv_loop:
-
-	delete pv_pos;
 
 	return pv;
 }

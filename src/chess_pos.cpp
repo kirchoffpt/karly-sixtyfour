@@ -46,18 +46,15 @@ chess_pos::chess_pos(){
 
 unsigned short chess_pos::operator - (chess_pos const &c1){
 	unsigned short move; 
-	chess_pos* p1 = new chess_pos;
-	chess_pos* p2 = new chess_pos;
-	*p1 = *const_cast<chess_pos*>(&c1);
-	p1->next = p2;
-	p1->generate_moves();
-	while(move = p1->pop_and_add()){
-		if (*p2 == *this) {
+	chess_pos p1, p2;
+	p1 = *const_cast<chess_pos*>(&c1);
+	p1.next = &p2;
+	p1.generate_moves();
+	while(move = p1.pop_and_add()){
+		if (p2 == *this) {
 			break;
 		}
 	}
-	delete p1;
-	delete p2;
 	return move;
 }
 
