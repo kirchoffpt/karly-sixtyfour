@@ -75,17 +75,29 @@ int ttable::hashfull()
 string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
 	chess_pos pv_pos;
 	string pv = move_itos(first_move);
+	std::vector<z_key> past_pos;
+	std::vector<z_key>::iterator it;
 	z_key key, hkey;
 	pv_pos = *const_cast<chess_pos*>(rpos);
+	int idx;
+
+	past_pos.push_back(pv_pos.zobrist_key);
 	pv_pos.generate_moves();
 	pv_pos.add_move(first_move);
 
 	while(true){
+		if((it = std::find(past_pos.begin(), past_pos.end(), pv_pos.zobrist_key)) != past_pos.end()) {
+		    //repeated position in PV
+		    idx = std::distance(it, past_pos.end());
+		    pv += " LOOP " + to_string(idx);
+		    break;
+		}
+		past_pos.push_back(pv_pos.zobrist_key);
 		key = pv_pos.zobrist_key;
 		hkey = key % key_mask;
 		if(tt[hkey].full_key == key && tt[hkey].node_type == PVNODE){
 			pv_pos.generate_moves();
-			if(pv_pos.pos_move_list.swap_to_front(tt[hkey].best_move)){
+			if(pv_pos.pos_move_list.swap_to_front(tt[hkey].best_move)){ //if move list contains this move
 				pv_pos.add_move(tt[hkey].best_move);
 				pv += " " + move_itos(tt[hkey].best_move);
 			} else {
