@@ -90,11 +90,17 @@ void uci_go(istringstream& is, search_handler* searcher){
 int main(int argc, char *argv[]){
 	string cmd, token;
 	ofstream ofs;
-	chess_pos *rootpos = new chess_pos(STARTPOS);
-	search_handler *searcher = new search_handler(rootpos);
+	chess_pos *rootpos;
+	search_handler *searcher;
 	time_t system_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
 
+	if(argc > 1) token = argv[1];
+	else token = STARTPOS;
+
+	rootpos = new chess_pos(token); 
 	rootpos->generate_moves();
+	rootpos->sort_piece_list();
+	searcher = new search_handler(rootpos);
 
 	if(DEBUG){
 		ofs = ofstream(FILEOUT, ofstream::app);
@@ -111,13 +117,13 @@ int main(int argc, char *argv[]){
 			cout << "uciok\n";
 		} else if(token == "isready"){
 			cout << "readyok\n";
-		} else if(token == "position"){
+		} else if(token == "position" || token == "pos"){
 			uci_position(is, rootpos, searcher);
 		} else if(token == "go"){
 			uci_go(is, searcher);
 		} else if(token == "stop"){
 			searcher->stop();
-		} else if(token == "ucinewgame"){
+		} else if(token == "ucinewgame" || token == "reset"){
 			searcher->reset();
 		} else if(token == "showpos"){
 			rootpos->print_pos(false);

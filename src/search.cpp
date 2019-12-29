@@ -361,7 +361,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval; 
 	node->order_moves();
-	if(b_move) node->pos_move_list.swap_to_front(b_move);
+	if(b_move) node->pos_move_list.move_to_front(b_move);
 
 	if(b_move = node->pop_and_add()){
 		eval = -pvs(node->next, depth - 1, -color, -b,-a);
