@@ -98,9 +98,8 @@ int main(int argc, char *argv[]){
 	else token = STARTPOS;
 
 	rootpos = new chess_pos(token); 
-	rootpos->generate_moves();
-	rootpos->sort_piece_list();
 	searcher = new search_handler(rootpos);
+	rootpos->generate_moves();
 
 	if(DEBUG){
 		ofs = ofstream(FILEOUT, ofstream::app);
