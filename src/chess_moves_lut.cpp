@@ -347,13 +347,6 @@ chess_mask_LUT::chess_mask_LUT() {
 		en_passant_attackers[i] = temp;
 	}
 
-	//PIECE SQUARE TABLES
-	for (i=0; i < 64; i++)
-	{
-		piece_square_pawn[i] = const_piece_square_pawn[63-i];
-		piece_square_king[i] = const_piece_square_king[63-i];
-	}
-
 }
 
 ll chess_mask_LUT::get_move_mask(int piece_type, int piece_position)
@@ -404,16 +397,6 @@ ll chess_mask_LUT::get_rook_area_of_influence(int index)
 ll chess_mask_LUT::get_en_passant_attackers(int index)
 {
 	return en_passant_attackers[index];
-}
-
-int chess_mask_LUT::get_piece_square_pawn(int index)
-{
-	return piece_square_pawn[index];
-}
-
-int chess_mask_LUT::get_piece_square_king(int index)
-{
-	return piece_square_king[index];
 }
 
 ll chess_mask_LUT::get_zobrist_piece(int side, int piece_type, int idx)

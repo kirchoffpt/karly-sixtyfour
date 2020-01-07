@@ -54,8 +54,6 @@ public:
 	ll get_pawn_area_of_influence(int side, int index); //3x5 rectangle around king
 	ll get_rook_area_of_influence(int index);
 	ll get_en_passant_attackers(int index);
-	int get_piece_square_pawn(int index);
-	int get_piece_square_king(int index);
 	ll get_zobrist_piece(int side, int piece_type, int idx);
 	ll get_zobrist_btm();
 };
