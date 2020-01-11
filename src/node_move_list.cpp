@@ -209,3 +209,11 @@ void node_move_list::print_moves(){
 	}
 	return;
 }
+
+int node_move_list::contains(unsigned short move){
+	int i = get_num_moves()-1;
+	for(i;i>=0;i--){
+		if(moves[i] == move) break;
+	}
+	return i;
+}

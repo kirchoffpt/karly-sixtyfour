@@ -32,6 +32,7 @@ public:
 	bool swap_to_front(unsigned short move);
 	bool move_to_front(unsigned short move);
 	void print_moves();
+	int contains(unsigned short move); //returns idx, -1 if not found
 };
 
 
