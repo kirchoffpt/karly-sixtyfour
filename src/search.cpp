@@ -255,84 +255,31 @@ void search_handler::stop(){
 	return;
 }
 
-int search_handler::quiesce(chess_pos* node, int min_or_max, int a, int b, int depth, int last_eval, int last_delta){
+int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b){
 	nodes_searched++;
 
-	int eval, eval_temp, stand_pat, delta;
-	short move;
+	int eval, stand_pat;
 
-	if(last_delta == SCORE_LO){
-		stand_pat = node->eval();
-		delta = stand_pat - last_eval;
-		last_delta = delta;
-	} else {
-		node->generate_moves();
-		stand_pat = node->eval();
-		delta = stand_pat - last_eval;
-	}
-
-
-	// node->print_pos(true);
-	// print_bitboard(node->captures);
-	// cout << node->eval()/100.0 <<  "	depth: " << depth << endl;
-	// cout << delta << "	" << last_delta << endl;
-	// Sleep(500);
+	node->generate_moves();
 
 	if(node->get_num_moves() <= 0){
-		return node->mate_eval();
+		return color*node->mate_eval();
 	}
 
-	eval = stand_pat;
-	if(min_or_max){
-			b = min(b, eval);
-		} else {
-			a = max(a, eval);
-		}
-	if(a >= b) return eval;
-
-	// cout << "depth: " << depth << endl;
-	// node->print_pos(false);
-	// print_bitboard(node->captures);
-
-
-	if(node->captures == 0 || depth == 0){
-		// cout << "---------------: " << node->eval() << endl;
-		// Sleep(250);
-		return stand_pat;
-	} else {
-		if(min_or_max){
-			if(delta < -(last_delta+Q_DELTA_WINDOW)){
-				//cout << "STND PATl: " << stand_pat << endl;
-				return stand_pat;		
-			} 
-		} else {
-			if(delta > -(last_delta-Q_DELTA_WINDOW)){
-				//cout << "STND PATg: " << stand_pat << endl;
-				return stand_pat;
-			} 
-		}
-	}
+	stand_pat = color*node->eval();
+	if(node->captures == 0 || depth == 0) return stand_pat;
+	if(stand_pat >= b) return b;
+	a = max(a, stand_pat);
 
 	node->order_moves();
 	
-	if(min_or_max){
-		while(node->pop_and_add_capture() != 1){
-			eval_temp = quiesce(node->next, FALSE, a, b, depth-1, stand_pat, delta);
-			eval = min(eval_temp,eval);
-			b = min(b, eval);
-			if(a >= b) break;
-			if(node->get_num_moves() <= 0) break;
-		}
-	} else {
-		while(node->pop_and_add_capture() != 1){
-			eval_temp = quiesce(node->next, TRUE, a, b, depth-1, stand_pat, delta);
-			eval = max(eval_temp, eval);
-			a = max(a, eval);
-			if(a >= b) break;
-			if(node->get_num_moves() <= 0) break;
-		}
+	while(node->pop_and_add_capture() > 1){
+		eval = -quiesce(node->next, depth-1, -color, -b, -a);
+		a = max(a, eval);
+		if(a >= b) break;
 	}
-    return eval;
+
+    return a;
 }
 
 int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
@@ -349,11 +296,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	if(depth <= 0){
 		if(node->captures > 0){
-			if(color == -1){
-				return-quiesce(node,BLACK,-b,-a,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
-			} else {
-				return quiesce(node,WHITE,a,b,MAX_Q_DEPTH,node->prev->evaluation,SCORE_LO);
-			}
+			return quiesce(node,MAX_Q_DEPTH,color,a,b);
 		}
 		return color*node->eval();
 	}

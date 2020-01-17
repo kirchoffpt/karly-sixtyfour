@@ -2150,9 +2150,7 @@ unsigned short chess_pos::pop_and_add_capture()
 	unsigned short move;
 	if(next == NULL) return 0;
 	move = pos_move_list.pop_targeted_move(captures);
-	if(move == 0) return 0;
-	if(move == 1) return 1;
-	add_move_to_next_node(move);
+	if(move > 1) add_move_to_next_node(move);
 	return move;
 }
 
