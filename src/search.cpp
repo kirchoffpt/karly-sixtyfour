@@ -256,11 +256,13 @@ void search_handler::stop(){
 }
 
 int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b, bool gen_moves){
-	nodes_searched++;
 
 	int eval, stand_pat;
 
-	if(gen_moves) node->generate_moves();
+	if(gen_moves){
+		node->generate_moves();
+		nodes_searched++;
+	}
 
 	if(node->get_num_moves() <= 0){
 		return color*node->mate_eval();
@@ -283,7 +285,6 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b,
 }
 
 int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
-	nodes_searched++;
 	__assume(is_searching);
 	if(!is_searching) return 0;
 
@@ -293,6 +294,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	tt_entry entry;
 
     node->generate_moves(); //must generate moves for eval;
+    nodes_searched++;
 
 	if(depth <= 0){
 		if(node->captures > 0){
