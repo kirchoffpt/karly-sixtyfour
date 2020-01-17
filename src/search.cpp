@@ -255,12 +255,12 @@ void search_handler::stop(){
 	return;
 }
 
-int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b){
+int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b, bool gen_moves){
 	nodes_searched++;
 
 	int eval, stand_pat;
 
-	node->generate_moves();
+	if(gen_moves) node->generate_moves();
 
 	if(node->get_num_moves() <= 0){
 		return color*node->mate_eval();
@@ -274,7 +274,7 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b)
 	node->order_moves();
 	
 	while(node->pop_and_add_capture() > 1){
-		eval = -quiesce(node->next, depth-1, -color, -b, -a);
+		eval = -quiesce(node->next, depth-1, -color, -b, -a, TRUE);
 		a = max(a, eval);
 		if(a >= b) break;
 	}
@@ -296,7 +296,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	if(depth <= 0){
 		if(node->captures > 0){
-			return quiesce(node,MAX_Q_DEPTH,color,a,b);
+			return quiesce(node,MAX_Q_DEPTH,color,a,b,FALSE);
 		}
 		return color*node->eval();
 	}
