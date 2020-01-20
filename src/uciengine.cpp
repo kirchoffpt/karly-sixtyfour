@@ -12,13 +12,15 @@
 using namespace std;
 
 void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
-	string token, s, fenstring = STARTPOS;
+	string token, s, fenstring;
 	char move_string[5];
 	unsigned short move = 0;
 
 	is >> token;
 	if(token == "startpos"){
 		fenstring = STARTPOS;
+	} else if(token == "pos"){
+		fenstring = "\n";
 	} else if(token == "fen"){
 		is >> token;
 		while(is >> s && s != "moves"){
@@ -29,7 +31,7 @@ void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searche
 		return;
 	}
 	searcher->past_positions.clear();
-	rootpos->load_new_fen(fenstring);
+	if(fenstring != "\n") rootpos->load_new_fen(fenstring);
 	rootpos->generate_moves();
 	rootpos->sort_piece_list();
 	searcher->past_positions.push_back(rootpos->zobrist_key);
