@@ -257,7 +257,7 @@ void search_handler::stop(){
 
 int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b, bool gen_moves){
 
-	int eval, stand_pat;
+	int eval;
 
 	if(gen_moves){
 		node->generate_moves();
@@ -268,10 +268,10 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b,
 		return color*node->mate_eval();
 	}
 
-	stand_pat = color*node->eval();
-	if(node->captures == 0 || depth == 0) return stand_pat;
-	if(stand_pat >= b) return b;
-	a = max(a, stand_pat);
+	eval = color*node->eval(); //stand pat score "do nothing eval"
+	if(node->captures == 0 || depth == 0) return eval; 
+	if(eval >= b) return b;
+	a = max(a, eval);
 
 	node->order_moves();
 	
@@ -296,6 +296,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     node->generate_moves(); //must generate moves for eval;
     nodes_searched++;
 
+    //enter quiescence search at horizon nodes
 	if(depth <= 0){
 		if(node->captures > 0){
 			return quiesce(node,MAX_Q_DEPTH,color,a,b,FALSE);
@@ -303,11 +304,20 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		return color*node->eval();
 	}
 
+	//forward null move pruning
+	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
+		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
+		if(eval >= b) return b;
+		eval = SCORE_LO;
+	}
+
+	//transposition table lookup
 	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval; 
 	node->order_moves();
 	if(b_move) node->pos_move_list.move_to_front(b_move);
 
+	//principal variation search (first move)
 	if(b_move = node->pop_and_add()){
 		eval = -pvs(node->next, depth - 1, -color, -b,-a);
 		a = max(a, eval);
@@ -315,6 +325,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	} else {
 		return color*node->mate_eval();
 	}
+
+	//null window searches (later moves)
     while(move = node->pop_and_add()){
     	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
         if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
@@ -327,6 +339,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
     done:
 
+    //entry into transposition table
     entry.depth = depth;
     entry.score = a;
     entry.age = search_id;

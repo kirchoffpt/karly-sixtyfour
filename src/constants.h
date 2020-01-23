@@ -1,5 +1,5 @@
 
-#define VERSION "v0.5.1"
+#define VERSION "v0.6.0"
 
 #define DEBUG 0
 
@@ -16,7 +16,8 @@
 
 #define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
-#define USE_OLD_TTABLE_BEST_MOVES TRUE //works fine but alters timings for tests/comparisons
+#define USE_OLD_TTABLE_BEST_MOVES TRUE 			//works fine but alters timings for tests/comparisons
+#define ENABLE_NULL_MOVE_PRUNING TRUE 			//enable null move pruning
 
 ////////////////////////////////////////////
 //below values should not be changed lightly
