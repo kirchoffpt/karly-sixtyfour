@@ -26,21 +26,23 @@ The evaluation in general works quite well for the time being (it used to perfor
 That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between moves that score similarly (or help with move ordering, but neural nets are probably way too slow for that). 
 
 #### Everything Else
-Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations.
+Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations. Endgame tablebases are not currently planned as they add too much playing strength for no effort.
   - Current
     - Bitboards (64 bit board representations)
     - Fast legal move generation (as opposed to pseudo-legal)
     - Principal variation search (minimax variant) w/ iterative deepening
     - Quiescence/Capture search
+    - Null move pruning (compile time option)
     - Transposition table w/ Zobrist hashing
-    - Weak UCI implementation (good enough for most GUIs)
+    - UCI protocol (more than good enough for most GUI's)
   - Planned
     - More advanced quiescence search and draw detection
     - Chess960 support
     - Multithreading capabilities
-    - More complete adherence to UCI protocol
-    - Many more optimizations in general
-    - NOT endgame tablebases
+    - More/improved forward pruning
+    - Neural net assisted move ordering
+    - Small optimizations to move generation
+    - More fleshed out time management
     
    
    
