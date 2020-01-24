@@ -2,9 +2,9 @@
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
-#define MAX_AB_DEPTH 24
+#define MAX_AB_DEPTH 64
 #define MIN_DEPTH 5
-#define MAX_Q_DEPTH 24
+#define MAX_Q_DEPTH 32
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
 #define TABLE_SIZE 256E6
 
