@@ -109,7 +109,7 @@ void search_handler::search(){
 	float t, total_time;
 	char move_string[5];
 	clock_t cl;     //initializing a clock type
-	float target_time, max_time, t1, t2;
+	float max_time, t1, t2;
 	std::chrono::steady_clock::time_point start, end;
 
 	i = MAX_DEPTH;
@@ -135,19 +135,15 @@ void search_handler::search(){
 
 	t1 = float(uci_s.time[to_move]);
 	t2 = float(uci_s.time[!to_move]);
-	target_time = max(t1/128 , t1 - 1.1*t2);
-	target_time = max(target_time, 333);
 
 	if(uci_s.movetime){
 		max_time = uci_s.movetime;
-		target_time = max_time;
 	} else {
-		max_time = t1 - 0.98*t2;
-		if(max_time < 0) max_time = t1/64;
+		max_time = 0.99*t1/(t2+1)+t1/128;
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
-		max_time = target_time = FLT_MAX - 1;
+		max_time = FLT_MAX - 1;
 	} else {
 		thread timer_thread(&search_handler::max_timer,this,int(max_time));
 		timer_thread.detach();
@@ -226,7 +222,6 @@ void search_handler::search(){
 		//cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
-		if(target_time && total_time > target_time && depth >= MIN_DEPTH && top_score > P_MAT) goto exit_search;
 		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_search;
 	}
 
