@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
 	searcher = new search_handler(rootpos);
 	rootpos->generate_moves();
 
-	if(DEBUG){
+	if(LOG_UCI_INPUT){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;
 	}

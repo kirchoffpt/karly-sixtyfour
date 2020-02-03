@@ -133,13 +133,14 @@ void search_handler::search(){
 	to_move = rootpos->to_move;
 	to_move_sign = ((!to_move)*2-1);
 
-	t1 = float(uci_s.time[to_move]);
+	t1 = max(0, float(uci_s.time[to_move]) - MOVE_TIME_OVERHEAD);
 	t2 = float(uci_s.time[!to_move]);
 
 	if(uci_s.movetime){
 		max_time = uci_s.movetime;
 	} else {
-		max_time = 0.99*t1/(t2+1)+t1/128;
+		max_time = t1*powf(0.7,0.022+12*t2/t1)+t1/128;
+		if(uci_s.inc[to_move]) max_time = max(t1,max_time+uci_s.inc[to_move]);
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
@@ -161,7 +162,7 @@ void search_handler::search(){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "d " +  to_string(depth) + "/" + to_string(MIN_DEPTH) + "\n";
+		cout << "D" << depth << endl;
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
@@ -190,22 +191,16 @@ void search_handler::search(){
 
 			if(!is_searching) goto exit_search; 
 
-			for(j=1;j<MAX_DEPTH;j++){
-				if(node_ptrs[j]->occ[0] == 0){
-					sel_depth = j-1;
-					break;
-				}
-			}
 			if(depth >= 4){
-				info_str = "info currmove " + move_itos(move);
+				info_str = "info";
+				info_str +=  " depth " + to_string(depth);
+				info_str += " currmove " + move_itos(move);
 				info_str += " score cp " + to_string(top_score);
 				info_str += " nodes " + to_string(nodes_searched);
-				info_str +=  " depth " + to_string(depth);
-				//info_str +=  " seldepth " + to_string(sel_depth);
 				if(total_time > 10){
-				info_str += " time " + to_string(int(total_time));
-				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
-				//info_str += " hashfull " + to_string(TT->hashfull());
+					info_str += " time " + to_string(int(total_time));
+					info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
+					//info_str += " hashfull " + to_string(TT->hashfull());
 				}
 				if(is_searching) cout << info_str + "\n";
 			}
@@ -216,10 +211,15 @@ void search_handler::search(){
 				goto exit_search;
 			}
 		}
+		info_str = "info";
+		info_str +=  " depth " + to_string(depth);
+		info_str += " score cp " + to_string(top_score);
+		info_str += " nodes " + to_string(nodes_searched);
+		info_str += " pv " + TT->extract_pv(rootpos, best_move);
+		cout << info_str + "\n";
 		if(top_score <= -CHECKMATE){
 			break;
 		}
-		//cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
 		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
 		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_search;

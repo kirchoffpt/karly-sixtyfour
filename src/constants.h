@@ -1,7 +1,9 @@
 
-#define VERSION "v0.6.1"
+#define VERSION "v0.6.2"
 
 #define DEBUG 0
+#define LOG_UCI_INPUT 1
+#define MOVE_TIME_OVERHEAD 100 //est. milliseconds
 
 //DEBUG 1- fast assertions 
 //DEBUG 2- previously used for move generation debugging
@@ -9,10 +11,10 @@
 #define EVAL_GRAIN	4 
 #define Q_DELTA_WINDOW 256
 #define P_MAT	128
-#define N_MAT	782
-#define B_MAT	830
-#define R_MAT	1289
-#define Q_MAT	2529
+#define N_MAT	470
+#define B_MAT	498
+#define R_MAT	773
+#define Q_MAT	1517
 
 #define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
 #define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
