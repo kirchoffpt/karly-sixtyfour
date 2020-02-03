@@ -111,6 +111,8 @@ void search_handler::search(){
 	clock_t cl;     //initializing a clock type
 	float max_time, t1, t2;
 	std::chrono::steady_clock::time_point start, end;
+	std::chrono::steady_clock::time_point abs_start, abs_end;
+	abs_start = std::chrono::steady_clock::now();
 
 	i = MAX_DEPTH;
 	node_ptrs[i--] = new chess_pos;
@@ -133,14 +135,15 @@ void search_handler::search(){
 	to_move = rootpos->to_move;
 	to_move_sign = ((!to_move)*2-1);
 
-	t1 = max(0, float(uci_s.time[to_move]) - MOVE_TIME_OVERHEAD);
+	t1 = max(100, float(uci_s.time[to_move]));
 	t2 = float(uci_s.time[!to_move]);
 
 	if(uci_s.movetime){
 		max_time = uci_s.movetime;
 	} else {
-		max_time = t1*powf(0.7,0.022+12*t2/t1)+t1/128;
-		if(uci_s.inc[to_move]) max_time = max(t1,max_time+uci_s.inc[to_move]);
+		max_time = (0.99*t1/(t2+1)+t1*powf(0.7,0.022+12*t2/t1))/2+t1/128;
+		if(uci_s.inc[to_move]) max_time = min(t1,max_time+uci_s.inc[to_move]);
+		max_time = min(max_time,t1*MAX_MOVE_TIME_USAGE);
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
@@ -232,7 +235,8 @@ void search_handler::search(){
 	}
 
 	if(is_searching && !uci_s.movetime) stop();
-
+	abs_end = std::chrono::steady_clock::now();
+	cout << "info time " << to_string((int)std::chrono::duration_cast<std::chrono::milliseconds>(abs_end - abs_start).count()) + "\n";
 	return;
 }
 
