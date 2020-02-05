@@ -135,7 +135,7 @@ void search_handler::search(){
 	to_move = rootpos->to_move;
 	to_move_sign = ((!to_move)*2-1);
 
-	t1 = max(100, float(uci_s.time[to_move]));
+	t1 = float(uci_s.time[to_move]);
 	t2 = float(uci_s.time[!to_move]);
 
 	if(uci_s.movetime){
@@ -144,6 +144,7 @@ void search_handler::search(){
 		max_time = (0.99*t1/(t2+1)+t1*powf(0.7,0.022+12*t2/t1))/2+t1/128;
 		if(uci_s.inc[to_move]) max_time = min(t1,max_time+uci_s.inc[to_move]);
 		max_time = min(max_time,t1*MAX_MOVE_TIME_USAGE);
+		max_time = max(100, max_time);
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){

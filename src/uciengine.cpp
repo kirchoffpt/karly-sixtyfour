@@ -129,9 +129,10 @@ int main(int argc, char *argv[]){
 		} else if(token == "showpos"){
 			rootpos->print_pos(false);
 		} else if(token == "quit"){
+			searcher->stop();
 			break;
 		} else if(token == "help"){
-			cout << "position [fen <fenstring> | startpos ]  moves <move1> .... <movei>" << endl;
+			cout << "position [fen <fenstring> | startpos | pos]  moves <move1> .... <movei>" << endl;
 			cout << "go wtime <x> btime <y> depth <d> movetime <t>" << endl;
 			cout << "uci isready stop ucinewgame showpos quit" << endl;
 		}

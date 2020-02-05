@@ -99,11 +99,11 @@ void node_move_list::reset_num_moves()
 void node_move_list::sort_moves_by_scores(int* score_list)
 {
 	int i,j,max_idx;
-	float score, max_score = SCORE_LO;
+	int score, max_score = SCORE_LO;
 	unsigned short move_temp;
 
 	for(j=get_num_moves()-1;j>0;j--){
-		max_score = F_LO;
+		max_score = SCORE_LO;
 		for(i=j;i>=0;i--){
 			score = *(score_list + i);
 			if(score > max_score){
