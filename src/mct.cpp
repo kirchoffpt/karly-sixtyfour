@@ -1,4 +1,5 @@
 #include "chess_pos.h"
+#include <chrono>
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
@@ -26,7 +27,7 @@ int main(int argc, char *argv[]){
 	int depth;
 	int to_move;
 	long long k = 0, total_nodes = 0;
-	clock_t cl;     //initializing a clock type
+	std::chrono::steady_clock::time_point start, end;
 	int test_depth;
 	float t = 0, dt = 0;
 	int num_trials, num_failed = 0;
@@ -69,13 +70,13 @@ int main(int argc, char *argv[]){
 			}
 		}
 		for(i=1;i<=test_depth;i++){
-		    cl = clock();   //starting time of clock
+		   start = std::chrono::steady_clock::now();
 
 			perft(rootpos, i, &k);
 
-			cl = clock() - cl;
+			end = std::chrono::steady_clock::now();
 
-			dt = cl/(double)CLOCKS_PER_SEC;
+			dt = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/1000.0;
 
 			t += dt;
 

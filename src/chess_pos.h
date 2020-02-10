@@ -13,7 +13,6 @@ Always generate moves before evaluating or adding a move.
 
 #include <cmath>
 #include <time.h>
-#include <Windows.h>
 #include <cstdio>
 #include <iomanip>
 #include <vector>
