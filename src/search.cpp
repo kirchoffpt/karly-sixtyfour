@@ -94,7 +94,13 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 }
 
 bool search_handler::is_threefold(const chess_pos* c1){
+	tt_entry entry = {0};
 	if (num_repetitions(c1->zobrist_key) >= 2){
+		entry.age = search_id;
+		entry.node_type = PVNODE;
+		entry.depth = MAX_DEPTH;
+		entry.score = 0;
+		TT->place(c1->zobrist_key, entry);
 		return true;
 	}
 	return false;
