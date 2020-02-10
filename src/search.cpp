@@ -192,13 +192,13 @@ void search_handler::search(){
 			move_scores[i] = score;
 			
 			if(score > top_score){
-				best_move = move;
 				top_score = score;
+				best_move = move;
 			}
 
 			if(!is_searching) goto exit_search; 
 
-			if(search_depth >= 4){
+			if(total_time > 10){
 				info_str = "info";
 				info_str +=  " depth " + to_string(search_depth);
 				info_str += " currmove " + move_itos(move);
@@ -317,7 +317,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	//transposition table lookup
 	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
-	if(eval != SCORE_LO) return eval; 
+	if(eval != SCORE_LO) return eval;
 	node->order_moves();
 	if(b_move) node->pos_move_list.move_to_front(b_move);
 

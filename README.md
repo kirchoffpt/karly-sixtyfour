@@ -1,7 +1,7 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.6.2 (Windows only)
+Version 0.6.3 (Windows only)
 
 A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence search. It is quite strong at the moment considering how basic it is. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 

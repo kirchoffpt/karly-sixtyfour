@@ -460,6 +460,8 @@ void chess_pos::init_piece_list()
 
 		}
 		init_targets(side);
+
+		//many loops are unfurled to avoid branches, these are unfurled because i'm lazy
 		//ROOK
 		u = straight_blockers;
 
@@ -555,6 +557,8 @@ void chess_pos::store_init_targets(U64 piece_loc, U64 targets, int pinned)
 
 void chess_pos::init_targets(int side)
 {
+	//this is essentially the old move generation code modified to store moves in the piece list struct
+	//speed is not of concern here
 	U64 enemies = occ[!side]; //enemies gets modified
 	U64 allies = occ[side];
 	U64 allied_pawns = pieces[side][PAWN];
@@ -745,7 +749,8 @@ void chess_pos::init_targets(int side)
 
 void chess_pos::generate_moves()
 {
-
+	//note many fixed sized loops are unfurled to avoid branches
+	//code here specifically is pretty nightmarish in an attempt to be faster
 	U64 king_loc, e_king_loc, straight_blockers, diag_blockers, *p_loc, *p_targ, *p_ctrl;
 	U64 u,m,v,u_temp,possible_pins, unpins=0;
 	U64 actual_pins[2] = {0};
@@ -2382,6 +2387,5 @@ int chess_pos::eval()
 
 	eval += 2*P_MAT*(int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 
-	this->evaluation = EVAL_GRAIN*(eval/EVAL_GRAIN);
-	return this->evaluation;
+	return EVAL_GRAIN*(eval/EVAL_GRAIN);
 }

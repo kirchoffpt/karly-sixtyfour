@@ -62,7 +62,6 @@ class chess_pos {
 	U64 captures; //enemy pieces that may be captured, currently does not count ep captures
 	int last_move_check_evasion;
 	int last_move_capture;
-	int evaluation; //saves last static evaluation of position
 	U64 changed_squares;
 	U64 last_move_to_and_from;
 	U64 ctrl[2];
@@ -83,12 +82,8 @@ class chess_pos {
 	void print_pos(bool);
 	void print_line();
 	void dump_pos(ofstream& ofile); //for debugging
-	void init_piece_list();
-	void init_zobrist();
 	void generate_moves(); 
 	void order_moves();
-	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
-	void init_targets(int side);
 	void copy_pos(chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
@@ -96,14 +91,19 @@ class chess_pos {
 	unsigned short pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
 	int fwd_null_move();
 	void add_null_move();
-	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces
 	int get_num_moves(); //undefined if used before move generation
-	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
-	U64 create_pawn_pushes(U64 pawn_loc, int side);
 	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
 							
+	private:
+	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
+	U64 create_pawn_pushes(U64 pawn_loc, int side);
+	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces
+	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
+	void init_targets(int side);
+	void init_piece_list();
+	void init_zobrist();
 
 };
 
