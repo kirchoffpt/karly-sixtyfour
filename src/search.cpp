@@ -4,7 +4,7 @@
 
 #define MAX_AB_DEPTH 64
 #define MIN_DEPTH 5
-#define MAX_Q_DEPTH 32
+#define MAX_Q_DEPTH 64
 #define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
 #define TABLE_SIZE 256E6
 
@@ -14,10 +14,15 @@ search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
 	rootpos->id = 0;
 	search_id = 0; //incrememt before searching
-	pv_moves.reserve(MAX_DEPTH);
+	principal_variation.reserve(MAX_DEPTH);
 	TT = new ttable;
 	TT->resize(TABLE_SIZE);
 	reset();
+	return;
+}
+
+search_handler::~search_handler(){
+	delete TT;
 	return;
 }
 
@@ -99,7 +104,7 @@ void search_handler::search(){
 	
 	int i,j,n_root_moves;
 	int to_move_sign;
-	int score, top_score, alpha, beta, depth, sel_depth;
+	int score, top_score, alpha, beta, sel_depth;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
@@ -111,8 +116,6 @@ void search_handler::search(){
 	clock_t cl;     //initializing a clock type
 	float max_time, t1, t2;
 	std::chrono::steady_clock::time_point start, end;
-	std::chrono::steady_clock::time_point abs_start, abs_end;
-	abs_start = std::chrono::steady_clock::now();
 
 	i = MAX_DEPTH;
 	node_ptrs[i--] = new chess_pos;
@@ -160,13 +163,13 @@ void search_handler::search(){
 	}
 
 	best_move = rootpos->pos_move_list.get_random_move();
-    total_time = 0;
+    total_time = 1;
     nodes_searched = 0;
-	for(depth=min(MAX_AB_DEPTH,1);depth <= MAX_AB_DEPTH;depth++){
+	for(search_depth=min(MAX_AB_DEPTH,1);search_depth <= MAX_AB_DEPTH;search_depth++){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "D" << depth << endl;
+		cout << "\nD" << search_depth << endl;
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
@@ -179,7 +182,7 @@ void search_handler::search(){
 				k = nodes_searched;
 				start = std::chrono::steady_clock::now();
 
-				score = -pvs(rootpos->next, depth-1,-to_move_sign, -beta, -alpha);
+				score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -alpha);
 				alpha = max(alpha, score);
 
 				end = std::chrono::steady_clock::now();
@@ -195,17 +198,16 @@ void search_handler::search(){
 
 			if(!is_searching) goto exit_search; 
 
-			if(depth >= 4){
+			if(search_depth >= 4){
 				info_str = "info";
-				info_str +=  " depth " + to_string(depth);
+				info_str +=  " depth " + to_string(search_depth);
 				info_str += " currmove " + move_itos(move);
+				//info_str += " currmovenumber " + to_string(n_root_moves-i);
 				info_str += " score cp " + to_string(top_score);
 				info_str += " nodes " + to_string(nodes_searched);
-				if(total_time > 10){
-					info_str += " time " + to_string(int(total_time));
-					info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
-					//info_str += " hashfull " + to_string(TT->hashfull());
-				}
+				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
+				info_str += " time " + to_string(int(total_time));
+				//info_str += " hashfull " + to_string(TT->hashfull());
 				if(is_searching) cout << info_str + "\n";
 			}
 
@@ -216,9 +218,12 @@ void search_handler::search(){
 			}
 		}
 		info_str = "info";
-		info_str +=  " depth " + to_string(depth);
+		info_str +=  " depth " + to_string(search_depth);
 		info_str += " score cp " + to_string(top_score);
 		info_str += " nodes " + to_string(nodes_searched);
+		info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
+		info_str += " time " + to_string(int(total_time));
+		//info_str += " hashfull " + to_string(TT->hashfull());
 		info_str += " pv " + TT->extract_pv(rootpos, best_move);
 		cout << info_str + "\n";
 		if(top_score <= -CHECKMATE){
@@ -226,7 +231,7 @@ void search_handler::search(){
 		}
 		fflush(stdout);
 		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
-		if(uci_s.depth_limit && (depth >= uci_s.depth_limit)) goto exit_search;
+		if(uci_s.depth_limit && (search_depth >= uci_s.depth_limit)) goto exit_search;
 	}
 
 	exit_search:
@@ -236,8 +241,6 @@ void search_handler::search(){
 	}
 
 	if(is_searching && !uci_s.movetime) stop();
-	abs_end = std::chrono::steady_clock::now();
-	cout << "info time " << to_string((int)std::chrono::duration_cast<std::chrono::milliseconds>(abs_end - abs_start).count()) + "\n";
 	return;
 }
 
@@ -245,11 +248,12 @@ void search_handler::search(){
 void search_handler::stop(){
 	if(!is_searching) return;
 
-	cout << "info pv " + TT->extract_pv(rootpos, best_move) + "\n";
-	fflush(stdout);
-
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
+
+	cout << "PV " + TT->extract_pv(rootpos, best_move) + "\n";
+	fflush(stdout);
+
 
 	is_searching = FALSE;
 	return;

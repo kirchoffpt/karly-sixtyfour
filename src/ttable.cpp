@@ -29,7 +29,7 @@ U64 ttable::resize(U64 n_bytes)
 	return n_elements;
 }
 
-void ttable::place(z_key z, tt_entry t)
+void ttable::place(z_key z, tt_entry &t)
 {
 	z_key key = z % key_mask;
 	tt_entry curr = tt[key];
@@ -69,7 +69,7 @@ int ttable::hashfull()
 	for(i=0;i<tt.size();i++){
 		if(tt[i].age != 0) count++;
 	}
-	return count/(tt.size()/1000000);
+	return count/(tt.size()/1000);
 }
 
 string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
