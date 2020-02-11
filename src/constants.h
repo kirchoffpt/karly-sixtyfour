@@ -4,12 +4,15 @@
 #define DEBUG 0
 
 #define LOG_UCI_INPUT 1
+#define FILEOUT "uci_input_log.txt"
 #define MAX_MOVE_TIME_USAGE 0.25
 
 //DEBUG 1- fast assertions 
 //DEBUG 2- previously used for move generation debugging
 
-#define EVAL_GRAIN	4 
+#define EVAL_GRAIN	4
+#define MAX_AB_DEPTH 64
+#define MAX_Q_DEPTH 64 
 #define Q_DELTA_WINDOW 256
 #define P_MAT	128
 #define N_MAT	782
@@ -22,11 +25,15 @@
 #define USE_OLD_TTABLE_BEST_MOVES TRUE 			//works fine but alters timings for tests/comparisons
 #define ENABLE_NULL_MOVE_PRUNING TRUE 			//enable null move pruning
 
+#define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+
 ////////////////////////////////////////////
 //below values should not be changed lightly
 ////////////////////////////////////////////
 
 typedef unsigned long long z_key;
+
+#define MAX_DEPTH MAX_AB_DEPTH+MAX_Q_DEPTH
 
 #define TOTAL_MAT P_MAT*16+N_MAT*4+B_MAT*4+R_MAT*4+Q_MAT*2
 
