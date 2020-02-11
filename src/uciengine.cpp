@@ -16,6 +16,14 @@ void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searche
 	char move_string[5];
 	unsigned short move = 0;
 
+	while(searcher->is_searching){
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		if(searcher->is_searching){
+			//search handler is clearly still searching do not load another position
+			return;
+		}
+	}
+
 	is >> token;
 	if(token == "startpos"){
 		fenstring = STARTPOS;

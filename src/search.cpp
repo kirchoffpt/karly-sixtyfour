@@ -22,6 +22,7 @@ search_handler::~search_handler(){
 }
 
 void search_handler::reset(){
+	is_searching = FALSE;
 	std::memset(&uci_s, 0, sizeof(search_options));
 	past_positions.clear();
 	search_id = 0;
@@ -29,7 +30,6 @@ void search_handler::reset(){
 	ponder_move = 0;
 	TT->tt.clear();
 	TT->resize(TABLE_SIZE);
-	is_searching = FALSE;
 	return;	
 }
 
