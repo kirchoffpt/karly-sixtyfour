@@ -103,6 +103,9 @@ int main(int argc, char *argv[]){
 	chess_pos *rootpos;
 	search_handler *searcher;
 	time_t system_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	std::chrono::steady_clock::time_point start_t, curr_t;
+
+	start_t = std::chrono::steady_clock::now();
 
 	if(argc > 1) token = argv[1];
 	else token = STARTPOS;
@@ -118,7 +121,8 @@ int main(int argc, char *argv[]){
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
-		ofs << cmd << endl;
+		curr_t = std::chrono::steady_clock::now();
+		ofs << std::chrono::duration_cast<std::chrono::microseconds>(curr_t - start_t).count() << "->	"<< cmd << endl;
 		if(!(is >> token)) continue;
 		if(token == "uci"){
 			cout << "id name karly64 " << VERSION << "\n";
@@ -143,6 +147,9 @@ int main(int argc, char *argv[]){
 			cout << "position [fen <fenstring> | startpos | pos]  moves <move1> .... <movei>" << endl;
 			cout << "go wtime <x> btime <y> depth <d> movetime <t>" << endl;
 			cout << "uci isready stop ucinewgame showpos quit" << endl;
+			cout << "*see standard uci protocol for more info on some of the above commands*" << endl;
+		} else {
+			cout << "type help for list of commands..." << endl;
 		}
 	}
 

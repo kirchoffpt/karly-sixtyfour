@@ -89,7 +89,7 @@ string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
 		if((it = std::find(past_pos.begin(), past_pos.end(), pv_pos.zobrist_key)) != past_pos.end()) {
 		    //repeated position in PV
 		    idx = std::distance(it, past_pos.end());
-		    pv += " LOOP " + to_string(idx);
+		    pv += "\nLOOP IN PV LENGTH" + to_string(idx);
 		    break;
 		}
 		past_pos.push_back(pv_pos.zobrist_key);

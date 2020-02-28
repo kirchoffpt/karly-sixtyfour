@@ -3,7 +3,6 @@
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
-#define MAX_DEPTH 20
 #define FILENAME "perftpositions.txt"
 
 using namespace std;
