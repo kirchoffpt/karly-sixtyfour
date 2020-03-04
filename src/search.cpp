@@ -260,14 +260,12 @@ void search_handler::stop(){
 	return;
 }
 
-int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b, bool gen_moves){
+int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b){
 
 	int eval;
 
-	if(gen_moves){
-		node->generate_moves();
-		nodes_searched++;
-	}
+	node->generate_moves(); //must generate moves for eval;
+	nodes_searched++;
 
 	if(node->get_num_moves() <= 0){
 		return color*node->mate_eval();
@@ -281,7 +279,7 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b,
 	node->order_moves();
 	
 	while(node->pop_and_add_capture() > 1){
-		eval = -quiesce(node->next, depth-1, -color, -b, -a, TRUE);
+		eval = -quiesce(node->next, depth-1, -color, -b, -a);
 		a = max(a, eval);
 		if(a >= b) break;
 	}
@@ -298,16 +296,20 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	unsigned short move, b_move;
 	tt_entry entry;
 
-    node->generate_moves(); //must generate moves for eval;
-    nodes_searched++;
-
     //enter quiescence search at horizon nodes
 	if(depth <= 0){
 		if(node->captures > 0){
-			return quiesce(node,MAX_Q_DEPTH,color,a,b,FALSE);
+			return quiesce(node,MAX_Q_DEPTH,color,a,b);
 		}
+		node->generate_moves(); //must generate moves for eval;
+		nodes_searched++;
 		return color*node->eval();
 	}
+
+	node->generate_moves(); //must generate moves for eval;
+	nodes_searched++;
+
+	//if(node->in_check) depth++;
 
 	//forward null move pruning
 	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){

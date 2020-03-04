@@ -2327,7 +2327,7 @@ int chess_pos::eval()
 	int i,j,k,white,black,wking,bking;
 	int woffense, boffense;
 	int king_safety;
-	const int targ_mult[KING] = {1,2,2,2,1};
+	static const int targ_mult[KING] = {1,2,2,2,1};
 	U64 temp;
 
 	if(get_num_moves()<=0){
