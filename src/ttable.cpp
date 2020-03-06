@@ -21,6 +21,7 @@ ttable::ttable()
 U64 ttable::resize(U64 n_bytes)
 {
 	U64 n_elements = n_bytes/(sizeof(tt_entry));
+	n_elements = max(5,n_elements);
 	key_mask = n_elements;
 	tt.reserve(n_elements);
 	tt_entry invalid_entry = {0};

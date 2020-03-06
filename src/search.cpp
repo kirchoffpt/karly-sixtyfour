@@ -261,6 +261,8 @@ void search_handler::stop(){
 }
 
 int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b){
+	__assume(is_searching);
+	if(!is_searching) return 0;
 
 	int eval;
 
@@ -273,7 +275,7 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b)
 
 	eval = color*node->eval(); //stand pat score "do nothing eval"
 	if(node->captures == 0 || depth == 0) return eval; 
-	if(eval >= b) return b;
+	if(eval >= b) return eval;
 	a = max(a, eval);
 
 	node->order_moves();
@@ -304,18 +306,16 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		node->generate_moves(); //must generate moves for eval;
 		nodes_searched++;
 		return color*node->eval();
+	} else { //else for clarity
+		node->generate_moves(); //must generate moves for eval;
+		nodes_searched++;
 	}
-
-	node->generate_moves(); //must generate moves for eval;
-	nodes_searched++;
-
-	//if(node->in_check) depth++;
 
 	//forward null move pruning
 	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
 		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
-		if(eval >= b) return b;
-		eval = SCORE_LO;
+		if(eval >= b) return eval;
+		eval = SCORE_LO; //null move failed to produce a cut off
 	}
 
 	//transposition table lookup
