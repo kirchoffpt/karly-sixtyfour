@@ -1,9 +1,9 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.6.4 (Windows only)
+Version 0.7.0 (Windows only)
 
-A 64-bit, mostly UCI compliant, AB minimax engine with a simple quiescence search. It is quite strong at the moment considering how basic it is. Elo is approximately 1500-2000 depending on the time control and if it's playing a human or another engine. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
+A 64-bit, mostly UCI compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
 **Play it [here](https://lichess.org/@/karly64)!** Lichess account needed (free).
 
@@ -34,13 +34,14 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Quiescence/Capture search
     - Null move pruning (compile time option)
     - Transposition table w/ Zobrist hashing
+    - LMR
     - UCI protocol (more than good enough for most GUI's)
   - Planned
     - More advanced quiescence search and draw detection
     - Chess960 support
     - Multithreading capabilities
     - More/improved forward pruning
-    - Neural net assisted move ordering
+    - Neural net assistance
     - Small optimizations to move generation
     - More fleshed out time management
     

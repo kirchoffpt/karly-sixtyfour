@@ -83,6 +83,7 @@ class chess_pos {
 	void dump_pos(ofstream& ofile); //for debugging
 	void generate_moves(); 
 	void order_moves();
+	int order_moves_smart(); //returns number of moves from top not to reduce
 	void copy_pos(chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none

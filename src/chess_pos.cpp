@@ -1617,6 +1617,28 @@ void chess_pos::order_moves()
 	return;	
 }
 
+int chess_pos::order_moves_smart()
+{
+	static chess_pos pos;
+	static int m_s[MAX_MOVES_IN_POS];
+	int noreduce = 0;
+	int i, color = 1-to_move*2;
+	unsigned short move;
+	int stand_pat = this->eval()*color, delta;
+	for(i = get_num_moves() - 1;i>=0;i--){
+		move = pos_move_list.get_move(i);
+		pos.copy_pos(this);
+		pos.add_move(move);
+		pos.generate_moves();
+		delta = color*pos.eval() - stand_pat;
+		delta = (delta+(pos.in_check*R_MAT));
+		m_s[i] = delta;
+		if(delta > (P_MAT*3)/2) noreduce++;
+	}
+	pos_move_list.sort_moves_by_scores(m_s);
+	return noreduce+1;	
+}
+
 U64 chess_pos::create_pawn_pushes(U64 pawn_loc, int side)
 {
 	U64 b = occ[0] | occ[1];
@@ -2364,8 +2386,13 @@ int chess_pos::eval()
 
 		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
 
-		eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
-		eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
+		if(material_sum > 5*R_MAT){
+			eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
+			eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
+		} else {
+			eval += 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],&MLUT,3) & occ[WHITE]));
+			eval -= 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],&MLUT,3) & occ[BLACK]));
+		}
 
 		woffense = int(__popcnt64(ctrl[WHITE]&occ[BLACK])) - int(__popcnt64(ctrl[BLACK]&occ[BLACK]));
 		boffense = int(__popcnt64(ctrl[BLACK]&occ[WHITE])) - int(__popcnt64(ctrl[WHITE]&occ[WHITE]));
@@ -2385,7 +2412,7 @@ int chess_pos::eval()
 
 	}
 
-	eval += 2*P_MAT*(int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
+	eval += ((3*P_MAT)/2)*(int(__popcnt64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(__popcnt64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 
 	return EVAL_GRAIN*(eval/EVAL_GRAIN);
 }

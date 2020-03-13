@@ -2,6 +2,9 @@
 
 
 #define TABLE_SIZE 256E6
+#define LMR_LIMIT 3
+#define LMR_DEPTH_REDUCTION 2
+#define Q_SEARCH_DEPTH search_depth
 
 using namespace std;
 
@@ -266,8 +269,10 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b)
 
 	int eval;
 
-	node->generate_moves(); //must generate moves for eval;
-	nodes_searched++;
+	if(depth < Q_SEARCH_DEPTH){ //dont regenerate moves if we just entered q search
+		node->generate_moves(); //must generate moves for eval;
+		nodes_searched++;
+	}
 
 	if(node->get_num_moves() <= 0){
 		return color*node->mate_eval();
@@ -296,32 +301,37 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	int eval = SCORE_LO;
 	int a_cpy = a;
 	unsigned short move, b_move;
+	int moves_searched, noreduce_moves = MAX_MOVES_IN_POS;
 	tt_entry entry;
+
+	node->generate_moves(); //must generate moves for eval;
+	nodes_searched++;
 
     //enter quiescence search at horizon nodes
 	if(depth <= 0){
 		if(node->captures > 0){
-			return quiesce(node,MAX_Q_DEPTH,color,a,b);
+			return quiesce(node,Q_SEARCH_DEPTH,color,a,b);
 		}
-		node->generate_moves(); //must generate moves for eval;
-		nodes_searched++;
 		return color*node->eval();
-	} else { //else for clarity
-		node->generate_moves(); //must generate moves for eval;
-		nodes_searched++;
-	}
-
-	//forward null move pruning
-	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
-		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
-		if(eval >= b) return eval;
-		eval = SCORE_LO; //null move failed to produce a cut off
 	}
 
 	//transposition table lookup
 	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval;
-	node->order_moves();
+
+	//forward null move pruning
+	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
+		eval = -pvs(node->next, depth-4, -color, -b,-b + 1);
+		if(eval >= b) return eval;
+		eval = SCORE_LO; //null move failed to produce a cut off
+	}
+
+	//move ordering
+	if(depth > LMR_LIMIT){
+		noreduce_moves = node->order_moves_smart();
+	} else {
+		node->order_moves();
+	}
 	if(b_move) node->pos_move_list.move_to_front(b_move);
 
 	//principal variation search (first move)
@@ -332,11 +342,19 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	} else {
 		return color*node->mate_eval();
 	}
+	moves_searched = 1;
 
 	//null window searches (later moves)
     while(move = node->pop_and_add()){
-    	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
-        if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+    	if((moves_searched++ >= noreduce_moves) && (depth > LMR_LIMIT)){
+    		eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
+    	} else {
+    		eval = a + 1;
+    	}
+    	if(eval > a){
+	    	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
+	        if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+    	}
         if(eval > a){
         	a = eval;
         	b_move = move;
