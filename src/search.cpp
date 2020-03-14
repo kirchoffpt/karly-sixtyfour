@@ -218,7 +218,7 @@ void search_handler::search(){
 			fflush(stdout);
 
 			if(top_score >= CHECKMATE){
-				goto exit_search;
+				break;
 			}
 		}
 		info_str = "info";
@@ -230,7 +230,7 @@ void search_handler::search(){
 		//info_str += " hashfull " + to_string(TT->hashfull());
 		info_str += " pv " + TT->extract_pv(rootpos, best_move);
 		cout << info_str + "\n";
-		if(top_score <= -CHECKMATE){
+		if(abs(top_score) >= CHECKMATE){
 			break;
 		}
 		fflush(stdout);
