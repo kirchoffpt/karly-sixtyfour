@@ -1636,7 +1636,7 @@ int chess_pos::order_moves_smart()
 		if(delta > (P_MAT*3)/2) noreduce++;
 	}
 	pos_move_list.sort_moves_by_scores(m_s);
-	return noreduce+1;	
+	return noreduce;	
 }
 
 U64 chess_pos::create_pawn_pushes(U64 pawn_loc, int side)
@@ -2386,16 +2386,13 @@ int chess_pos::eval()
 
 		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
 
-		if(material_sum > 5*R_MAT){
-			eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[WHITE]));
-			eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,4) & ctrl[BLACK]));
-		} else {
-			eval += 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],&MLUT,3) & occ[WHITE]));
-			eval -= 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],&MLUT,3) & occ[BLACK]));
-		}
+		eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[WHITE]));
+		eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[BLACK]));
+		eval += 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],&MLUT,2) & occ[WHITE]));
+		eval -= 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],&MLUT,2) & occ[BLACK]));
 
-		woffense = int(__popcnt64(ctrl[WHITE]&occ[BLACK])) - int(__popcnt64(ctrl[BLACK]&occ[BLACK]));
-		boffense = int(__popcnt64(ctrl[BLACK]&occ[WHITE])) - int(__popcnt64(ctrl[WHITE]&occ[WHITE]));
+		woffense = int(__popcnt64(target_squares[WHITE]&occ[BLACK])) - int(__popcnt64(target_squares[BLACK]&occ[BLACK]));
+		boffense = int(__popcnt64(target_squares[BLACK]&occ[WHITE])) - int(__popcnt64(target_squares[WHITE]&occ[WHITE]));
 
 		eval += (woffense-boffense);
 
