@@ -1,7 +1,7 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.7.0 (Windows only)
+Version 0.7.1 (Windows only)
 
 A 64-bit, mostly UCI compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
@@ -21,12 +21,11 @@ Notably this engine does not and will not use any piece square tables (a very co
 
 Evaluation also uses flood fill algorithms for various king-related evaluations. For example even if the engine can't see a distant checkmate with two bishops it can usually do a *reasonably* good job of constraining the enemy king's move space until it can. The engine also likes to keep the enemy from controlling too many squares in the vicinity of its king. 
 
-The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was using piece square tables). At the moment only changes to the search (making it better at looking at critical lines) are going to have any notable effect on performance.
+The evaluation in general works quite well for the time being (it used to perform ridiculous castles when it was naively using piece square tables). At the moment only changes to the search (making it better at looking at critical lines) are going to have any notable effect on performance.
 
-That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between moves that score similarly (or help with move ordering, but neural nets are probably way too slow for that). 
-
+That being said it will be interesting to later try and work a neural network in somewhere to assist in deciding between moves that score similarly or assist with move ordering.
 #### Everything Else
-Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations. Endgame tablebases are not currently planned as they add too much playing strength for no effort.
+Everything else in the engine is pretty standard stuff you can find on the [chess programming wiki](https://www.chessprogramming.org/Main_Page), but here are current and planned implementations. Endgame tablebases are not currently planned.
   - Current
     - Bitboards (64 bit board representations)
     - Fast legal move generation (as opposed to pseudo-legal)
@@ -34,14 +33,14 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Quiescence/Capture search
     - Null move pruning (compile time option)
     - Transposition table w/ Zobrist hashing
-    - LMR
+    - Late Move Reductions (LMR)
     - UCI protocol (more than good enough for most GUI's)
   - Planned
     - More advanced quiescence search and draw detection
     - Chess960 support
     - Multithreading capabilities
     - More/improved forward pruning
-    - Neural net assistance
+    - Neural net assisted move ordering
     - Small optimizations to move generation
     - More fleshed out time management
     
