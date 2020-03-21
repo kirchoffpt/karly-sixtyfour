@@ -140,13 +140,17 @@ int main(int argc, char *argv[]){
 			searcher->reset();
 		} else if(token == "showpos"){
 			rootpos->print_pos(false);
+		} else if(token == "showmoves"){
+			rootpos->pos_move_list.print_moves();
+			cout << endl << rootpos->order_moves_smart() << endl;
+			rootpos->pos_move_list.print_moves();
 		} else if(token == "quit"){
 			searcher->stop();
 			break;
 		} else if(token == "help"){
 			cout << "position [fen <fenstring> | startpos | pos]  moves <move1> .... <movei>" << endl;
 			cout << "go wtime <x> btime <y> depth <d> movetime <t>" << endl;
-			cout << "uci isready stop ucinewgame showpos quit" << endl;
+			cout << "uci isready stop ucinewgame showpos showmoves quit" << endl;
 			cout << "*see standard uci protocol for more info on some of the above commands*" << endl;
 		} else {
 			cout << "type help for list of commands..." << endl;

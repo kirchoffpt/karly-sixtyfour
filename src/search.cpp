@@ -307,6 +307,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	node->generate_moves(); //must generate moves for eval;
 	nodes_searched++;
 
+	if((node->in_check) && (node->id < (search_depth+4)) && (depth < 3)) depth++;
+
     //enter quiescence search at horizon nodes
 	if(depth <= 0){
 		if(node->captures > 0){
