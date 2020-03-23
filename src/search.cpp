@@ -186,8 +186,13 @@ void search_handler::search(){
 				k = nodes_searched;
 				start = std::chrono::steady_clock::now();
 
-				score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -alpha);
-				alpha = max(alpha, score);
+				if(i==n_root_moves-1){
+					score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -alpha);
+				} else {
+					score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -alpha-1, -alpha);
+		        	if((alpha < score) && (score < beta)) score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -score);
+	        	}
+				if(search_depth > 5) alpha = max(alpha, score);
 
 				end = std::chrono::steady_clock::now();
 				t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -202,12 +207,12 @@ void search_handler::search(){
 
 			if(!is_searching) goto exit_search; 
 
-			if(total_time > 10){
+			if(total_time > 10 && (move == best_move || score != top_score)){
 				info_str = "info";
 				info_str +=  " depth " + to_string(search_depth);
 				info_str += " currmove " + move_itos(move);
 				//info_str += " currmovenumber " + to_string(n_root_moves-i);
-				info_str += " score cp " + to_string(top_score);
+				info_str += " score cp " + to_string(score);
 				info_str += " nodes " + to_string(nodes_searched);
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
 				info_str += " time " + to_string(int(total_time));

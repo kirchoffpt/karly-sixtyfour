@@ -95,6 +95,7 @@ class chess_pos {
 	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
+	string get_fen(); //generates FEN string
 							
 	private:
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list

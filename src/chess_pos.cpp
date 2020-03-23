@@ -2284,6 +2284,47 @@ void chess_pos::print_line()
 	cout << os << endl;
 }
 
+string chess_pos::get_fen()
+{
+	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+	int i,j,n;
+	string ofen = "", castling = "";
+	n=0;
+	for(i=63;i>=0;i--){
+		if(occ[WHITE] & (U64(1)<<i)){
+			if(n>0) ofen += to_string(n);
+			n=0;
+			ofen += "PNBRQK"[piece_at[i]];
+		} else if(occ[BLACK] & (U64(1)<<i)){
+			if(n>0) ofen += to_string(n);
+			n=0;
+			ofen += "pnbrqk"[piece_at[i]];
+		} else {
+			n++;
+			if(i%8==0){
+				ofen += to_string(n);
+				n=0;
+			}
+		}
+		if(i%8==0 && i>0) ofen += "/";
+	}
+	ofen += " ";
+	ofen += "wb"[to_move];
+	ofen += " ";
+	if(castlable_rooks & KSCW_CHANGED_SQUARES) castling += "K";
+	if(castlable_rooks & QSCW_CHANGED_SQUARES) castling += "Q";
+	if(castlable_rooks & KSCB_CHANGED_SQUARES) castling += "k";
+	if(castlable_rooks & QSCB_CHANGED_SQUARES) castling += "q";
+	if(castling.size() < 1) castling = "-";
+	ofen += castling + " ";
+	if(ep_target_square){
+		ofen += idx_to_coord(bit_to_idx(ep_target_square));
+	} else {
+		ofen += "-";
+	}
+	return ofen;
+}
+
 int chess_pos::is_material_draw()
 {
 	int i,j,k,n;
@@ -2349,7 +2390,7 @@ int chess_pos::eval()
 	int i,j,k,white,black,wking,bking;
 	int woffense, boffense;
 	int king_safety;
-	static const int targ_mult[KING] = {1,2,2,2,1};
+	static const int targ_mult[KING] = {1,4,5,4,2};
 	U64 temp;
 
 	if(get_num_moves()<=0){
@@ -2384,10 +2425,10 @@ int chess_pos::eval()
 
 	} else {
 
-		eval += (int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER)));
+		eval += 2*((int(__popcnt64(ctrl[WHITE] & CENTER)) - int(__popcnt64(ctrl[BLACK] & CENTER))));
 
-		eval += 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[WHITE]));
-		eval -= 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[BLACK]));
+		eval += 4*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[WHITE]));
+		eval -= 4*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[BLACK]));
 		eval += 2*int(__popcnt64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],&MLUT,2) & occ[WHITE]));
 		eval -= 2*int(__popcnt64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],&MLUT,2) & occ[BLACK]));
 
