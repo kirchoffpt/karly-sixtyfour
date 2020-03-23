@@ -192,7 +192,7 @@ void search_handler::search(){
 					score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -alpha-1, -alpha);
 		        	if((alpha < score) && (score < beta)) score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -score);
 	        	}
-				if(search_depth > 5) alpha = max(alpha, score);
+				if(search_depth > 2) alpha = max(alpha, score);
 
 				end = std::chrono::steady_clock::now();
 				t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
