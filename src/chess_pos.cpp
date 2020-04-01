@@ -40,6 +40,8 @@ chess_pos::chess_pos(){
 	changed_squares = 0;
 	last_move_to_and_from = 0;
 	zobrist_key = 0;
+	next = nullptr;
+	prev = nullptr;
 
 	return;
 }
@@ -160,8 +162,6 @@ void chess_pos::load_new_fen(string FEN)
 
 	string position = FEN;
 
-	next = nullptr;
-
 	for(i=0;i<12;i++){
 		pieces[i/6][i%6] = 0;
 		j = 0;
@@ -269,6 +269,8 @@ void chess_pos::load_new_fen(string FEN)
 
 chess_pos::chess_pos(string FEN)
 {
+	next = nullptr;
+	prev = nullptr;
 	load_new_fen(FEN);
 	return;
 }

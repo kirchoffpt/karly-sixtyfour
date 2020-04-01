@@ -308,9 +308,19 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	unsigned short move, b_move;
 	int moves_searched, noreduce_moves = MAX_MOVES_IN_POS;
 	tt_entry entry;
+	chess_pos* past_node = node;
+
+	nodes_searched++;
 
 	node->generate_moves(); //must generate moves for eval;
-	nodes_searched++;
+
+	//check for repeated position (must generate moves first)
+	while(past_node->id > 1){
+		past_node = past_node->prev->prev; //go back two positions each time
+		if(past_node->zobrist_key == node->zobrist_key){
+			return 0;
+		}
+	}
 
 	if((node->in_check) && (node->id < (search_depth+4)) && (depth < 3)) depth++;
 
