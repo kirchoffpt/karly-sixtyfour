@@ -312,15 +312,16 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	nodes_searched++;
 
-	node->generate_moves(); //must generate moves for eval;
-
-	//check for repeated position (must generate moves first)
+	//check for repeated position
+	unsigned long long this_key = node->zobrist_key;
 	while(past_node->id > 1){
 		past_node = past_node->prev->prev; //go back two positions each time
-		if(past_node->zobrist_key == node->zobrist_key){
+		if(past_node->zobrist_key == this_key){
 			return 0;
 		}
 	}
+
+	node->generate_moves(); //must generate moves for eval;
 
 	if((node->in_check) && (node->id < (search_depth+4)) && (depth < 3)) depth++;
 
@@ -393,7 +394,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     } else {
     	entry.node_type = PVNODE;
     }
-    TT->place(node->zobrist_key, entry);
+    TT->place(this_key, entry);
 
     return a;
 }
