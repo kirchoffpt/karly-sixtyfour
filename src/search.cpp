@@ -339,7 +339,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	//forward null move pruning
 	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
-		eval = -pvs(node->next, depth-4, -color, -b,-b + 1);
+		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
 		if(eval >= b) return eval;
 		eval = SCORE_LO; //null move failed to produce a cut off
 	}
@@ -364,7 +364,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	//null window searches (later moves)
     while(move = node->pop_and_add()){
-    	if((moves_searched++ >= noreduce_moves) && (depth > LMR_LIMIT)){
+    	if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
     		eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
     	} else {
     		eval = a + 1;
