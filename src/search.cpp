@@ -228,6 +228,7 @@ void search_handler::search(){
 		}
 		info_str = "info";
 		info_str +=  " depth " + to_string(search_depth);
+		info_str += " seldepth " + to_string(rootpos->clear_next_occs()-search_depth);
 		info_str += " score cp " + to_string(top_score);
 		info_str += " nodes " + to_string(nodes_searched);
 		info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
@@ -323,7 +324,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	node->generate_moves(); //must generate moves for eval;
 
-	if((node->in_check) && (node->id < (search_depth+4)) && (depth < 3)) depth++;
+	if((node->in_check) && (depth < 3)) depth++;
 
     //enter quiescence search at horizon nodes
 	if(depth <= 0){

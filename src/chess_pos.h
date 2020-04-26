@@ -96,6 +96,7 @@ class chess_pos {
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
 	string get_fen(); //generates FEN string
+	int clear_next_occs(); //follows linked list of positions clearing their piece occupations. returns total depth cleared. use to get seldepth (max depth searched) after a search
 							
 	private:
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list

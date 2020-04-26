@@ -2187,6 +2187,22 @@ unsigned short chess_pos::pop_and_add_capture()
 	return move;
 }
 
+int chess_pos::clear_next_occs()
+{
+	chess_pos* curr_pos = this;
+	int total_depth = 0;
+	while(curr_pos->next != nullptr){
+		curr_pos = curr_pos->next;
+		if (curr_pos->occ[WHITE] == 0
+			|| curr_pos->occ[BLACK] == 0){
+			break;
+		}
+		curr_pos->occ[WHITE] = curr_pos->occ[BLACK] = 0;
+		total_depth++;
+	}
+	return total_depth;
+}
+
 void chess_pos::print_pos(bool basic)
 {
 	int i,j,k,p;

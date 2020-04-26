@@ -1,7 +1,7 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.8.1 (Windows only)
+Version 0.8.2 (Windows only)
 
 A 64-bit, mostly UCI compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
@@ -30,19 +30,18 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Bitboards (64 bit board representations)
     - Fast legal move generation (as opposed to pseudo-legal)
     - Principal variation search (minimax variant) w/ iterative deepening
+    - Draw by repetition detection
     - Quiescence/Capture search
     - Null move pruning (compile time option)
     - Transposition table w/ Zobrist hashing
     - Late Move Reductions (LMR)
     - UCI protocol (more than good enough for most GUI's)
   - Planned
-    - More advanced quiescence search and draw detection
     - Chess960 support
     - Multithreading capabilities
-    - More/improved forward pruning
-    - Neural net assisted move ordering
+    - Much better move ordering (possibly NN assisted)
     - Small optimizations to move generation
-    - More fleshed out time management
+    - Smarter time management
     
    
    
