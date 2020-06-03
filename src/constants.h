@@ -1,5 +1,5 @@
 
-#define VERSION "v0.8.2"
+#define VERSION "v0.8.3"
 
 #define DEBUG 0
 
