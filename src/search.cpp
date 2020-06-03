@@ -10,7 +10,7 @@ using namespace std;
 
 search_handler::search_handler(chess_pos* pos){
 	rootpos = pos;
-	rootpos->id = 0;
+	rootpos->ply = 0;
 	search_id = 0; //incrememt before searching
 	principal_variation.reserve(MAX_DEPTH);
 	TT = new ttable;
@@ -133,7 +133,7 @@ void search_handler::search(){
 		node_ptrs[i]->prev = node_ptrs[i-1];
 	}
 	for(i=0;i<MAX_DEPTH+1;i++){
-		node_ptrs[i]->id = i+1;
+		node_ptrs[i]->ply = i+1;
 	}
 
 	rootpos->generate_moves();
@@ -212,7 +212,11 @@ void search_handler::search(){
 				info_str +=  " depth " + to_string(search_depth);
 				info_str += " currmove " + move_itos(move);
 				//info_str += " currmovenumber " + to_string(n_root_moves-i);
-				info_str += " score cp " + to_string(score);
+				if(abs(score) >= CHECKMATE-MATE_BUFFER){
+					info_str += " score mate " + to_string(int((abs(CHECKMATE)-abs(score)+1)/2*(abs(score)/score)));
+				} else {
+					info_str += " score cp " + to_string(score);
+				}
 				info_str += " nodes " + to_string(nodes_searched);
 				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
 				info_str += " time " + to_string(int(total_time));
@@ -222,21 +226,25 @@ void search_handler::search(){
 
 			fflush(stdout);
 
-			if(top_score >= CHECKMATE){
+			if(top_score >= CHECKMATE-MATE_BUFFER){
 				break;
 			}
 		}
 		info_str = "info";
 		info_str +=  " depth " + to_string(search_depth);
 		info_str += " seldepth " + to_string(rootpos->clear_next_occs()-search_depth);
-		info_str += " score cp " + to_string(top_score);
+		if(abs(top_score) >= CHECKMATE-MATE_BUFFER){
+			info_str += " score mate " + to_string(int((abs(CHECKMATE)-abs(top_score)+1)/2*(abs(top_score)/top_score)));
+		} else {
+			info_str += " score cp " + to_string(top_score);
+		}
 		info_str += " nodes " + to_string(nodes_searched);
 		info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
 		info_str += " time " + to_string(int(total_time));
 		//info_str += " hashfull " + to_string(TT->hashfull());
 		info_str += " pv " + TT->extract_pv(rootpos, best_move);
 		cout << info_str + "\n";
-		if(abs(top_score) >= CHECKMATE){
+		if(top_score >= CHECKMATE-MATE_BUFFER){
 			break;
 		}
 		fflush(stdout);
@@ -315,7 +323,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	//check for repeated position
 	unsigned long long this_key = node->zobrist_key;
-	while(past_node->id > 1){
+	while(past_node->ply > 1){
 		past_node = past_node->prev->prev; //go back two positions each time
 		if(past_node->zobrist_key == this_key){
 			return 0;

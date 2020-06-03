@@ -45,7 +45,7 @@ struct piece_list_struct
 
 class chess_pos {
 	public:
-	unsigned short id; //should set to what depth this node will be
+	unsigned short ply = 0; //should set to what depth this node will be
 	piece_list_struct pl[2][MAX_PIECES_PER_SIDE];
 	U64 pin_rays[2][8]; //8 for each king, 0-7, E,SE,S,SW,W,NW,N,NE
 	U64 pieces[2][6]; 

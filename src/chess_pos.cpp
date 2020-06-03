@@ -2385,9 +2385,9 @@ int chess_pos::mate_eval()
 {
 	if(in_check > 0){
 		if(to_move){
-			return CHECKMATE;
+			return (CHECKMATE-this->ply);
 		} else {
-			return -CHECKMATE;
+			return -(CHECKMATE-this->ply);
 		}
 	} else {
 		return STALEMATE;

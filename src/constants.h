@@ -41,7 +41,8 @@ typedef unsigned long long z_key;
 #define MAX_MOVES_IN_GAME 256
 #define MAX_MOVES_IN_POS 256 //218 maxiumum moves in a position
 
-#define CHECKMATE 10000
+#define CHECKMATE 1E9 //score is this number minus the ply
+#define MATE_BUFFER 1E6 //every non mate score should fall under CHECKMATE-MATE_BUFFER
 #define STALEMATE 0
 
 #define F_HI 	1000000.0
