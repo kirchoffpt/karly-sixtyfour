@@ -2,3 +2,17 @@
 *.obj
 *.exe
 uci_input_log.txt
+*.opendb
+*.db
+*.ipch
+*.json
+*.log
+*.tlog
+*.pdb
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.ilk
+*.idb
+*.suo
