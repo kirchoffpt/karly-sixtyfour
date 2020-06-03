@@ -16,3 +16,4 @@ uci_input_log.txt
 *.ilk
 *.idb
 *.suo
+*.txt
