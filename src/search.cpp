@@ -119,6 +119,7 @@ void search_handler::search(){
 	char move_string[5];
 	clock_t cl;     //initializing a clock type
 	float max_time, t1, t2;
+	bool timed;
 	std::chrono::steady_clock::time_point start, end;
 
 	i = MAX_DEPTH;
@@ -156,9 +157,11 @@ void search_handler::search(){
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
 		max_time = FLT_MAX - 1;
+		timed = false;
 	} else {
 		thread timer_thread(&search_handler::max_timer,this,int(max_time));
 		timer_thread.detach();
+		timed = true;
 	}
 
 	if(n_root_moves == 1){
@@ -226,7 +229,7 @@ void search_handler::search(){
 
 			fflush(stdout);
 
-			if(uci_s.movetime && top_score >= CHECKMATE-MATE_BUFFER){
+			if(timed && top_score >= CHECKMATE-MATE_BUFFER){
 				break;
 			}
 		}
@@ -244,7 +247,7 @@ void search_handler::search(){
 		//info_str += " hashfull " + to_string(TT->hashfull());
 		info_str += " pv " + TT->extract_pv(rootpos, best_move);
 		cout << info_str + "\n";
-		if(uci_s.movetime && top_score >= CHECKMATE-MATE_BUFFER){
+		if(timed && top_score >= CHECKMATE-MATE_BUFFER){
 			break;
 		}
 		fflush(stdout);
