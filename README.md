@@ -43,6 +43,8 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Small optimizations to move generation
     - Smarter time management
     
-   
+ ### Build
+ To build simply clone and run `nmake` in a x64 Visual Studio command prompt. 
+ Alternatively, use the VS2019 IDE to make a project 'from existing code' and select all files in `src` except for `mct.cpp`.
    
  ##### Named after my friend that is absolutely [terrible at chess](https://lichess.org/@/heatner). He was honored.
