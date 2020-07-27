@@ -3,7 +3,7 @@ Chess engine written in C++11
 
 Version 0.8.3 (Windows only)
 
-A 64-bit, mostly UCI compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
+A 64-bit, mostly [UCI](http://wbec-ridderkerk.nl/html/UCIProtocol.html) compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
 **Play it [here](https://lichess.org/@/karly64)!** Lichess account needed (free).
 
@@ -43,6 +43,8 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Small optimizations to move generation
     - Smarter time management
     
-   
+ ### Build
+ To build simply clone and run `nmake` in a x64 Visual Studio command prompt. 
+ Alternatively, use the VS2019 IDE to make a project 'from existing code' and select all files in `src` except for `mct.cpp`.
    
  ##### Named after my friend that is absolutely [terrible at chess](https://lichess.org/@/heatner). He was honored.
