@@ -69,6 +69,7 @@ class chess_pos {
 	chess_pos* next; //next node
 	chess_pos* prev; //prev node, for getting eval deltas
 	int last_move_null = 0;
+	static chess_mask_LUT MLUT;
 	
 	chess_pos(string);
 	chess_pos();

@@ -183,7 +183,7 @@ bool node_move_list::move_to_front(unsigned short move){
 	int i = get_num_moves()-1;
 	int j, chksum = 0; //for debug since memcpy on overlapped objects is undefined
 	if(DEBUG){
-		for(j=0;j<=iterator;j++) chksum += moves[i];
+		for(j=0;j<=iterator;j++) chksum += moves[j];
 	}
 	if(moves[i--] == move) return true;
 	for(i;i>=0;i--){
@@ -191,8 +191,14 @@ bool node_move_list::move_to_front(unsigned short move){
 			memcpy(moves+i,moves+i+1,sizeof(move)*(iterator-i));
 			moves[iterator] = move;
 			if(DEBUG){
-				for(j=0;j<=iterator;j++) chksum -= moves[i];
-				assert(chksum == 0);
+				for(j=0;j<=iterator;j++) chksum -= moves[j];
+				try{
+					if(chksum != 0) throw chksum;
+				}
+				catch(int e){
+					cout << "move_to_front failed" << endl;
+					assert(chksum == 0);
+				}
 			}
 			return true;
 		}
