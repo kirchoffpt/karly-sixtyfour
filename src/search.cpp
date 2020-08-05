@@ -394,7 +394,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
     done:
 
-    //entry into transposition table
+    //entry into transposition tabl-
     entry.depth = depth;
     entry.score = a;
     entry.age = search_id;

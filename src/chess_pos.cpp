@@ -4,7 +4,7 @@
 
 using namespace std;
 
-chess_mask_LUT MLUT; //GLOBAL LUT
+chess_mask_LUT chess_pos::MLUT;
 
 chess_pos::chess_pos(){
 	int i,j,k;
@@ -42,8 +42,6 @@ chess_pos::chess_pos(){
 	zobrist_key = 0;
 	next = nullptr;
 	prev = nullptr;
-
-	return;
 }
 
 unsigned short chess_pos::operator - (chess_pos const &c1){
@@ -114,7 +112,6 @@ void chess_pos::copy_pos(chess_pos* source_pos){
 		assert(to_move == source_pos->to_move);
 		assert(castlable_rooks == source_pos->castlable_rooks);
 		assert(ep_target_square == source_pos->ep_target_square);
-		assert(in_check == source_pos->in_check);
 	}
 
 	return;
@@ -464,79 +461,21 @@ void chess_pos::init_piece_list()
 		}
 		init_targets(side);
 
-		//many loops are unfurled to avoid branches, these are unfurled because i'm lazy
-		//ROOK
-		u = straight_blockers;
-
-		m = MLUT.get_straight_ray(0,king_idx);
-		if (_BitScanReverse64( &idx, u & m)){
-			m &= ~MLUT.get_straight_ray(0,idx);
-			m |= (U64(1)<<idx);
+		const int straight_directions[4] = {E_DIR,S_DIR,W_DIR,N_DIR};
+		const int diag_directions[4] = {SE_DIR,SW_DIR,NW_DIR,NE_DIR};
+		for(int straight = 1; straight >= 0; straight--){
+			u = straight ? straight_blockers : diag_blockers;	
+			for(int it=0;it<4;it++){
+				m = straight ? MLUT.get_straight_ray(it,king_idx) : MLUT.get_diag_ray(it,king_idx);
+				bool blocked = it < 2 ? _BitScanReverse64( &idx, u & m) : _BitScanForward64( &idx, u & m);
+				if(blocked){
+					m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
+					m |= (U64(1)<<idx);
+				}
+				pin_rays[side][straight ? straight_directions[it] : diag_directions[it]] = m;
+			}
 		}
-		pin_rays[side][E_DIR] = m;
-		m = MLUT.get_straight_ray(1,king_idx);
-		if (_BitScanReverse64( &idx, u & m)){
-			m &= ~MLUT.get_straight_ray(1,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][S_DIR] = m; 
-		m = MLUT.get_straight_ray(2,king_idx);
-		if (_BitScanForward64( &idx, u & m)){
-			m &= ~MLUT.get_straight_ray(2,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][W_DIR] = m; 
-		m = MLUT.get_straight_ray(3,king_idx);
-		if (_BitScanForward64( &idx, u & m)){
-			m &= ~MLUT.get_straight_ray(3,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][N_DIR] = m;
-		//BISHOP
-
-		u = diag_blockers;
-
-		m = MLUT.get_diag_ray(0,king_idx);
-		if (_BitScanReverse64( &idx, u & m)){
-			m &= ~MLUT.get_diag_ray(0,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][SE_DIR] = m;
-		m = MLUT.get_diag_ray(1,king_idx);
-		if (_BitScanReverse64( &idx, u & m)){
-			m &= ~MLUT.get_diag_ray(1,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][SW_DIR] = m;
-		m = MLUT.get_diag_ray(2,king_idx); 
-		if (_BitScanForward64( &idx, u & m)){
-			m &= ~MLUT.get_diag_ray(2,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][NW_DIR] = m;
-		m = MLUT.get_diag_ray(3,king_idx); 
-		if (_BitScanForward64( &idx, u & m)){
-			m &= ~MLUT.get_diag_ray(3,idx);
-			m |= (U64(1)<<idx);
-		}
-		pin_rays[side][NE_DIR] = m; 
-
 	}
-	// for(side = WHITE;side<=BLACK;side++){
-	// 	for(i=0;i<8;i++){
-	// 		cout << "PIN!" << endl;
-	// 		print_bitboard(pin_rays[side][i]);
-	// 		Sleep(2000);
-	// 	}
-	// }
-	// for(side = WHITE;side<=BLACK;side++){
-	// 	num_pieces = __popcnt64(occ[side]);
-	// 	for(i=0;i<num_pieces;i++){
-	// 		cout << piece_itos(pl[side][i].piece_type) << endl;
-	// 		print_bitboard(pl[side][i].targets);
-	// 		Sleep(1000);
-	// 	}
-	// }
 }
 
 void chess_pos::store_init_targets(U64 piece_loc, U64 targets, int pinned)
@@ -752,8 +691,8 @@ void chess_pos::init_targets(int side)
 
 void chess_pos::generate_moves()
 {
-	//note many fixed sized loops are unfurled to avoid branches
-	//code here specifically is pretty nightmarish in an attempt to be faster
+	const int straight_directions[4] = {E_DIR,S_DIR,W_DIR,N_DIR};
+	const int diag_directions[4] = {SE_DIR,SW_DIR,NW_DIR,NE_DIR};
 	U64 king_loc, e_king_loc, straight_blockers, diag_blockers, *p_loc, *p_targ, *p_ctrl;
 	U64 u,m,v,u_temp,possible_pins, unpins=0;
 	U64 actual_pins[2] = {0};
@@ -786,7 +725,6 @@ void chess_pos::generate_moves()
 	num_pieces[to_move] = __popcnt64(occ[to_move]);
 	num_pieces[!to_move] = __popcnt64(occ[!to_move]);
 
-	//return;
 	// load white king position. 
 	// if squares changed in a pin ray, find the new pin ray for that direction
 	// see which pieces are actually pinned on the rays and store loc in actual pins
@@ -797,6 +735,9 @@ void chess_pos::generate_moves()
 	e_king_idx = bit_to_idx(e_king_loc);
 
 	//check for special case of en passant pin
+	//only checks pins from straight rays
+	//pin from diag rays (i.e. bishop) is NOT checked as this sort of pin cannot occur naturally
+	//this will lead to crashes in certain impossible positions e.g. "8/8/2k5/8/4Pp2/8/6B1/4K3 b - e3 0 1"
 	if(ep_sq > 0){
 		if(king_loc & EN_PASSANT_ATTACKER_RANKS){
 			u = MLUT.get_en_passant_attackers(bit_to_idx(ep_sq)) & pieces[to_move][PAWN];
@@ -832,6 +773,36 @@ void chess_pos::generate_moves()
 
 	v = occ[to_move] & ~king_loc;
 	u_temp = occ[!to_move];
+
+	// for(int straight = 1; straight >= 0; straight--){
+	// 	u = straight ? straight_blockers : diag_blockers;	
+	// 	for(int it=0;it<4;it++){
+	// 		int direction = straight ? straight_directions[it] : diag_directions[it];
+	// 		if(changed_squares & pin_rays[to_move][direction]){
+	// 			m = straight ? MLUT.get_straight_ray(it,king_idx) : MLUT.get_diag_ray(it,king_idx);
+	// 			bool blocked = (it < 2) ? _BitScanReverse64( &idx, u & m) : _BitScanForward64( &idx, u & m);
+	// 			if (blocked){
+	// 				m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
+	// 				if((m & u_temp)==0){
+	// 					possible_pins = m & v;
+	// 					m |= (U64(1)<<idx);
+	// 					j = __popcnt64(possible_pins);
+	// 					if(j == 1){
+	// 						actual_pins[to_move] |= possible_pins;
+	// 					}else if( j == 0){
+	// 						in_check++;
+	// 						king_attacker_ray = m;
+	// 					} 
+	// 				} else {
+	// 					m |= (U64(1)<<idx);
+	// 				}
+	// 			}
+	// 			unpins |= (pin_rays[to_move][direction] & ~m);
+	// 			partial_pins[to_move] |= m;
+	// 			pin_rays[to_move][direction] = m;
+	// 		}
+	// 	}
+	// }
 
 	if(changed_squares & pin_rays[to_move][E_DIR]){
 		m = MLUT.get_straight_ray(0,king_idx);
@@ -1026,7 +997,6 @@ void chess_pos::generate_moves()
 	// load black king position. 
 	// save pin rays if last move moved to or from a pin ray. 
 	// see which pieces are actually pinned on the rays.
-	// if the last move was a king move, pin rays are regenerated in all directions.
 
 	straight_blockers = pieces[to_move][QUEEN] | pieces[to_move][ROOK];
 	diag_blockers = pieces[to_move][QUEEN] | pieces[to_move][BISHOP];
@@ -1035,186 +1005,46 @@ void chess_pos::generate_moves()
 
 	u_temp = occ[to_move];
 
+
+	// if the last move was a king move, pin rays are regenerated in all directions.
 	if(e_king_loc & changed_squares){
 
-			u = straight_blockers;	
-
-			m = MLUT.get_straight_ray(0,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(0,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
+		for(int straight = 1; straight >= 0; straight--){
+			u = straight ? straight_blockers : diag_blockers;	
+			for(int it=0;it<4;it++){
+				m = straight ? MLUT.get_straight_ray(it,e_king_idx) : MLUT.get_diag_ray(it,e_king_idx);
+				bool blocked = (it < 2) ? _BitScanReverse64( &idx, u & m) : _BitScanForward64( &idx, u & m);
+				if (blocked){
+					m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
+					possible_pins = m & v;
+					if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
+					m |= (U64(1)<<idx);
+					partial_pins[!to_move] |= m;
+				}
+				pin_rays[!to_move][straight ? straight_directions[it] : diag_directions[it]] = m;
 			}
-			pin_rays[!to_move][E_DIR] = m;
-			m = MLUT.get_straight_ray(1,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(1,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][S_DIR] = m;
-			m = MLUT.get_straight_ray(2,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(2,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][W_DIR] = m;
-			m = MLUT.get_straight_ray(3,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(3,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][N_DIR] = m;
-		//BISHOP
-
-		u = diag_blockers;
-
-			m = MLUT.get_diag_ray(0,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(0,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][SE_DIR] = m;
-			m = MLUT.get_diag_ray(1,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(1,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][SW_DIR] = m;
-			m = MLUT.get_diag_ray(2,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(2,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][NW_DIR] = m;
-			m = MLUT.get_diag_ray(3,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(3,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-				partial_pins[!to_move] |= m;
-			}
-			pin_rays[!to_move][NE_DIR] = m;
-
+		}
 
 	} else {
 
-		u = straight_blockers;
-			
-		if(changed_squares & pin_rays[!to_move][E_DIR]){
-			m = MLUT.get_straight_ray(0,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(0,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
+		for(int straight = 1; straight >= 0; straight--){
+			u = straight ? straight_blockers : diag_blockers;	
+			for(int it=0;it<4;it++){
+				int direction = straight ? straight_directions[it] : diag_directions[it];
+				if(changed_squares & pin_rays[!to_move][direction]){
+					m = straight ? MLUT.get_straight_ray(it,e_king_idx) : MLUT.get_diag_ray(it,e_king_idx);
+					bool blocked = (it < 2) ? _BitScanReverse64( &idx, u & m) : _BitScanForward64( &idx, u & m);
+					if (blocked){
+						m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
+						possible_pins = m & v;
+						if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
+						m |= (U64(1)<<idx);
+					}
+					pin_rays[!to_move][direction] = m;
+					partial_pins[!to_move] |= m;
+				}
 			}
-			pin_rays[!to_move][E_DIR] = m;
-			partial_pins[!to_move] |= m;
 		}
-		if(changed_squares & pin_rays[!to_move][S_DIR]){
-			m = MLUT.get_straight_ray(1,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(1,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-			}
-			pin_rays[!to_move][S_DIR] = m;
-			partial_pins[!to_move] |= m;
-		}
-		if(changed_squares & pin_rays[!to_move][W_DIR]){
-			m = MLUT.get_straight_ray(2,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(2,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins; 
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][W_DIR] = m;
-		}
-		if(changed_squares & pin_rays[!to_move][N_DIR]){
-			m = MLUT.get_straight_ray(3,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_straight_ray(3,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins; 
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][N_DIR] = m;
-		}
-		//BISHOP
-
-		u = diag_blockers;
-
-		if(changed_squares & pin_rays[!to_move][SE_DIR]){
-			m = MLUT.get_diag_ray(0,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(0,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][SE_DIR] = m;
-		}
-		if(changed_squares & pin_rays[!to_move][SW_DIR]){
-			m = MLUT.get_diag_ray(1,e_king_idx);
-			if (_BitScanReverse64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(1,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][SW_DIR] = m;
-		}
-		if(changed_squares & pin_rays[!to_move][NW_DIR]){
-			m = MLUT.get_diag_ray(2,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(2,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins; 
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][NW_DIR] = m;
-		}
-		if(changed_squares & pin_rays[!to_move][NE_DIR]){
-			m = MLUT.get_diag_ray(3,e_king_idx);
-			if (_BitScanForward64( &idx, u & m)){
-				m &= ~MLUT.get_diag_ray(3,idx);
-				possible_pins = m & v;
-				if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-				m |= (U64(1)<<idx);
-			}
-			partial_pins[!to_move] |= m;
-			pin_rays[!to_move][NE_DIR] = m;
-		}
-
-
 	}
 
 
@@ -1222,11 +1052,6 @@ void chess_pos::generate_moves()
 	// generate moves if last move changed them or the piece is in a new white king pin ray
 	// if theres an enpassant target, generate moves of en passant attackers.
 	// if the piece is not there its been captured. remove it from the list.
-
-	// print_bitboard(actual_pins[to_move]);
-	// print_bitboard(actual_pins[!to_move]);
-	// print_pos(true);
-	// Sleep(100);
 
 	m = (occ[0] | occ[1]) & ~e_king_loc;
 	for(i=1;i<num_pieces[to_move];i++){
@@ -1301,7 +1126,6 @@ void chess_pos::generate_moves()
 		ally_ctrl |= *p_ctrl;
 		ally_targ |= *p_targ;
 	}
-	//print_bitboard(ally_ctrl);
 
 	// 	iterate through black non-king pieces, 
 	// generate moves if last move changed them or the piece is in a black king pin ray 
