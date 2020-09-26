@@ -40,6 +40,7 @@ void search_handler::go(){
 	if(is_searching) return;
 	is_searching = TRUE;
 	search_id++;
+	overall_top_score = SCORE_LO;
 	if(CLEAR_TTABLE_BEFORE_SEARCH){
 		TT->tt.clear();
 		TT->resize(TABLE_SIZE);
@@ -49,15 +50,33 @@ void search_handler::go(){
 	return;	
 }
 
-void search_handler::max_timer(int ms){
+void search_handler::max_timer(int ms, float incr){
 	std::chrono::steady_clock::time_point start, end;
-	start = std::chrono::steady_clock::now();
-	end = std::chrono::steady_clock::now();
-	while(is_searching && 
-		std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() < ms){
-		std::this_thread::sleep_for(std::chrono::microseconds(100));
+
+	do{
+		start = std::chrono::steady_clock::now();
 		end = std::chrono::steady_clock::now();
-	}
+
+		//rather than simple timer use this loop to check if we are still searching every so often
+		while(is_searching && 
+			std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() < ms){
+
+			std::this_thread::sleep_for(std::chrono::microseconds(500));
+			end = std::chrono::steady_clock::now();
+
+		}
+
+		//if we are in correspondence mode we may increase the time instead of finishing
+		float depth_score = (overall_top_score+CSPOND_CONTEMPT)*powf(1.5,search_depth);
+		if( depth_score < CSPOND_TRGT_DEPTHSCORE){
+			ms = incr;
+			incr *= CSPOND_TIME_DECAY;
+		} else {
+			ms = 0;
+		}
+	} while (is_searching && ms > 100);
+	
+
 	stop();
 	return;
 }
@@ -108,7 +127,7 @@ void search_handler::search(){
 	
 	int i,j,n_root_moves;
 	int to_move_sign;
-	int score, top_score, alpha, beta, sel_depth;
+	int top_score, score, alpha, beta, sel_depth;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
@@ -118,7 +137,7 @@ void search_handler::search(){
 	float t, total_time;
 	char move_string[5];
 	clock_t cl;     //initializing a clock type
-	float max_time, t1, t2;
+	float max_time, t1, t2, cspond_time_incr;
 	bool timed;
 	std::chrono::steady_clock::time_point start, end;
 
@@ -143,27 +162,43 @@ void search_handler::search(){
 	to_move = rootpos->to_move;
 	to_move_sign = ((!to_move)*2-1);
 
+	//set up time variables
+
 	t1 = float(uci_s.time[to_move]);
 	t2 = float(uci_s.time[!to_move]);
 
-	if(uci_s.movetime){
-		max_time = uci_s.movetime;
+	if(t1 >= CORRESPONDENCE_MODE_THRESHOLD){
+
+		cout << "\nCORRESPONDENCE SEARCH\n";
+		cspond_time_incr = CSPOND_TIME_INCREMENT;
+		max_time = CSPOND_TIME_BASE;
+
 	} else {
-		max_time = (0.99*t1/(t2+1)+t1*powf(0.7,0.022+12*t2/t1))/2+t1/128;
-		if(uci_s.inc[to_move]) max_time = min(t1,max_time+uci_s.inc[to_move]);
-		max_time = min(max_time,t1*MAX_MOVE_TIME_USAGE);
-		max_time = max(100, max_time);
+		cspond_time_incr = 0;
+
+		if(uci_s.movetime){
+			max_time = uci_s.movetime;
+		} else {
+			max_time = (0.99*t1/(t2+1)+t1*powf(0.7,0.022+12*t2/t1))/2+t1/128;
+			if(uci_s.inc[to_move]) max_time = min(t1,max_time+uci_s.inc[to_move]);
+			max_time = min(max_time,t1*MAX_MOVE_TIME_USAGE);
+			max_time = max(100, max_time);
+		}
+
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
 		max_time = FLT_MAX - 1;
 		timed = false;
 	} else {
-		thread timer_thread(&search_handler::max_timer,this,int(max_time));
+		thread timer_thread(&search_handler::max_timer,this,int(max_time),cspond_time_incr);
 		timer_thread.detach();
 		timed = true;
 	}
 
+
+	//begin search loop
+	//if only one move available just make it, skip output
 	if(n_root_moves == 1){
 		best_move = rootpos->pos_move_list.pop_move();
 		goto exit_search;
@@ -172,6 +207,7 @@ void search_handler::search(){
 	best_move = rootpos->pos_move_list.get_random_move();
     total_time = 1;
     nodes_searched = 0;
+
 	for(search_depth=min(MAX_AB_DEPTH,1);search_depth <= MAX_AB_DEPTH;search_depth++){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
@@ -205,6 +241,7 @@ void search_handler::search(){
 			
 			if(score > top_score){
 				top_score = score;
+				overall_top_score = max(overall_top_score, top_score);
 				best_move = move;
 			}
 

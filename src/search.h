@@ -13,7 +13,7 @@ struct search_options{
 	unsigned short moves[MAX_MOVES_IN_POS];
 	int num_moves;
 	bool ponder;
-	int time[2];							// can be negative
+	int time[2];							
 	int inc[2], movestogo; 					// 0 for N/A
 	int depth_limit, mate, movetime; 			// constraints, 0 for N/A
 	unsigned long long nodes_limit;
@@ -30,7 +30,7 @@ class search_handler{
 	unsigned short best_move;
 	unsigned short ponder_move; //move that we think the enemy will play after ours
 	unsigned long long nodes_searched;
-	int depth_searched;
+	int overall_top_score; //top score over all searches for position
 	std::vector<z_key> past_positions;
 	ttable* TT;
 	int search_depth;
@@ -43,7 +43,7 @@ class search_handler{
 	void reset();
 	void search(); 
 	void stop();
-	void max_timer(int ms);
+	void max_timer(int ms, float incr);
 	int quiesce(chess_pos* node, int depth, int color, int a, int b);
 	int minimax(chess_pos* node, int depth, int min_or_max, int a, int b);
 	int pvs(chess_pos* node, int depth, int color, int a, int b);

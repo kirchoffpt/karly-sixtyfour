@@ -1,11 +1,19 @@
 
-#define VERSION "v0.8.3"
+#define VERSION "v0.8.4"
 
 #define DEBUG FALSE
 
 #define LOG_UCI_INPUT 1
 #define FILEOUT "uci_input_log.txt"
 #define MAX_MOVE_TIME_USAGE 0.25
+
+#define CORRESPONDENCE_MODE_THRESHOLD 86400E3 //time per move (ms) greater/equal than this will enable correspondence mode
+#define CSPOND_TIME_BASE 5E3
+#define CSPOND_TIME_INCREMENT 5E3 //gets added to base time if score is not sufficient 
+#define CSPOND_TIME_DECAY 0.99 //max time is base+sum(incr*decay^n,n,0,infinity)
+#define CSPOND_TRGT_DEPTHSCORE 5000 //check implementation in search.cpp for reference
+#define CSPOND_CONTEMPT 35 //centipawns added to top score when checking to see if search should be extended
+
 
 //DEBUG 1- fast assertions 
 //DEBUG 2- previously used for move generation debugging
@@ -85,6 +93,7 @@ typedef unsigned long long z_key;
 #define CENTER 0x00003C3C3C3C0000
 
 #define LIGHT_SQUARES 0xAA55AA55AA55AA55
+#define DARK_SQUARES ~LIGHT_SQUARES
 
 //SPECIAL
 #define PROMO 	0x0004
