@@ -1,7 +1,7 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.8.3 (Windows only)
+Version 0.8.4 (Windows only)
 
 A 64-bit, mostly [UCI](http://wbec-ridderkerk.nl/html/UCIProtocol.html) compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and was (and is being) written completely from scratch with relatively little reference to other engines/wikis because it's more fun that way.
 
@@ -15,6 +15,8 @@ Features a novel legal-move generation algorithm that effectively generates move
 The move generator is currently about half as fast as the *very* quick [qperft](https://home.hccnet.nl/h.g.muller/perft.c) by H.G. Muller (nearly 200 million moves per second) but the current implementation of Karly64's move generator still leaves a lot of obvious opportunities for optimizations. This generator is also pulling double duty for evaluation's sake.
 
 It is possible this move generation scheme will end up being unimportant or even cumbersome in the scope of an entire chess engine but a general outline of the algorithm is laid out in [movegen.txt](./movegen.txt) (or see the current implementation in `chess_pos::generate_moves()` in [chess_pos.cpp](./src/chess_pos.cpp)) if anyone wants ideas from it.
+
+##### **Update:** After having implemented more features into the engine it has become very apparent that move generation is not nearly as performance critical as I previously thought (it's about 5-10% of total time). This method does still expose quite a lot of information to the evaluation function (thereby taking a large load off the much more performance critical evaluation function) but overall the benefits are extremely hard to quantify. While it was interesting to implement and it's still very fast move generation, if I were to write another engine I would simply use basic pseudo-legal move generation. I would also leave a lot more optimizations up to the compiler instead of attempting them myself with unrolled loops and constantly reusing variables.
 
 #### Evaluation
 Notably this engine does not and will not use any piece square tables (a very common method assigning predetermined scores for certain pieces on certain squares). Its general strategy is to try to maximize controlled squares and keep a safe king. At the moment king safety evaluations are based on attempting to minimize the number of ways an enemy piece can get into the king's general area.
@@ -40,7 +42,6 @@ Everything else in the engine is pretty standard stuff you can find on the [ches
     - Chess960 support
     - Multithreading capabilities
     - Much better move ordering (possibly NN assisted)
-    - Small optimizations to move generation
     - Smarter time management
     
  ### Build
