@@ -32,8 +32,6 @@ Always generate moves before evaluating or adding a move.
 
 #define U64 unsigned long long int
 
-using namespace std;
-
 struct piece_list_struct 
 { 
 	int piece_type; 	
@@ -71,9 +69,9 @@ class chess_pos {
 	int last_move_null = 0;
 	static chess_mask_LUT MLUT;
 	
-	chess_pos(string);
+	chess_pos(std::string);
 	chess_pos();
-	void load_new_fen(string);
+	void load_new_fen(std::string);
 	int is_quiet();
 	int eval(); //moves must have been generated first
 	int mate_eval(); //moves must have been generated first
@@ -81,7 +79,7 @@ class chess_pos {
 	void add_move_to_next_node(unsigned short move); //copy this position into another and add move there
 	void print_pos(bool);
 	void print_line();
-	void dump_pos(ofstream& ofile); //for debugging
+	void dump_pos(std::ofstream& ofile); //for debugging
 	void generate_moves(); 
 	void order_moves();
 	int order_moves_smart(); //returns number of moves from top not to reduce
@@ -96,7 +94,7 @@ class chess_pos {
 	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
-	string get_fen(); //generates FEN string
+	std::string get_fen(); //generates FEN string
 	int clear_next_occs(); //follows linked list of positions clearing their piece occupations. returns total depth cleared. use to get seldepth (max depth searched) after a search
 							
 	private:

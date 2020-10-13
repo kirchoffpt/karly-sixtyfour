@@ -7,8 +7,6 @@
 #include <thread>
 #include <chrono>
 
-using namespace std;
-
 struct search_options{
 	unsigned short moves[MAX_MOVES_IN_POS];
 	int num_moves;
@@ -45,7 +43,6 @@ class search_handler{
 	void stop();
 	void max_timer(int ms, float incr);
 	int quiesce(chess_pos* node, int depth, int color, int a, int b);
-	int minimax(chess_pos* node, int depth, int min_or_max, int a, int b);
 	int pvs(chess_pos* node, int depth, int color, int a, int b);
 	int num_repetitions(const z_key position);
 	bool allows_threefold(const chess_pos* c1);

@@ -35,7 +35,7 @@ void node_move_list::push_move(unsigned short move)
 void node_move_list::push_promo_move(unsigned short move)
 {
 	int i;
-	*(U64*)(moves + iterator + 1) = PROMO_MOVE_BUNDLE + U64(move)*PROMO_MOVE_CONVOLUTE;
+	*(U64*)(moves + iterator + 1) = PROMO_MOVE_BUNDLE + (U64)(move)*PROMO_MOVE_CONVOLUTE;
 	iterator += 4;
 	return;
 }				
@@ -56,7 +56,7 @@ unsigned short node_move_list::pop_targeted_move(U64 targets)
 
 	if(iterator >= 0){
 		for(i=get_num_moves()-1;i>=0;i--){
-			if ((U64(1) << ((moves[i] & DST_MASK) >> DST_SHIFT)) & targets){
+			if (((U64)(1) << ((moves[i] & DST_MASK) >> DST_SHIFT)) & targets){
 				move_temp = moves[iterator];
 				moves[iterator] = moves[i];
 				moves[i] = move_temp;
@@ -139,7 +139,7 @@ unsigned short node_move_list::get_move_from_string(char* move_string)
 				for(j=0;j<4;j++){
 					if(*(move_string+4) == promos[j]) promotion = j;
 				}
-				move += unsigned short(PROMO + promotion);
+				move += (unsigned short)(PROMO + promotion);
 				return move;
 			} else {
 				return moves[i];

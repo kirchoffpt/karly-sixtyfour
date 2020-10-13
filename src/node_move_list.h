@@ -7,9 +7,6 @@
 
 #include "constants.h"
 
-
-using namespace std;
-
 //FILO list
 
 class node_move_list {

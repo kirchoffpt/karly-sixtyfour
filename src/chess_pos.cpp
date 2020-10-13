@@ -133,7 +133,7 @@ void chess_pos::load_new_fen(string FEN)
 		for(k=0;k<2;k++){
 			u = pieces[k][i];
 			while(_BitScanForward64( &idx, u)){
-				u ^= U64(1) << idx; 
+				u ^= (U64)1 << idx; 
 				piece_at[idx] = i;
 			}	
 		}
@@ -171,7 +171,7 @@ void chess_pos::load_new_fen(string FEN)
 
 	ep_target_square = 0;
 	if(position[j] != '-'){
-		ep_target_square = U64(1);
+		ep_target_square = (U64)1;
 		ep_target_square <<= 7-(int(position[j])-97);
 		j++;
 		ep_target_square <<= 8*(atoi(&position[j])-1);
@@ -228,7 +228,7 @@ int chess_pos::piece_at_idx(int idx, int side)
 	int i;
 
 	for(i=0;i<6;i++){
-		if( ((pieces[side][i] >> idx) & ll(1)) == 1 ) return i;
+		if( ((pieces[side][i] >> idx) & (U64)1) == 1 ) return i;
 	}
 
 	return -1;
@@ -249,72 +249,72 @@ U64 chess_pos::prune_blocked_moves(int piece_type, int move_mask_center_idx, U64
 		if(piece_type == ROOK){
 			//ROOK
 			if (_BitScanReverse64( &idx, u & MLUT.get_straight_ray(0,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(0,idx);
 			}
 			if (_BitScanReverse64( &idx, u & MLUT.get_straight_ray(1,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(1,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_straight_ray(2,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(2,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_straight_ray(3,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(3,idx);
 			} 
 		} else if(piece_type == BISHOP){
 			//BISHOP
 			if (_BitScanReverse64( &idx, u & MLUT.get_diag_ray(0,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(0,idx);
 			}
 			if (_BitScanReverse64( &idx, u & MLUT.get_diag_ray(1,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(1,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_diag_ray(2,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(2,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_diag_ray(3,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(3,idx);
 			} 
 		} else if(piece_type == QUEEN){
 			//ROOK
 			if (_BitScanReverse64( &idx, u & MLUT.get_straight_ray(0,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(0,idx);
 			}
 			if (_BitScanReverse64( &idx, u & MLUT.get_straight_ray(1,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(1,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_straight_ray(2,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(2,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_straight_ray(3,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_straight_ray(3,idx);
 			}
 			//BISHOP
 			if (_BitScanReverse64( &idx, u & MLUT.get_diag_ray(0,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(0,idx);
 			}
 			if (_BitScanReverse64( &idx, u & MLUT.get_diag_ray(1,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(1,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_diag_ray(2,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(2,idx);
 			} 
 			if (_BitScanForward64( &idx, u & MLUT.get_diag_ray(3,move_mask_center_idx))){
-				actual_blockers |= U64(1) << idx;
+				actual_blockers |= (U64)1 << idx;
 				*move_mask &= ~MLUT.get_diag_ray(3,idx);
 			} 
 		} else {
@@ -379,7 +379,7 @@ void chess_pos::init_piece_list()
 
 		while(_BitScanForward64( &idx, attackers ^ king_loc)){
 			curr_piece++;
-			attacker_loc = ll(1)<<idx;
+			attacker_loc = (U64)1<<idx;
 			attackers ^= attacker_loc;
 			attacking_piece = piece_at[idx];
 
@@ -409,7 +409,7 @@ void chess_pos::init_piece_list()
 				bool blocked = it < 2 ? _BitScanReverse64( &idx, u & m) : _BitScanForward64( &idx, u & m);
 				if(blocked){
 					m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
-					m |= (U64(1)<<idx);
+					m |= ((U64)1<<idx);
 				}
 				pin_rays[side][straight ? straight_directions[it] : diag_directions[it]] = m;
 			}
@@ -495,7 +495,7 @@ void chess_pos::init_targets(int side)
 
 	//find squares attacked by enemy and allied pieces that are pinned
 	while(_BitScanForward64( &idx, enemies)){
-		attacker_loc = ll(1)<<idx;
+		attacker_loc = (U64)1<<idx;
 		enemies ^= attacker_loc;
 		attacking_piece = piece_at[idx];
 
@@ -574,7 +574,7 @@ void chess_pos::init_targets(int side)
 	allies ^= king_loc;
 	//PAWNS first
 	while(_BitScanForward64( &idx, allied_pawns)){
-		attacker_loc = ll(1)<<idx;
+		attacker_loc = (U64)1<<idx;
 		allied_pawns ^= attacker_loc;
 
 		u = create_pawn_pushes(attacker_loc,side);
@@ -595,7 +595,7 @@ void chess_pos::init_targets(int side)
 
 	//other pieces next except for the king
 	while(_BitScanForward64( &idx, allies)){
-		attacker_loc = ll(1)<<idx;
+		attacker_loc = (U64)1<<idx;
 		allies ^= attacker_loc;
 		attacking_piece = piece_at[idx];
 
@@ -723,7 +723,7 @@ void chess_pos::generate_moves()
 					m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
 					if((m & u_temp)==0){
 						possible_pins = m & v;
-						m |= (U64(1)<<idx);
+						m |= ((U64)1<<idx);
 						j = __popcnt64(possible_pins);
 						if(j == 1){
 							actual_pins[to_move] |= possible_pins;
@@ -732,7 +732,7 @@ void chess_pos::generate_moves()
 							king_attacker_ray = m;
 						} 
 					} else {
-						m |= (U64(1)<<idx);
+						m |= ((U64)1<<idx);
 					}
 				}
 				unpins |= (pin_rays[to_move][direction] & ~m);
@@ -766,7 +766,7 @@ void chess_pos::generate_moves()
 					m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
 					possible_pins = m & v;
 					if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-					m |= (U64(1)<<idx);
+					m |= ((U64)1<<idx);
 					partial_pins[!to_move] |= m;
 				}
 				pin_rays[!to_move][straight ? straight_directions[it] : diag_directions[it]] = m;
@@ -786,7 +786,7 @@ void chess_pos::generate_moves()
 						m &= straight ? ~MLUT.get_straight_ray(it,idx) : ~MLUT.get_diag_ray(it,idx);
 						possible_pins = m & v;
 						if(((m&u_temp)==0) && (__popcnt64(possible_pins) == 1)) actual_pins[!to_move] |= possible_pins;
-						m |= (U64(1)<<idx);
+						m |= ((U64)1<<idx);
 					}
 					pin_rays[!to_move][direction] = m;
 					partial_pins[!to_move] |= m;
@@ -1015,7 +1015,7 @@ void chess_pos::generate_moves()
 	//captures = u & occ[!to_move];
 
 	while(_BitScanForward64( &idx, u)){
-		u ^= U64(1)<<idx;
+		u ^= (U64)1<<idx;
 		move = src_square + (idx << DST_SHIFT);
 		pos_move_list.push_move(move);
 	}
@@ -1029,7 +1029,7 @@ void chess_pos::generate_moves()
 				u &= ~occ[to_move];
 				//captures |= u & occ[!to_move];
 				while(_BitScanForward64( &idx, u)){
-					u ^= U64(1)<<idx;
+					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
 					pos_move_list.push_move(move);
 				}
@@ -1039,11 +1039,11 @@ void chess_pos::generate_moves()
 				u &= ~(pl[to_move][i].ctrl_sq & ~(occ[!to_move] | ep_sq));
 				//captures |= occ[!to_move] & pl[to_move][i].ctrl_sq;
 				while(_BitScanForward64( &idx, u)){
-					u ^= U64(1)<<idx;
+					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
 						pos_move_list.push_move(move+ENPAS);
-					} else if((U64(1)<<idx) & PROMOTION_RANKS){
+					} else if(((U64)1<<idx) & PROMOTION_RANKS){
 						pos_move_list.push_promo_move(move);
 					} else {
 						pos_move_list.push_move(move);
@@ -1059,7 +1059,7 @@ void chess_pos::generate_moves()
 			can_castle = castlable_rooks & 0x00000000000000FF;
 		}
 		while(_BitScanForward64( &idx, can_castle)){
-			can_castle ^= ll(1)<<idx;
+			can_castle ^= (U64)1<<idx;
 			if(king_idx > idx){
 				if(to_move){
 					if(KSCB_CHECK & enem_ctrl) continue;
@@ -1096,7 +1096,7 @@ void chess_pos::generate_moves()
 					u &= king_attacker_ray;
 					//captures |= u & occ[!to_move];
 					while(_BitScanForward64( &idx, u)){
-						u ^= U64(1)<<idx;
+						u ^= (U64)1<<idx;
 						move = src_square + (idx << DST_SHIFT);
 						pos_move_list.push_move(move);
 					}
@@ -1111,11 +1111,11 @@ void chess_pos::generate_moves()
 					u &= king_attacker_ray;
 				}
 				while(_BitScanForward64( &idx, u)){
-					u ^= U64(1)<<idx;
+					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
 						pos_move_list.push_move(move+ENPAS);
-					} else if((U64(1)<<idx) & PROMOTION_RANKS){
+					} else if(((U64)1<<idx) & PROMOTION_RANKS){
 						pos_move_list.push_promo_move(move);
 					} else {
 						pos_move_list.push_move(move);
@@ -1184,7 +1184,7 @@ void chess_pos::order_moves()
 	int i,j;
 	j = get_num_moves();
 	for(i=j-1;i>=0;i--){
-		if((U64(1)<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
+		if(((U64)1<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
 			pos_move_list.swap_moves(i,(j--)-1);
 		} 
 	}
@@ -1313,7 +1313,7 @@ void chess_pos::generate_moves_deprecated()
 
 	//find squares attacked by enemy and allied pieces that are pinned
 	while(_BitScanForward64( &idx, enemies)){
-		attacker_loc = ll(1)<<idx;
+		attacker_loc = (U64)1<<idx;
 		enemies ^= attacker_loc;
 		attacking_piece = piece_at[idx];
 
@@ -1402,7 +1402,7 @@ void chess_pos::generate_moves_deprecated()
 	if(in_check < 2){
 		//PAWNS first
 		while(_BitScanForward64( &idx, allied_pawns)){
-			attacker_loc = ll(1)<<idx;
+			attacker_loc = (U64)1<<idx;
 			allied_pawns ^= attacker_loc;
 
 			promotion = false;
@@ -1421,7 +1421,7 @@ void chess_pos::generate_moves_deprecated()
 			src_square = idx << SRC_SHIFT;
 			a_controlled_sq |= u;
 			while(_BitScanForward64( &idx2, u)){
-				u ^= ll(1)<<idx2;
+				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
 				if(promotion){
 					move += PROMO;
@@ -1429,7 +1429,7 @@ void chess_pos::generate_moves_deprecated()
 					pos_move_list.push_move(move+B_PROMO);
 					pos_move_list.push_move(move+R_PROMO);
 					pos_move_list.push_move(move+Q_PROMO);
-				} else if(ep_target_square && ((U64(1)<<idx2) == ep_target_square)){
+				} else if(ep_target_square && (((U64)1<<idx2) == ep_target_square)){
 					pos_move_list.push_move(move+ENPAS);
 				} else {
 					pos_move_list.push_move(move);
@@ -1447,7 +1447,7 @@ void chess_pos::generate_moves_deprecated()
 			if((u & PROMOTION_RANKS) > 0) promotion = true;
 			a_controlled_sq |= u;
 			while(_BitScanForward64( &idx2, u)){
-				u ^= ll(1)<<idx2;
+				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
 				if(promotion){
 					move += PROMO;
@@ -1455,7 +1455,7 @@ void chess_pos::generate_moves_deprecated()
 					pos_move_list.push_move(move+B_PROMO);
 					pos_move_list.push_move(move+R_PROMO);
 					pos_move_list.push_move(move+Q_PROMO);
-				} else if(ep_target_square && ((U64(1)<<idx2) == ep_target_square)){
+				} else if(ep_target_square && (((U64)1<<idx2) == ep_target_square)){
 					pos_move_list.push_move(move+ENPAS);
 				} else {
 					pos_move_list.push_move(move);
@@ -1467,7 +1467,7 @@ void chess_pos::generate_moves_deprecated()
 
 		//other pieces next except for the king
 		while(_BitScanForward64( &idx, allies)){
-			attacker_loc = ll(1)<<idx;
+			attacker_loc = (U64)1<<idx;
 			allies ^= attacker_loc;
 			attacking_piece = piece_at[idx];
 
@@ -1481,7 +1481,7 @@ void chess_pos::generate_moves_deprecated()
 			src_square = idx << SRC_SHIFT;
 			a_controlled_sq |= u;
 			while(_BitScanForward64( &idx2, u)){
-				u ^= ll(1)<<idx2;
+				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
 				pos_move_list.push_move(move);
 			}
@@ -1496,7 +1496,7 @@ void chess_pos::generate_moves_deprecated()
 			if(in_check > 0) u &= king_attacker_ray;
 			a_controlled_sq |= u;
 			while(_BitScanForward64( &idx2, u)){
-				u ^= ll(1)<<idx2;
+				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
 				pos_move_list.push_move(move);
 			}
@@ -1515,14 +1515,14 @@ void chess_pos::generate_moves_deprecated()
 	src_square = idx << SRC_SHIFT;
 	a_controlled_sq |= u;
 	while(_BitScanForward64( &idx2, u)){
-		u ^= ll(1)<<idx2;
+		u ^= (U64)1<<idx2;
 		move = src_square + (idx2 << DST_SHIFT);
 		pos_move_list.push_move(move);
 	}
 
 	if(in_check == 0){
 		while(_BitScanForward64( &idx2, can_castle)){
-			can_castle ^= ll(1)<<idx2;
+			can_castle ^= (U64)1<<idx2;
 			if(idx > idx2){
 				if(to_move){
 					if(KSCB_CHECK & e_controlled_sq) continue;
@@ -1577,8 +1577,8 @@ void chess_pos::add_move(unsigned short move)
 {
 	int src_idx = unsigned((move & SRC_MASK)>>SRC_SHIFT);
 	int dst_idx = unsigned((move & DST_MASK)>>DST_SHIFT);
-	U64 src_square = U64(1) << src_idx; 
-	U64 dst_square = U64(1) << dst_idx;
+	U64 src_square = (U64)1 << src_idx; 
+	U64 dst_square = (U64)1 << dst_idx;
 	int piece_type = piece_at[src_idx];
 	//cout << idx_to_coord(src_idx) << " " << idx_to_coord(dst_idx);
 
@@ -1875,11 +1875,11 @@ string chess_pos::get_fen()
 	string ofen = "", castling = "";
 	n=0;
 	for(i=63;i>=0;i--){
-		if(occ[WHITE] & (U64(1)<<i)){
+		if(occ[WHITE] & ((U64)1<<i)){
 			if(n>0) ofen += to_string(n);
 			n=0;
 			ofen += "PNBRQK"[piece_at[i]];
-		} else if(occ[BLACK] & (U64(1)<<i)){
+		} else if(occ[BLACK] & ((U64)1<<i)){
 			if(n>0) ofen += to_string(n);
 			n=0;
 			ofen += "pnbrqk"[piece_at[i]];

@@ -2,31 +2,31 @@
 
 #define INCLUDE_CENTER false
 
-const ll ray_NwSe = 0x8040201008040201; // '\'
-const ll ray_SwNe = 0x0102040810204080; // '/'
-const ll ray_SeSw = 0x00000000000000FF;
-const ll ray_NeNw = 0xFF00000000000000;
-const ll ray_NwSw = 0x8080808080808080;
-const ll ray_NeSe = 0x0101010101010101;
+const U64 ray_NwSe = 0x8040201008040201; // '\'
+const U64 ray_SwNe = 0x0102040810204080; // '/'
+const U64 ray_SeSw = 0x00000000000000FF;
+const U64 ray_NeNw = 0xFF00000000000000;
+const U64 ray_NwSw = 0x8080808080808080;
+const U64 ray_NeSe = 0x0101010101010101;
 
-const ll ray_SeNw = ray_NwSe;
-const ll ray_NeSw = ray_SwNe;
-const ll ray_SwSe = ray_SeSw;
-const ll ray_NwNe = ray_NeNw;
-const ll ray_SwNw = ray_NwSw;
-const ll ray_SeNe = ray_NeSe;
+const U64 ray_SeNw = ray_NwSe;
+const U64 ray_NeSw = ray_SwNe;
+const U64 ray_SwSe = ray_SeSw;
+const U64 ray_NwNe = ray_NeNw;
+const U64 ray_SwNw = ray_NwSw;
+const U64 ray_SeNe = ray_NeSe;
 
-const ll knight_pattern_18 = 0x0000000A1100110A; //centered at idx 18
-const ll king_patt_9 = 0x70507;
+const U64 knight_pattern_18 = 0x0000000A1100110A; //centered at idx 18
+const U64 king_patt_9 = 0x70507;
 
 using namespace std;
 
-ll reverse_U64(ll x){ //slow
-	ll y = 0;
+U64 reverse_U64(U64 x){ //slow
+	U64 y = 0;
 	int i;
 
 	for(i=0;i<64;i++){
-		y |= (((x>>i)&ll(1)) << (63-i));
+		y |= (((x>>i)&(U64)1) << (63-i));
 	}
 
 	return y;
@@ -36,7 +36,7 @@ chess_mask_LUT::chess_mask_LUT() {
 
 	int i,j,k,x,y,z;
 	int shift;
-	ll temp = 0, temp2, ab;
+	U64 temp = 0, temp2, ab;
 
 	std::random_device rd;
   	std::mt19937_64 gen(rd());
@@ -57,7 +57,7 @@ chess_mask_LUT::chess_mask_LUT() {
 	for(i=0;i<64;i++){
 		temp = 0;
 		if(i < 56){
-			temp |= ll(0xA) << (i+6);
+			temp |= (U64)(0xA) << (i+6);
 			if(i%8 == 0) {
 				temp &= ~ray_NwSw;
 			} else if(i%8 == 7){
@@ -79,14 +79,14 @@ chess_mask_LUT::chess_mask_LUT() {
 	for(i=0;i<64;i++){
 		temp = 0;
 		if(i < 56){
-			temp |= ll(1) << (i+8);
+			temp |= (U64)1 << (i+8);
 			if(i%8 == 0) {
 				temp &= ~ray_NwSw;
 			} else if(i%8 == 7){
 				temp &= ~ray_NeSe;
 			}
 		}
-		if((i < 16)&&(i > 7)) temp |= (ll(1) << (i+16));
+		if((i < 16)&&(i > 7)) temp |= ((U64)1 << (i+16));
 
 
 		move_mask[W_PAWN][i] = temp;
@@ -111,7 +111,7 @@ chess_mask_LUT::chess_mask_LUT() {
 			temp &= ~ray_NwSw;
 			temp &= ~(ray_NwSw>>1);
 		}
-		if(INCLUDE_CENTER) temp |= ll(1) << i;
+		if(INCLUDE_CENTER) temp |= (U64)1 << i;
 		move_mask[KNIGHT][i] = temp;
 	}
 
@@ -131,7 +131,7 @@ chess_mask_LUT::chess_mask_LUT() {
 		} else {
 			temp |= ray_NeSw >> 8*(-shift);
 		}
-		if(!INCLUDE_CENTER) temp &= ~(ll(1) << i);
+		if(!INCLUDE_CENTER) temp &= ~((U64)1 << i);
 		move_mask[BISHOP][i] = temp;
 	}
 
@@ -141,7 +141,7 @@ chess_mask_LUT::chess_mask_LUT() {
 		temp |= ray_NeSe << i%8;
 		temp |= ray_SeSw << 8*(i/8);
 
-		if(!INCLUDE_CENTER) temp &= ~(ll(1) << i);
+		if(!INCLUDE_CENTER) temp &= ~((U64)1 << i);
 		move_mask[ROOK][i] = temp;
 	}
 
@@ -154,16 +154,16 @@ chess_mask_LUT::chess_mask_LUT() {
 	for(i=0;i<64;i++){
 		temp = 0;
 		if(i < 32){
-			temp |= (ll(king_patt_9) << i) >> 9;
+			temp |= ((U64)(king_patt_9) << i) >> 9;
 		} else {
-			temp |= (ll(king_patt_9) << (i-9));
+			temp |= ((U64)(king_patt_9) << (i-9));
 		}
 		if(i%8 == 0) {
 			temp &= ~ray_NwSw;
 		} else if(i%8 == 7){
 			temp &= ~ray_NeSe;
 		}
-		if(!INCLUDE_CENTER) temp &= ~(ll(1) << i);
+		if(!INCLUDE_CENTER) temp &= ~((U64)1 << i);
 		move_mask[KING][i] = temp;
 	}	
 	
@@ -173,14 +173,14 @@ chess_mask_LUT::chess_mask_LUT() {
 		for(j=0;j<i/8;j++){
 			temp &= ~(ray_SeSw << (8*j));
 		}
-		temp |= (ll(1) << i);
+		temp |= ((U64)1 << i);
 		V_mask[0][i] = temp;
 	}
 
 	//V_MASK_REVERSE
 	for(i=0;i<64;i++){
 		temp = move_mask[BISHOP][i] ^ V_mask[0][i];
-		temp |= (ll(1) << i);
+		temp |= ((U64)1 << i);
 		V_mask[1][i] = temp;
 	}
 
@@ -189,14 +189,14 @@ chess_mask_LUT::chess_mask_LUT() {
 		temp = move_mask[ROOK][i];
 		temp &= ~(ray_SeSw << i);
 		temp &= ~(ray_NeSe << i);
-		temp |= (ll(1) << i);
+		temp |= ((U64)1 << i);
 		L_mask[1][i] = temp;
 	}
 
 	//L_MASK
 	for(i=0;i<64;i++){
 		temp = move_mask[ROOK][i] ^ L_mask[1][i];
-		temp |= (ll(1) << i);
+		temp |= ((U64)1 << i);
 		L_mask[0][i] = temp;
 	}
 
@@ -205,7 +205,7 @@ chess_mask_LUT::chess_mask_LUT() {
 	{
 		for (j=0;j<i; j++)
 		{
-			temp = (ll(1) << i)|(ll(1) << j);
+			temp = ((U64)1 << i)|((U64)1 << j);
 			ab = temp;
 			x = (i%8)-(j%8);
 			y = (i/8)-(j/8);
@@ -223,7 +223,7 @@ chess_mask_LUT::chess_mask_LUT() {
 			}
 			if(k != 0){
 				for(z = i-k; z > j; z -= k){
-					temp |= (ll(1) << z);
+					temp |= ((U64)1 << z);
 				}
 				sliding_rays.insert(std::make_pair(ab, temp));
 			}
@@ -238,28 +238,28 @@ chess_mask_LUT::chess_mask_LUT() {
 		temp = ray_NwSe;
 		temp = temp << 8*(7-i%8);
 		temp = temp >> (8*(7-i/8));
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		diag_ray[0][i] = temp;
 
 		//SW
 		temp = ray_SwNe;
 		temp = temp << 8*(i%8);
 		temp = temp >> (8*(7-i/8));
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		diag_ray[1][i] = temp;
 
 		//NW
 		temp = ray_NwSe;
 		temp = temp >> (8*(i%8));
 		temp = temp << 8*(i/8);
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		diag_ray[2][i] = temp;
 
 		//NE
 		temp = ray_NeSw;
 		temp = temp >> 8*(7-i%8);
 		temp = temp << 8*(i/8);
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		diag_ray[3][i] = temp;
 	}
 
@@ -272,26 +272,26 @@ chess_mask_LUT::chess_mask_LUT() {
 		temp = ray_SwSe;
 		temp = temp >> (7-i%8);
 		temp = temp << (8*(i/8));
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		straight_ray[0][i] = temp;
 
 		//S
 		temp = ray_NeSe;
 		temp = temp << i%8;
 		temp = temp >> (8*(7-i/8));
-		//temp &= ~(ll(1) << i);
+		//temp &= ~((U64)1 << i);
 		straight_ray[1][i] = temp;
 
 		//W
 		temp = straight_ray[0][i] ^ (ray_SwSe << 8*(i/8));
-		//temp &= ~(ll(1) << i);
-		temp |= ll(1) << i;
+		//temp &= ~((U64)1 << i);
+		temp |= (U64)1 << i;
 		straight_ray[2][i] = temp;
 
 		//N
 		temp = straight_ray[1][i] ^ (ray_NeSe << (i%8));
-		//temp &= ~(ll(1) << i);
-		temp |= ll(1) << i;
+		//temp &= ~((U64)1 << i);
+		temp |= (U64)1 << i;
 		straight_ray[3][i] = temp;
 	}
 
@@ -349,62 +349,62 @@ chess_mask_LUT::chess_mask_LUT() {
 
 }
 
-ll chess_mask_LUT::get_move_mask(int piece_type, int piece_position)
+U64 chess_mask_LUT::get_move_mask(int piece_type, int piece_position)
 {
 	return move_mask[piece_type][piece_position];
 }
 
-ll chess_mask_LUT::get_pawn_attack_mask(int side, int piece_position)
+U64 chess_mask_LUT::get_pawn_attack_mask(int side, int piece_position)
 {
 	return pawn_attack_mask[side][piece_position];
 }
 
-ll chess_mask_LUT::getVmask(bool reversed, int pos)
+U64 chess_mask_LUT::getVmask(bool reversed, int pos)
 {
 	return V_mask[reversed][pos];
 }
 
-ll chess_mask_LUT::getLmask(bool reversed, int pos)
+U64 chess_mask_LUT::getLmask(bool reversed, int pos)
 {
 	return L_mask[reversed][pos];
 }
 
-ll chess_mask_LUT::get_sliding_ray(ll AB)
+U64 chess_mask_LUT::get_sliding_ray(U64 AB)
 {
 	return sliding_rays[AB];
 }
 
-ll chess_mask_LUT::get_diag_ray(int direction, int index) //SE, SW, NW, NE
+U64 chess_mask_LUT::get_diag_ray(int direction, int index) //SE, SW, NW, NE
 {
 	return diag_ray[direction][index];
 }
 
-ll chess_mask_LUT::get_straight_ray(int direction, int index) //right, bottom, left, top
+U64 chess_mask_LUT::get_straight_ray(int direction, int index) //right, bottom, left, top
 {
 	return straight_ray[direction][index];
 }
 
-ll chess_mask_LUT::get_pawn_area_of_influence(int side, int index)
+U64 chess_mask_LUT::get_pawn_area_of_influence(int side, int index)
 {
 	return pawn_area_of_influence[side][index];
 }
 
-ll chess_mask_LUT::get_rook_area_of_influence(int index)
+U64 chess_mask_LUT::get_rook_area_of_influence(int index)
 {
 	return rook_area_of_influence[index];
 }
 
-ll chess_mask_LUT::get_en_passant_attackers(int index)
+U64 chess_mask_LUT::get_en_passant_attackers(int index)
 {
 	return en_passant_attackers[index];
 }
 
-ll chess_mask_LUT::get_zobrist_piece(int side, int piece_type, int idx)
+U64 chess_mask_LUT::get_zobrist_piece(int side, int piece_type, int idx)
 {
 	return zobrist_piece[side][piece_type][idx];
 }
 
-ll chess_mask_LUT::get_zobrist_btm()
+U64 chess_mask_LUT::get_zobrist_btm()
 {
 	return zobrist_black_to_move;
 }
