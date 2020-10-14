@@ -19,3 +19,4 @@ add_executable(karly64 uciengine.cpp search.cpp chess_pos.cpp chess_funcs.cpp ch
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(karly64 PRIVATE Threads::Threads)
+
