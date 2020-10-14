@@ -3,6 +3,7 @@
 #include <stdlib.h> //rand
 #include <iostream>
 #include <ctime>
+#include <cstring>
 #include "assert.h"
 #include "chess_funcs.h"
 

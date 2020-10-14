@@ -1,6 +1,5 @@
 #include "search.h"
 
-
 #define TABLE_SIZE 256E6
 #define LMR_LIMIT 3
 #define LMR_DEPTH_REDUCTION 2
@@ -25,7 +24,7 @@ search_handler::~search_handler(){
 }
 
 void search_handler::reset(){
-	is_searching = FALSE;
+	is_searching = false;
 	std::memset(&uci_s, 0, sizeof(search_options));
 	past_positions.clear();
 	search_id = 0;
@@ -38,7 +37,7 @@ void search_handler::reset(){
 
 void search_handler::go(){
 	if(is_searching) return;
-	is_searching = TRUE;
+	is_searching = true;
 	search_id++;
 	overall_top_score = SCORE_LO;
 	if(CLEAR_TTABLE_BEFORE_SEARCH){
@@ -181,14 +180,14 @@ void search_handler::search(){
 		} else {
 			max_time = (0.99*t1/(t2+1)+t1*powf(0.7,0.022+12*t2/t1))/2+t1/128;
 			if(uci_s.inc[to_move]) max_time = min(t1,max_time+uci_s.inc[to_move]);
-			max_time = min(max_time,t1*MAX_MOVE_TIME_USAGE);
-			max_time = max(100, max_time);
+			max_time = min((double)max_time,t1*MAX_MOVE_TIME_USAGE);
+			max_time = max(100.0, (double)max_time);
 		}
 
 	}
 
 	if(t1 <= 0 && uci_s.movetime <= 0){
-		max_time = FLT_MAX - 1;
+		max_time = F_HI - 1;
 		timed = false;
 	} else {
 		thread timer_thread(&search_handler::max_timer,this,int(max_time),cspond_time_incr);
@@ -313,12 +312,11 @@ void search_handler::stop(){
 	fflush(stdout);
 
 
-	is_searching = FALSE;
+	is_searching = false;
 	return;
 }
 
 int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b){
-	__assume(is_searching);
 	if(!is_searching) return 0;
 
 	int eval;
@@ -349,7 +347,6 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b)
 }
 
 int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
-	__assume(is_searching);
 	if(!is_searching) return 0;
 
 	int eval = SCORE_LO;

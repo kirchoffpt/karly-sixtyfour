@@ -1,7 +1,7 @@
 
 #define VERSION "v0.8.4"
 
-#define DEBUG FALSE
+#define DEBUG false
 
 #define LOG_UCI_INPUT 1
 #define FILEOUT "uci_input_log.txt"
@@ -28,10 +28,10 @@
 #define R_MAT	1289
 #define Q_MAT	2529
 
-#define CLEAR_TTABLE_BEFORE_SEARCH FALSE 
-#define EXCLUDE_PAWNS_FROM_CAPTURE_MASK FALSE
-#define USE_OLD_TTABLE_BEST_MOVES TRUE 			//works fine but alters timings for tests/comparisons
-#define ENABLE_NULL_MOVE_PRUNING TRUE 			//enable null move pruning
+#define CLEAR_TTABLE_BEFORE_SEARCH false 
+#define EXCLUDE_PAWNS_FROM_CAPTURE_MASK false
+#define USE_OLD_TTABLE_BEST_MOVES true 			//works fine but alters timings for tests/comparisons
+#define ENABLE_NULL_MOVE_PRUNING true 			//enable null move pruning
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
@@ -53,8 +53,8 @@ typedef unsigned long long z_key;
 #define MATE_BUFFER 1E6 //every non mate score should fall under CHECKMATE-MATE_BUFFER
 #define STALEMATE 0
 
-#define F_HI 	1000000.0
-#define F_LO 	-1000000.0
+#define F_HI 	1E38
+#define F_LO 	-1E38
 
 #define SCORE_HI 	1E9
 #define SCORE_LO 	-1E9

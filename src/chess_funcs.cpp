@@ -1,5 +1,6 @@
 
 #include "chess_funcs.h"
+#include "bitops.h"
 
 using namespace std;
 
@@ -87,7 +88,7 @@ int bit_to_idx(U64 bitboard)
 {
 	unsigned long idx;
 
-	_BitScanForward64( &idx, bitboard);
+	bitops::bscanf64( &idx, bitboard);
 
 	return int(idx);
 }
@@ -103,7 +104,7 @@ string idx_to_coord(int idx)
 	y = y + 1;
 
 	coord.append(sizeof(char),(letters[7-x]));
-	coord.append(_itoa(y,buffer,10));
+	coord.append(to_string(y));
 
 	return coord;
 }
@@ -176,7 +177,7 @@ U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int d
 	for(depth;depth>0;depth--){
 		temp = fill &~ done_sq;
 		done_sq |= temp;
-		while(_BitScanForward64(&idx, temp)){
+		while(bitops::bscanf64(&idx, temp)){
 			temp ^= (U64)1 << idx;
 			fill |= mlut->get_move_mask(KING,idx);
 		}
