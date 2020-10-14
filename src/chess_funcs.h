@@ -1,5 +1,4 @@
 #include <cmath>
-#include <Windows.h>
 #include <cstdio>
 #include <iomanip>
 #include <vector>
@@ -8,7 +7,6 @@
 #include <bitset>
 #include <fstream>
 #include <string>
-#include <intrin.h> //popcnt and bitscan
 #include <ctime>
 #include "constants.h"
 #include "chess_moves_lut.h"

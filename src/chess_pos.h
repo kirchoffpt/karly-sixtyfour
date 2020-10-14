@@ -21,8 +21,7 @@ Always generate moves before evaluating or adding a move.
 #include <bitset>
 #include <fstream>
 #include <string>
-#include <intrin.h> //popcnt and bitscan
-#include "immintrin.h"
+#include <bit>
 #include "assert.h"
 #include <ctime>
 #include "chess_moves_lut.h"

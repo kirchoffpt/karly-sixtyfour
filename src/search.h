@@ -6,6 +6,7 @@
 #include "ttable.h"
 #include <thread>
 #include <chrono>
+#include <cstring>
 
 struct search_options{
 	unsigned short moves[MAX_MOVES_IN_POS];

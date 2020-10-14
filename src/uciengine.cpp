@@ -4,7 +4,8 @@
 #include <sstream>
 #include <fstream>
 #include <chrono>
-#include <ctime>   
+#include <ctime>  
+#include <cstring> 
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 #define FILEOUT "uci_input_log.txt"
@@ -98,6 +99,7 @@ void uci_go(istringstream& is, search_handler* searcher){
 
 
 int main(int argc, char *argv[]){
+
 	string cmd, token;
 	ofstream ofs;
 	chess_pos *rootpos;
