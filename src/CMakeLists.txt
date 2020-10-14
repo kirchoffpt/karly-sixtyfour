@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(cmake_testapp)
+project(karly64)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Oi /Ob2 /Ot /GL")
 add_executable(karly64 uciengine.cpp chess_funcs.cpp chess_moves_lut.cpp chess_pos.cpp node_move_list.cpp search.cpp ttable.cpp)
