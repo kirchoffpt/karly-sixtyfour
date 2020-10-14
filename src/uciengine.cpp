@@ -100,7 +100,6 @@ void uci_go(istringstream& is, search_handler* searcher){
 
 int main(int argc, char *argv[]){
 
-	cout << "initializing..." << endl;
 	string cmd, token;
 	ofstream ofs;
 	chess_pos *rootpos;
@@ -113,7 +112,6 @@ int main(int argc, char *argv[]){
 	if(argc > 1) token = argv[1];
 	else token = STARTPOS;
 
-	cout << "initializing..." << endl;
 	rootpos = new chess_pos(token); 
 	searcher = new search_handler(rootpos);
 	rootpos->generate_moves();
