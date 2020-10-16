@@ -19,7 +19,7 @@ unsigned short chess_pos::operator - (chess_pos const &c1){
 	p1 = *const_cast<chess_pos*>(&c1);
 	p1.next = &p2;
 	p1.generate_moves();
-	while(move = p1.pop_and_add()){
+	while((move = p1.pop_and_add())){
 		if (p2 == *this) {
 			break;
 		}
@@ -42,10 +42,6 @@ bool chess_pos::operator == (chess_pos const &c1){
 }
 
 void chess_pos::copy_pos(chess_pos* source_pos){
-	int i,j,k;
-	U64 u;
-	unsigned long idx;
-
 	memcpy(pl, source_pos->pl, sizeof(pl)+sizeof(pin_rays));
 	memcpy(piece_at, source_pos->piece_at, sizeof(piece_at));
 	memcpy(pieces, source_pos->pieces, sizeof(piece_at));
@@ -103,7 +99,6 @@ void chess_pos::load_new_fen(string FEN)
 {
 	int i,j,k,n;
 	char piece_chars[2][6] = {{'P','N','B','R','Q','K'},{'p','n','b','r','q','k'}};
-	char c_temp;
 	unsigned long idx;
 	U64 u;
 
@@ -240,9 +235,8 @@ int chess_pos::piece_at_idx(int idx, int side)
 U64 chess_pos::prune_blocked_moves(int piece_type, int move_mask_center_idx, U64* move_mask, U64 blockers)
 {
 
-	U64 a,u,actual_blockers = 0;
+	U64 u,actual_blockers = 0;
 	unsigned long idx;
-	bool reverse = false;
 
 	u = (*move_mask & blockers);
 
@@ -332,7 +326,7 @@ U64 chess_pos::prune_blocked_moves(int piece_type, int move_mask_center_idx, U64
 
 void chess_pos::init_zobrist()
 {
-	int i, side;
+	size_t i, side;
 	int p_type, idx;
 
 	zobrist_key = 0;
@@ -358,7 +352,6 @@ void chess_pos::init_piece_list()
 	unsigned long idx;
 	U64 u,m,u_temp, straight_blockers=0;
 	U64 diag_blockers=0;
-	int i, num_pieces;
 	int king_idx;
 
 	for(side = WHITE;side<=BLACK;side++){
@@ -444,7 +437,7 @@ void chess_pos::init_targets(int side)
 	U64 enemies = occ[!side]; //enemies gets modified
 	U64 allies = occ[side];
 	U64 allied_pawns = pieces[side][PAWN];
-	unsigned long idx, idx2, pinned_idx;
+	unsigned long idx, pinned_idx;
 	int attacking_piece, pinned_piece;
 	U64 u, m, u_temp, v, ab_ray, attacker_loc, king_loc, possible_pins, king_attacker_ray, e_controlled_sq;
 	U64 ep_target_square_copy = ep_target_square;
@@ -452,9 +445,6 @@ void chess_pos::init_targets(int side)
 	int pinned_sliders = 0;
 	U64 pinned_pawn_moves[8][2];
 	int pinned_pawns = 0;
-	unsigned short move, src_square;
-	bool promotion = false;
-	U64 can_castle;
 
 
 	in_check = 0;
@@ -514,7 +504,7 @@ void chess_pos::init_targets(int side)
 		if(is_sliding_piece(attacking_piece)){
 			if((king_loc & u) > 0 ) {
 				ab_ray = MLUT.get_sliding_ray( king_loc | attacker_loc ); 
-				possible_pins = ab_ray & occ[side] ^ king_loc;
+				possible_pins = (ab_ray & occ[side]) ^ king_loc;
 				if(possible_pins == 0){
 					//if no possible pinned pieces the king is attacked
 					in_check++;
@@ -637,7 +627,7 @@ void chess_pos::generate_moves()
 	U64 u,m,v,u_temp,possible_pins, unpins=0;
 	U64 actual_pins[2] = {0};
 	U64 partial_pins[2] = {0}; //simply the cumulative of the pin rays that were added/changed from last move
-	U64 num_pieces[2];
+	uint32_t num_pieces[2];
 	U64 ally_ctrl = 0;
 	U64 enem_ctrl = 0;
 	U64 ally_targ = 0;
@@ -645,7 +635,7 @@ void chess_pos::generate_moves()
 	U64 king_attacker_ray = 0xFFFFFFFFFFFFFFFF;
 	U64 can_castle;
 	U64 ep_sq = ep_target_square;
-	int i,j, king_idx, e_king_idx, x,y,p_type,p_pinned,k;
+	uint32_t i,j, king_idx, e_king_idx,p_type,p_pinned;
 	unsigned long idx;
 	unsigned short move, src_square;
 	bool ep_check = false;
@@ -1330,7 +1320,7 @@ void chess_pos::generate_moves_deprecated()
 		if(is_sliding_piece(attacking_piece)){
 			if((king_loc & u) > 0 ) {
 				ab_ray = MLUT.get_sliding_ray( king_loc | attacker_loc ); 
-				possible_pins = ab_ray & occ[to_move] ^ king_loc;
+				possible_pins = ( ab_ray & occ[to_move] ) ^ king_loc;
 				if(possible_pins == 0){
 					//if no possible pinned pieces the king is attacked
 					in_check++;
@@ -1774,13 +1764,13 @@ void chess_pos::print_pos(bool basic)
 {
 	int i,j,k,p;
 	char a;
-	char castle_chars[4] = {'K','Q','k','q'};
 	char piece_chars[2][6] = {{'P','N','B','R','Q','K'},{'p','n','b','r','q','k'}};
 
 	cout << '\n';
 
 	for(i=0 ; i < 8 ; i++){
 		for(j =0; j <8; j++){
+			cout << " ";
 			for(k=0;k<2;k++){
 				p = piece_at_idx(63-(8*i+j),k);
 				if(p >= 0){
@@ -1815,7 +1805,7 @@ void chess_pos::print_pos(bool basic)
 
 void chess_pos::dump_pos(ofstream& ofs) //for debugging
 {
-	int i,j,k;
+	uint32_t i,j;
 	ofs << "POSDUMP:" << endl;
 
 	for(i=0;i<=1;i++){
@@ -1871,7 +1861,7 @@ void chess_pos::print_line()
 string chess_pos::get_fen()
 {
 	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
-	int i,j,n;
+	int i,n;
 	string ofen = "", castling = "";
 	n=0;
 	for(i=63;i>=0;i--){
@@ -1911,8 +1901,7 @@ string chess_pos::get_fen()
 
 int chess_pos::is_material_draw()
 {
-	int i,j,k,n;
-	int eval = 0;
+	int n;
 	
 	// KvK, KBvK, KNvK, KdarkBvKlightB
 
@@ -1960,7 +1949,7 @@ int chess_pos::mate_eval()
 	}
 }
 
-int chess_pos::get_num_moves()
+unsigned int chess_pos::get_num_moves()
 {
 	return pos_move_list.get_num_moves();
 }
@@ -1971,11 +1960,9 @@ int chess_pos::eval()
 	int eval = 0;
 	int material_sum, material_diff;
 	int p,n,b,r,q,P,N,B,R,Q;
-	int i,j,k,white,black,wking,bking;
+	int i,j,white,black,wking,bking;
 	int woffense, boffense;
-	int king_safety;
 	static const int targ_mult[KING] = {1,4,5,4,2};
-	U64 temp;
 
 	if(get_num_moves()<=0){
 		return mate_eval();

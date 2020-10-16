@@ -9,12 +9,13 @@ if(MSVC)
 endif(MSVC)
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -march=native -mtune=native -flto" )
+    set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -march=native -mtune=native -flto -Wall" )
     set(CMAKE_CXX_FLAGS_DEBUG "-Wall")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -march=native -mtune=native -flto")
 endif(UNIX)
 
 add_executable(karly64 uciengine.cpp search.cpp chess_pos.cpp chess_funcs.cpp chess_moves_lut.cpp node_move_list.cpp ttable.cpp bitops.cpp)
+add_executable(perft mct.cpp search.cpp chess_pos.cpp chess_funcs.cpp chess_moves_lut.cpp node_move_list.cpp ttable.cpp bitops.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

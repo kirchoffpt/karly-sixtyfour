@@ -35,7 +35,6 @@ void node_move_list::push_move(unsigned short move)
 
 void node_move_list::push_promo_move(unsigned short move)
 {
-	int i;
 	*(U64*)(moves + iterator + 1) = PROMO_MOVE_BUNDLE + (U64)(move)*PROMO_MOVE_CONVOLUTE;
 	iterator += 4;
 	return;
@@ -86,7 +85,7 @@ unsigned short node_move_list::get_random_move()
 }
 
 
-int node_move_list::get_num_moves()
+unsigned int node_move_list::get_num_moves()
 {
 	return iterator+1;
 }
@@ -127,7 +126,7 @@ unsigned short node_move_list::get_move_from_string(char* move_string)
 	unsigned int idx, idx2;
 	unsigned short move;
 	char promos[4] = {'n','b','r','q'};
-	int i,j,promotion = 3;
+	uint32_t i,j,promotion = 3;
 
 	idx = (7-(int(*move_string)-97))+8*(atoi(move_string + 1)-1);
 	idx2 = (7-(int(*(move_string+2))-97))+8*(atoi(move_string + 3)-1);
@@ -151,7 +150,7 @@ unsigned short node_move_list::get_move_from_string(char* move_string)
 }
 
 void node_move_list::randomize_move_order(){
-	int i,j,rand_idx;
+	int j,rand_idx;
 	unsigned short move_temp;
 
 	for(j=get_num_moves()-1;j>0;j--){
@@ -171,7 +170,7 @@ void node_move_list::swap_moves(int idx1, int idx2){
 bool node_move_list::swap_to_front(unsigned short move){
 	int i = get_num_moves()-1;
 	if(moves[i--] == move) return true;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		if(move == moves[i]){
 			swap_moves(i,iterator);
 			return true;
@@ -187,7 +186,7 @@ bool node_move_list::move_to_front(unsigned short move){
 		for(j=0;j<=iterator;j++) chksum += moves[j];
 	}
 	if(moves[i--] == move) return true;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		if(move == moves[i]){
 			memcpy(moves+i,moves+i+1,sizeof(move)*(iterator-i));
 			moves[iterator] = move;
@@ -209,7 +208,7 @@ bool node_move_list::move_to_front(unsigned short move){
 
 void node_move_list::print_moves(){
 	int i = get_num_moves()-1;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		cout << move_itos(moves[i]) << endl;
 	}
 	return;
@@ -217,7 +216,7 @@ void node_move_list::print_moves(){
 
 int node_move_list::contains(unsigned short move){
 	int i = get_num_moves()-1;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		if(moves[i] == move) break;
 	}
 	return i;

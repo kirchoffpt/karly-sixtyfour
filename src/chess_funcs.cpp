@@ -6,7 +6,7 @@ using namespace std;
 
 void print_bitboard(U64 board)
 {
-	int i,j,k;
+	int i,j;
 
 	cout << endl;
 
@@ -28,7 +28,7 @@ void print_bitboard(U64 board)
 
 void print_bitboard(U64 board, ofstream& ofs)
 {
-	int i,j,k;
+	int i,j;
 
 	ofs << endl;
 
@@ -84,7 +84,7 @@ string node_itos(int node_type)
 	return "UNDEFINED_NODE_TYPE";
 }
 
-int bit_to_idx(U64 bitboard)
+uint32_t bit_to_idx(U64 bitboard)
 {
 	unsigned long idx;
 
@@ -97,13 +97,11 @@ string idx_to_coord(int idx)
 {
 	int x = idx%8;
 	int y = idx/8;
-	char letters[8] = {'a','b','c','d','e','f','g','h'};
-	char buffer[32];
 	string coord = "";
 
 	y = y + 1;
 
-	coord.append(sizeof(char),(letters[7-x]));
+	coord.append(sizeof(char),("abcdefgh"[7-x]));
 	coord.append(to_string(y));
 
 	return coord;
@@ -174,7 +172,7 @@ U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int d
 	U64 temp, done_sq = 0;
 	unsigned long idx;
 	
-	for(depth;depth>0;depth--){
+	for(;depth>0;depth--){
 		temp = fill &~ done_sq;
 		done_sq |= temp;
 		while(bitops::bscanf64(&idx, temp)){

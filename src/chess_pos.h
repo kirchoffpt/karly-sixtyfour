@@ -89,7 +89,7 @@ class chess_pos {
 	unsigned short pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
 	int fwd_null_move();
 	void add_null_move();
-	int get_num_moves(); //undefined if used before move generation
+	unsigned int get_num_moves(); //undefined if used before move generation
 	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.

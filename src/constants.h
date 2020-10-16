@@ -1,7 +1,7 @@
 
-#define VERSION "v0.8.4"
+#define VERSION "v0.9.1"
 
-#define DEBUG false
+#define DEBUG 0
 
 #define LOG_UCI_INPUT 1
 #define FILEOUT "uci_input_log.txt"

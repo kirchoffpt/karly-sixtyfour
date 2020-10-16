@@ -308,7 +308,7 @@ chess_mask_LUT::chess_mask_LUT() {
 		k = (i%8)+2;
 		if(j < 0) j = 0;
 		if(k > 7) k = 7;
-		for(j;j<=k;j++){
+		for(;j<=k;j++){
 			temp2 |= ray_NeSe << j;
 		}
 		pawn_area_of_influence[0][i] = temp & temp2;
@@ -322,14 +322,14 @@ chess_mask_LUT::chess_mask_LUT() {
 		k = (i/8)+1;
 		if(k > 7) k = 7;
 		if(j < 0) j = 0;
-		for(j;j<=k;j++){
+		for(;j<=k;j++){
 			temp |= ray_SwSe << 8*(j);
 		}
 		j = (i%8)-1;
 		k = (i%8)+1;
 		if(j < 0) j = 0;
 		if(k > 7) k = 7;
-		for(j;j<=k;j++){
+		for(;j<=k;j++){
 			temp |= ray_NeSe << j;
 		}
 		rook_area_of_influence[i] = temp;

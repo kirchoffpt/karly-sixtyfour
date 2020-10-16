@@ -81,7 +81,7 @@ void search_handler::max_timer(int ms, float incr){
 }
 
 int search_handler::num_repetitions(const z_key position){
-	int i, count = 0;
+	size_t i, count = 0;
 	for(i=0;i<past_positions.size();i++){
 		if(past_positions[i] == position) count++;
 	}
@@ -95,7 +95,7 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 	p1 = *const_cast<chess_pos*>(c1);
 	p1.next = &p2;
 	p1.generate_moves();
-	while(move = p1.pop_and_add()){
+	while( (move = p1.pop_and_add()) ){
 		if (num_repetitions(p2.zobrist_key) >= 2){
 			entry.age = search_id;
 			entry.node_type = PVNODE;
@@ -124,25 +124,22 @@ bool search_handler::is_threefold(const chess_pos* c1){
 
 void search_handler::search(){
 	
-	int i,j,n_root_moves;
+	int i,n_root_moves;
 	int to_move_sign;
-	int top_score, score, alpha, beta, sel_depth;
+	int top_score, score, alpha, beta;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	unsigned short move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
 	int to_move;
 	string info_str;
-	long long k = 0;
 	float t, total_time;
-	char move_string[5];
-	clock_t cl;     //initializing a clock type
 	float max_time, t1, t2, cspond_time_incr;
 	bool timed;
 	std::chrono::steady_clock::time_point start, end;
 
 	i = MAX_DEPTH;
 	node_ptrs[i--] = new chess_pos;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		node_ptrs[i] = new chess_pos;
 		node_ptrs[i]->next = node_ptrs[i+1];
 	}
@@ -221,7 +218,6 @@ void search_handler::search(){
 				score = 0;
 				nodes_searched++;
 			} else {
-				k = nodes_searched;
 				start = std::chrono::steady_clock::now();
 
 				if(i==n_root_moves-1){
@@ -399,7 +395,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	if(b_move) node->pos_move_list.move_to_front(b_move);
 
 	//principal variation search (first move)
-	if(b_move = node->pop_and_add()){
+	if( (b_move = node->pop_and_add()) ){
 		eval = -pvs(node->next, depth - 1, -color, -b,-a);
 		a = max(a, eval);
         if(a >= b) goto done;
@@ -409,7 +405,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	moves_searched = 1;
 
 	//null window searches (later moves)
-    while(move = node->pop_and_add()){
+    while( (move = node->pop_and_add()) ){
     	if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
     		eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
     	} else {

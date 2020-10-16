@@ -21,6 +21,7 @@ struct search_options{
 
 class search_handler{
 	chess_pos* rootpos;
+	ttable* TT;
 	public:
 	//// UCI settings
 	search_options uci_s;
@@ -31,7 +32,6 @@ class search_handler{
 	unsigned long long nodes_searched;
 	int overall_top_score; //top score over all searches for position
 	std::vector<z_key> past_positions;
-	ttable* TT;
 	int search_depth;
 	int search_id; //do not start search with id < 1
 	std::vector<unsigned short> principal_variation;

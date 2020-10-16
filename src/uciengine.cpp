@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
 	if(argc > 1) token = argv[1];
 	else token = STARTPOS;
 
-	rootpos = new chess_pos(token); 
+	rootpos = new chess_pos(token);
 	searcher = new search_handler(rootpos);
 	rootpos->generate_moves();
 
@@ -121,11 +121,7 @@ int main(int argc, char *argv[]){
 		ofs << endl << ctime(&system_time) << endl;
 	}
 
-	cout <<	"   _/|    " << endl;
-    cout <<	"  // o\\   " << endl;
-    cout <<	"  || ._)  " << endl;
-    cout <<	"  //__\\   " << endl;
-    cout <<	"  )___(   KARLY64" << VERSION << endl;  
+    cout <<	"KARLY64" << VERSION << endl;
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
@@ -152,7 +148,7 @@ int main(int argc, char *argv[]){
 			rootpos->pos_move_list.print_moves();
 		} else if(token == "showfen"){
 			cout << rootpos->get_fen() << endl;
-		} else if(token == "quit"){
+		} else if(token == "quit" || token == "exit"){
 			searcher->stop();
 			break;
 		} else if(token == "help"){

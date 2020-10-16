@@ -20,7 +20,7 @@ public:
 	unsigned short pop_targeted_move(U64 targets); //pops first move with a dst in targets. returns 0 if no moves in list, returns 1 if no targeted move available
 	unsigned short get_move(int move_list_idx);
 	unsigned short get_random_move();
-	int get_num_moves();
+	unsigned int get_num_moves();
 	void reset_num_moves();
 	void sort_moves_by_scores(int* score_list);
 	unsigned short get_move_from_string(char* move_string);

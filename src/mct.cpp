@@ -3,7 +3,7 @@
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 
-#define FILENAME "perftpositions.txt"
+#define FILENAME "../perftpositions.txt"
 
 using namespace std;
 
@@ -20,11 +20,9 @@ void perft(chess_pos* node, int depth, long long* n){
 }
 
 int main(int argc, char *argv[]){
-	int i,j,x,n_root_moves;
+	int i,j;
+	unsigned int x;
 	chess_pos* rootpos, *node_ptrs[MAX_DEPTH];
-	unsigned short move;
-	int depth;
-	int to_move;
 	long long k = 0, total_nodes = 0;
 	std::chrono::steady_clock::time_point start, end;
 	int test_depth;
@@ -45,7 +43,7 @@ int main(int argc, char *argv[]){
 
 	i = MAX_DEPTH-1;
 	node_ptrs[i--] = new chess_pos;
-	for(i;i>=0;i--){
+	for(;i>=0;i--){
 		node_ptrs[i] = new chess_pos;
 		node_ptrs[i]->next = node_ptrs[i+1];
 	}
@@ -58,7 +56,6 @@ int main(int argc, char *argv[]){
 			infile >> test_nodes;
 		}
 		passed = false;
-		//cout << test_fen << endl;
 		rootpos = new chess_pos(test_fen);
 		rootpos->next = node_ptrs[0];
 		rootpos->generate_moves();
@@ -68,8 +65,10 @@ int main(int argc, char *argv[]){
 				cout << endl;
 			}
 		}
+		cout << test_fen << endl;
 		for(i=1;i<=test_depth;i++){
-		   start = std::chrono::steady_clock::now();
+			k = 0;
+		    start = std::chrono::steady_clock::now();
 
 			perft(rootpos, i, &k);
 
@@ -86,15 +85,15 @@ int main(int argc, char *argv[]){
 
 			total_nodes += k;
 			if(i == test_depth && k == test_nodes) passed = true;
-			k = 0;
 		}
 		if(argc > 1) break;
 		if(passed){
-			cout << "-";
+			cout << "\033[1;32m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m\n";
 		} else {
-			cout << "!";
+			cout << "\033[1;31m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m\n";
 			num_failed++;
 		}
+		cout << endl;
 		delete rootpos;
 	}
 
