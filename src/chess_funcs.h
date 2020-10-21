@@ -13,6 +13,7 @@
 
 #define U64 unsigned long long int
 
+
 void print_bitboard(U64 board);
 void print_bitboard(U64 board, std::ofstream& ofs);
 bool is_sliding_piece(int piece_type);

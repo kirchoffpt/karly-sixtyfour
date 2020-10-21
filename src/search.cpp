@@ -208,7 +208,6 @@ void search_handler::search(){
 		top_score = SCORE_LO;
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
-		cout << "\nD" << search_depth << endl;
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;

@@ -148,6 +148,8 @@ int main(int argc, char *argv[]){
 			rootpos->pos_move_list.print_moves();
 		} else if(token == "showfen"){
 			cout << rootpos->get_fen() << endl;
+		} else if(token == "hashfull"){
+			cout << to_string(searcher->get_ttable()->hashfull()) + "%" << endl;
 		} else if(token == "quit" || token == "exit"){
 			searcher->stop();
 			break;

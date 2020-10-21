@@ -28,8 +28,8 @@ class ttable {
 	U64 resize(U64 n_bytes); //returns number of available table entries
 	unsigned short find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age); //returns best move for position
 	void place(z_key z, tt_entry &t); 
-	int hashfull(); //returns valid elements per million, slow
-	std::string extract_pv(const chess_pos* rpos, unsigned short first_move);
+	int hashfull() const; //returns valid elements, slow
+	std::string extract_pv(const chess_pos* rpos, unsigned short first_move) const;
 	void dump_table(std::ostream &os);
 };
 

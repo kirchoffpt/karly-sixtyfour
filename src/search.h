@@ -20,8 +20,11 @@ struct search_options{
 };
 
 class search_handler{
+	private:
 	chess_pos* rootpos;
 	ttable* TT;
+	unsigned int search_id = 0;
+	
 	public:
 	//// UCI settings
 	search_options uci_s;
@@ -33,7 +36,6 @@ class search_handler{
 	int overall_top_score; //top score over all searches for position
 	std::vector<z_key> past_positions;
 	int search_depth;
-	int search_id; //do not start search with id < 1
 	std::vector<unsigned short> principal_variation;
 
 	search_handler(chess_pos* rootpos);
@@ -48,6 +50,7 @@ class search_handler{
 	int num_repetitions(const z_key position);
 	bool allows_threefold(const chess_pos* c1);
 	bool is_threefold(const chess_pos* c1);
+	const ttable* get_ttable(){return TT;};
 };
 
 #endif

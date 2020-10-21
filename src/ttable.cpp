@@ -64,16 +64,17 @@ unsigned short ttable::find(z_key full_key, int* score, int* alpha, int* beta, i
 	return 0;
 }
 
-int ttable::hashfull()
+int ttable::hashfull() const
 {
 	U64 i, count = 0;
 	for(i=0;i<tt.size();i++){
 		if(tt[i].age != 0) count++;
 	}
-	return count/(tt.size()/1000);
+	return count/(tt.size()/100);
 }
 
-string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move){
+string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move) const 
+{
 	chess_pos pv_pos;
 	string pv = move_itos(first_move);
 	std::vector<z_key> past_pos;

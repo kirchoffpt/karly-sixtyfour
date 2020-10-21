@@ -78,10 +78,10 @@ void chess_pos::sort_piece_list()
 					min_loc = pl[side][i].loc;
 					min_idx = i;
 				} else if(p_type == min){
-					if(pl[side][i].loc < min_loc && side){
+					if((pl[side][i].loc < min_loc) && side){
 						min_loc = pl[side][i].loc;
 						min_idx = i;
-					} else if(pl[side][i].loc > min_loc && !side){
+					} else if((pl[side][i].loc > min_loc) && !side){
 						min_loc = pl[side][i].loc;
 						min_idx = i;
 					}
@@ -439,7 +439,7 @@ void chess_pos::init_targets(int side)
 	U64 allied_pawns = pieces[side][PAWN];
 	unsigned long idx, pinned_idx;
 	int attacking_piece, pinned_piece;
-	U64 u, m, u_temp, v, ab_ray, attacker_loc, king_loc, possible_pins, king_attacker_ray, e_controlled_sq;
+	U64 u, m, u_temp, v, ab_ray, attacker_loc, king_loc, possible_pins, e_controlled_sq;
 	U64 ep_target_square_copy = ep_target_square;
 	U64 pinned_slider_moves[8][2];
 	int pinned_sliders = 0;
@@ -508,7 +508,6 @@ void chess_pos::init_targets(int side)
 				if(possible_pins == 0){
 					//if no possible pinned pieces the king is attacked
 					in_check++;
-					king_attacker_ray = ab_ray;
 				} else if( (bitops::popcount64(possible_pins) == 1) ){
 					//check for obstructions, otherwise a piece is pinned
 					//cout << "The " << piece_itos(this->piece_at_idx(bit_to_idx(possible_pins),side)) << " at " << idx_to_coord(bit_to_idx(possible_pins)) << " is pinned." << endl;
@@ -545,10 +544,6 @@ void chess_pos::init_targets(int side)
 		} else {
 			if((king_loc & u) > 0 ) {
 				in_check++;
-				king_attacker_ray = attacker_loc;
-				if((attacking_piece == PAWN) && (ep_target_square)){
-					if(ep_target_square/attacker_loc + attacker_loc/ep_target_square == 256) king_attacker_ray |= ep_target_square;
-				}
 			}
 		}
 
@@ -582,8 +577,6 @@ void chess_pos::init_targets(int side)
 		u = pinned_pawn_moves[pinned_pawns][1];
 		store_init_targets(attacker_loc,u,true);
 	}
-
-	king_attacker_ray &= ~ep_target_square;
 
 	//other pieces next except for the king
 	while(bitops::bscanf64( &idx, allies)){
