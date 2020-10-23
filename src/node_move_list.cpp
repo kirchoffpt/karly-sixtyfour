@@ -121,15 +121,15 @@ void node_move_list::sort_moves_by_scores(int* score_list)
 	return;
 }
 
-unsigned short node_move_list::get_move_from_string(char* move_string)
+unsigned short node_move_list::get_move_from_string(string move_string)
 {
 	unsigned int idx, idx2;
 	unsigned short move;
 	char promos[4] = {'n','b','r','q'};
 	uint32_t i,j,promotion = 3;
 
-	idx = (7-(int(*move_string)-97))+8*(atoi(move_string + 1)-1);
-	idx2 = (7-(int(*(move_string+2))-97))+8*(atoi(move_string + 3)-1);
+	idx = (7-(int(move_string[0])-97))+8*(atoi(&move_string[1])-1);
+	idx2 = (7-(int(move_string[2])-97))+8*(atoi(&move_string[3])-1);
 
 	move = (idx << SRC_SHIFT) + (idx2 << DST_SHIFT);
 
@@ -137,7 +137,7 @@ unsigned short node_move_list::get_move_from_string(char* move_string)
 		if((moves[i] & (SRC_MASK+DST_MASK)) == (move & (SRC_MASK+DST_MASK))){
 			if((moves[i] & SPECIAL_MASK) == PROMO){
 				for(j=0;j<4;j++){
-					if(*(move_string+4) == promos[j]) promotion = j;
+					if(move_string[4] == promos[j]) promotion = j;
 				}
 				move += (unsigned short)(PROMO + promotion);
 				return move;

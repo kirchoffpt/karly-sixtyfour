@@ -53,8 +53,8 @@ void chess_pos::copy_pos(chess_pos* source_pos){
 	castlable_rooks = source_pos->castlable_rooks; 
 	to_move = source_pos->to_move;
 	last_move_null = source_pos->last_move_null;
-	changed_squares = 0;
-	last_move_to_and_from = 0;
+	changed_squares = source_pos->changed_squares;
+	last_move_to_and_from = source_pos->last_move_to_and_from;
 
 	if(DEBUG){ 
 		assert(to_move == source_pos->to_move);

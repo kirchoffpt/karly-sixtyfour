@@ -14,7 +14,6 @@ using namespace std;
 
 void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
 	string token, s, fenstring;
-	char move_string[5];
 	unsigned short move = 0;
 
 	while(searcher->is_searching){
@@ -44,11 +43,9 @@ void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searche
 	rootpos->generate_moves();
 	rootpos->sort_piece_list();
 	searcher->past_positions.push_back(rootpos->zobrist_key);
-	//cout << token << endl;
 	if(s == "moves" || (is >> token && token == "moves")){
 		while(is >> token){
-			strcpy(move_string, token.c_str());
-			move = rootpos->pos_move_list.get_move_from_string(move_string);
+			move = rootpos->pos_move_list.get_move_from_string(token);
 			if(move != 0){
 				rootpos->add_move(move);
 				rootpos->generate_moves();
