@@ -66,7 +66,8 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -march=native -mtune=native -flto")
 endif(UNIX)
 
-set_target_properties(gtest PROPERTIES COMPILE_FLAGS "")
-
 add_subdirectory(src)
+
+enable_testing()
 add_subdirectory(test)
+

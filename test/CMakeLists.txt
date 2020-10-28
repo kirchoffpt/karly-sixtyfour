@@ -7,4 +7,10 @@ target_include_directories(testall PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(testall PRIVATE gtest)
 target_link_libraries(testall PRIVATE Threads::Threads)
 target_link_libraries(testall PRIVATE k64lib)
-set_target_properties(testall PROPERTIES COMPILE_FLAGS "")
+
+add_test(
+  NAME
+    unit
+  COMMAND
+    ${CMAKE_CURRENT_BINARY_DIR}/testall
+  )
