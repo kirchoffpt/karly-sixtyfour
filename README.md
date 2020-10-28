@@ -12,7 +12,7 @@ I left the old readme if anyone actually wants to read that stuff. Most things i
 The project started as more low-level C style with C++ classes thrown in but I'm currently in the process of refactoring, adding tests, and just generally messing with things.
 
 ## BUILD
-Just cmake the src folder and then build (try `cmake -B ./bin`). Should work for both g++ and msvc (Note that CXX20 is set in CMakeLists.txt). 
+Just cmake the root folder and then build (try `cmake -B ./bin`). Should work for both g++ and msvc (Note that CXX20 is set in CMakeLists.txt). 
 
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
