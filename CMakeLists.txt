@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 3.13)
 project(karly64)
 set(CMAKE_CXX_STANDARD 20)
-if( NOT CMAKE_BUILD_TYPE )
-   set( CMAKE_BUILD_TYPE Release ... FORCE )
-endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
+message("Generated with config types: ${CMAKE_CONFIGURATION_TYPES}")
+
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    message("No config types set, switching build to release.")
+    message("To build debug in single configuration build use the below argument in cmake call.")
+    message(-DCMAKE_CONFIGURATION_TYPES=Debug)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+message("Build type: ${CMAKE_BUILD_TYPE}")
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "")
