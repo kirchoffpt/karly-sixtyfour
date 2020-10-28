@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(karly64)
+project(karly64 VERSION 0.9.2)
 set(CMAKE_CXX_STANDARD 20)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -70,4 +70,6 @@ add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(test)
+
+
 

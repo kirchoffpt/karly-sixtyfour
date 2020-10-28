@@ -10,7 +10,7 @@ target_link_libraries(testall PRIVATE k64lib)
 
 add_test(
   NAME
-    unit
+    all_tests
   COMMAND
     ${CMAKE_CURRENT_BINARY_DIR}/testall
   )

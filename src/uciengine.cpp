@@ -1,6 +1,7 @@
 #include "chess_pos.h"
 #include "constants.h"
 #include "search.h"
+#include "k64config.h"
 #include <sstream>
 #include <fstream>
 #include <chrono>
@@ -103,6 +104,8 @@ int main(int argc, char *argv[]){
 	search_handler *searcher;
 	time_t system_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
 	std::chrono::steady_clock::time_point start_t, curr_t;
+	string version_str = to_string(karly64_VERSION_MAJOR) + "." + to_string(karly64_VERSION_MINOR) + "." + to_string(karly64_VERSION_PATCH);
+	string build_str = CMAKE_BUILD_TYPE;
 
 	start_t = std::chrono::steady_clock::now();
 
@@ -118,7 +121,7 @@ int main(int argc, char *argv[]){
 		ofs << endl << ctime(&system_time) << endl;
 	}
 
-    cout <<	"KARLY64" << VERSION << endl;
+    cout <<	"KARLY64v" + version_str + " Build: " + build_str << endl;
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
@@ -126,7 +129,7 @@ int main(int argc, char *argv[]){
 		ofs << std::chrono::duration_cast<std::chrono::microseconds>(curr_t - start_t).count() << "->	"<< cmd << endl;
 		if(!(is >> token)) continue;
 		if(token == "uci"){
-			cout << "id name karly64 " << VERSION << "\n";
+			cout << "id name karly64 " + version_str + "\n";
 			cout << "id author Paul Kirchoff\n";
 			cout << "uciok\n";
 		} else if(token == "isready"){
