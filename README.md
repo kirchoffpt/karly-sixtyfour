@@ -19,7 +19,6 @@ cmake .
 make
 ./karly64
 ```
-
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
 Reminder that this is a command line engine and does not come with its own gui. Arena chess works quite well.
