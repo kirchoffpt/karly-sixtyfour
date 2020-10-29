@@ -7,7 +7,7 @@
 //mostly minimal testing for various functions
 //we usually don't care what happens when something is used improperly
 //most of these are used only at a low level and error checking will just slows things down
-//functions reserved for debugging are not tested
+//functions reserved for debugging like print statements are not tested
 
 TEST(ChessFuncs, IdxToCoord) {
   EXPECT_EQ(idx_to_coord(27), "e4");
@@ -84,12 +84,28 @@ TEST(ChessFuncs, BitToIdxRollingTest) {
 TEST(ChessFuncs, FloodFillKing) {
   chess_pos pos; //create chess pos for lookup table to avoid generating extra lookup tables
 
-  // U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int depth); //gives all the squares a king could travel to given so many moves in a row
+  // U64 flood_fill_king(U--64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int depth); //gives all the squares a king could travel to given so many moves in a row
   EXPECT_EQ(flood_fill_king(0x1,0x0,&pos.MLUT,10),DARK_SQUARES | LIGHT_SQUARES);
   EXPECT_EQ(flood_fill_king(0x1,G_FILE,&pos.MLUT,10),H_FILE);
   EXPECT_EQ(flood_fill_king(0x80,LIGHT_SQUARES,&pos.MLUT,10),DARK_SQUARES);
   EXPECT_EQ(flood_fill_king(0x8000000000000000,DARK_SQUARES,&pos.MLUT,10),LIGHT_SQUARES);
 }
+
+TEST(ChessFuncs, FloodFillKingMaze) {
+  chess_pos pos; //create chess pos for lookup table to avoid generating extra lookup tables
+  U64 maze = 0x007F228AFA027E00;
+  //  .......x
+  //  .1111111
+  //  ..1...1o
+  //  1...1.1.
+  //  11111.1.
+  //  ......1.
+  //  .111111.
+  //  ........
+  EXPECT_EQ(flood_fill_king(0x0100000000000000,maze,&pos.MLUT,30),~maze);
+}
+
+
 
 
 
