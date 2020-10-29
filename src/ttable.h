@@ -21,6 +21,7 @@ struct tt_entry{
 
 class ttable {
 	z_key key_mask = ~z_key(0);
+	
 	public:
 	std::vector<tt_entry> tt;
 	U64 max_elements;
