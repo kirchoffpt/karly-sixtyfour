@@ -21,10 +21,18 @@ make
 ```
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
-Reminder that this is a command line engine and does not come with its own gui. Arena chess works quite well.
-
 ## TEST
 After building just use ctest or manually run testall for a more detailed breakdown. May be slightly different depending on the build type.
 
 There is also a perft executable (counts moves of different positions to certain depths) that will probably be deprecated.
+
+## USAGE
+
+This is a command line engine and does not come with its own gui. Arena chess works quite well.
+There is currently no gameplay mode but using the engine in the command line can most easily be done with the following:
+
+  * `go`
+  * `stop`
+  * to add a move (or many) use something like `pos pos moves e2e4 e7e5`
+  * `showpos` / `showmoves`
 
