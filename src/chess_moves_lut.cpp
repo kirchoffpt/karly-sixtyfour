@@ -1,3 +1,7 @@
+
+#include <map>
+#include <random>
+#include "constants.h"
 #include "chess_moves_lut.h"
 
 #define INCLUDE_CENTER false

@@ -24,6 +24,9 @@ U64 reverse_U64(U64 x);
 //lookup table for pseudo legal moves on a clear board but including pawn attacks. does not include castling
 
 class chess_mask_LUT {
+
+private:
+
 	U64 move_mask[7][64];
 	U64 pawn_attack_mask[2][64];
 	U64 V_mask[2][64];

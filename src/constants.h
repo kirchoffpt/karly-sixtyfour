@@ -1,19 +1,8 @@
-
-#define VERSION "v0.9.1"
-
 #define DEBUG 0
 
 #define LOG_UCI_INPUT 1
 #define FILEOUT "uci_input_log.txt"
 #define MAX_MOVE_TIME_USAGE 0.25
-
-#define CORRESPONDENCE_MODE_THRESHOLD 86400E3 //time per move (ms) greater/equal than this will enable correspondence mode
-#define CSPOND_TIME_BASE 5E3
-#define CSPOND_TIME_INCREMENT 5E3 //gets added to base time if score is not sufficient 
-#define CSPOND_TIME_DECAY 0.99 //max time is base+sum(incr*decay^n,n,0,infinity)
-#define CSPOND_TRGT_DEPTHSCORE 5000 //check implementation in search.cpp for reference
-#define CSPOND_CONTEMPT 35 //centipawns added to top score when checking to see if search should be extended
-
 
 //DEBUG 1- fast assertions 
 //DEBUG 2- previously used for move generation debugging
@@ -34,6 +23,14 @@
 #define ENABLE_NULL_MOVE_PRUNING true 			//enable null move pruning
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+
+//settings for correspondence mode
+#define CORRESPONDENCE_MODE_THRESHOLD 86400E3 //time per move (ms) greater/equal than this will enable correspondence mode
+#define CSPOND_TIME_BASE 5E3
+#define CSPOND_TIME_INCREMENT 5E3 //gets added to base time if score is not sufficient 
+#define CSPOND_TIME_DECAY 0.99 //max time is base+sum(incr*decay^n,n,0,infinity)
+#define CSPOND_TRGT_DEPTHSCORE 5000 //check implementation in search.cpp for reference
+#define CSPOND_CONTEMPT 35 //centipawns added to top score when checking to see if search should be extended
 
 ////////////////////////////////////////////
 //below values should not be changed lightly
