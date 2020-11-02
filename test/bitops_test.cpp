@@ -15,13 +15,35 @@ TEST(BitOps, Popcount64) {
   EXPECT_EQ(popcount64(0x0000000000000001), 1);
 }
 
-// TEST(BitOps, BitScanForward64) {
-//   EXPECT_EQ(popcount64(0x1), 1);
-// }
+TEST(BitOps, BitScanForward64) {
+  unsigned long idx;
+  U64 mask = 0x8000000000000000;
+  for(int i=0;i<64;i++){
+   bscanf64(&idx, mask | (mask >> i));
+   ASSERT_EQ(idx,63-i);
+  }
+}
 
-// TEST(BitOps, BitScanReverse64) {
-//   EXPECT_EQ(popcount64(0x1), 2);
-// }
+TEST(BitOps, BitScanReverse64) {
+  unsigned long idx;
+  U64 mask = 0x1;
+  for(int i=0;i<64;i++){
+   bscanr64(&idx, mask | (mask << i));
+   ASSERT_EQ(idx,i);
+  }
+}
+
+TEST(BitOps, BitScanForward64Zero) {
+  unsigned long idx;
+  U64 mask = 0x0;
+  EXPECT_FALSE(bscanf64(&idx, mask));
+}
+
+TEST(BitOps, BitScanReverse64Zero) {
+  unsigned long idx;
+  U64 mask = 0x0;
+  EXPECT_FALSE(bscanr64(&idx, mask));
+}
 
 }
 

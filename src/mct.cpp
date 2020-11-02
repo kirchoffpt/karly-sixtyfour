@@ -65,7 +65,8 @@ int main(int argc, char *argv[]){
 				cout << endl;
 			}
 		}
-		cout << test_fen << endl;
+		cout << "[   ] " + test_fen;
+		fflush(stdout);
 		for(i=1;i<=test_depth;i++){
 			k = 0;
 		    start = std::chrono::steady_clock::now();
@@ -88,9 +89,9 @@ int main(int argc, char *argv[]){
 		}
 		if(argc > 1) break;
 		if(passed){
-			cout << "\033[1;32m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m\n";
+			cout << "\r[ \033[1;32m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m ] " + test_fen  << flush;
 		} else {
-			cout << "\033[1;31m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m\n";
+			cout << "\r[ \033[1;31m" + to_string(k) + "/" + to_string(test_nodes) + "\033[0m ] " + test_fen  << flush;
 			num_failed++;
 		}
 		cout << endl;

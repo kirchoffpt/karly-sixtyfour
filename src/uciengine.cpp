@@ -98,6 +98,7 @@ void uci_go(istringstream& is, search_handler* searcher){
 
 int main(int argc, char *argv[]){
 
+
 	string cmd, token;
 	ofstream ofs;
 	chess_pos *rootpos;
@@ -121,7 +122,9 @@ int main(int argc, char *argv[]){
 		ofs << endl << ctime(&system_time) << endl;
 	}
 
-    cout <<	"KARLY64v" + version_str + " Build: " + build_str << endl;
+    cout <<	"KARLY64v" + version_str;
+	if(build_str.length() > 0) cout << " Build: " + build_str;
+	cout << endl;
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);

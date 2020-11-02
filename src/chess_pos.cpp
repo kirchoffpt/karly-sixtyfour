@@ -1755,45 +1755,54 @@ int chess_pos::clear_next_occs()
 
 void chess_pos::print_pos(bool basic)
 {
-	int i,j,k,p;
+	int row,file,k,p;
 	char a;
 	char piece_chars[2][6] = {{'P','N','B','R','Q','K'},{'p','n','b','r','q','k'}};
+	string o = "\n";
 
-	cout << '\n';
-
-	for(i=0 ; i < 8 ; i++){
-		for(j =0; j <8; j++){
-			cout << " ";
+	for(row=0 ; row < 8 ; row++){
+		for(file =0; file <8; file++){
+			o += " ";
 			for(k=0;k<2;k++){
-				p = piece_at_idx(63-(8*i+j),k);
+				p = piece_at_idx(63-(8*row+file),k);
 				if(p >= 0){
-					cout << piece_chars[k][p];
+					o += piece_chars[k][p];
 					break;
 				}
 			}
-			if(p < 0) cout << "-";
+			if(p < 0) o += "-";
 		}
-		cout << endl;
+		if(!basic){
+			switch(row){
+				case 0:
+					o += "	to move: ";
+					o += !to_move ? "white" : "black";
+					break;
+				case 1:
+					o +=  "	en passant target: ";
+					o += ep_target_square ? idx_to_coord(bit_to_idx(ep_target_square)) : "-";
+					break;
+				case 2:
+					o += "	castling: ";
+					if(castlable_rooks & KSCW_CHANGED_SQUARES) o += "K ";
+					if(castlable_rooks & KSCB_CHANGED_SQUARES) o += "k ";
+					if(castlable_rooks & QSCW_CHANGED_SQUARES) o += "Q ";
+					if(castlable_rooks & QSCB_CHANGED_SQUARES) o += "q ";
+					break;
+				case 3:
+					o += "	zobrist: " + to_string(zobrist_key);
+					break;
+				case 4:
+
+					break;
+			}
+		}
+		o += "\n";
 	}
 
-	cout << '\n';
+	o += '\n';
 
-	if(basic) return;
-
-	if(to_move == 0){
-		a = 'w';
-	} else {
-		a = 'b';
-	}
-	cout << "to move: " << a << endl;
-	cout << "en passant target: ";
-	if(ep_target_square == 0){
-		cout << "-" << endl;
-	} else {
-		cout << idx_to_coord(bit_to_idx(ep_target_square)) << endl;
-	}
-	cout << "zobrist: " << zobrist_key;
-	cout << endl;
+	cout << o << flush;
 }
 
 void chess_pos::dump_pos(ofstream& ofs) //for debugging
