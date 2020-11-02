@@ -42,12 +42,12 @@ bool chess_pos::operator == (chess_pos const &c1){
 }
 
 void chess_pos::copy_pos(chess_pos* source_pos){
-	memcpy(pl, source_pos->pl, sizeof(pl)+sizeof(pin_rays));
+	memcpy(pl, source_pos->pl, sizeof(pl));
+	memcpy(pin_rays, source_pos->pin_rays, sizeof(pin_rays));
+	memcpy(pieces, source_pos->pieces, sizeof(pieces));
+	memcpy(occ, source_pos->occ, sizeof(occ));
 	memcpy(piece_at, source_pos->piece_at, sizeof(piece_at));
-	memcpy(pieces, source_pos->pieces, sizeof(piece_at));
 
-	occ[WHITE] = source_pos->occ[WHITE];
-	occ[BLACK] = source_pos->occ[BLACK];
 	zobrist_key = source_pos->zobrist_key;
 	ep_target_square = source_pos->ep_target_square;
 	castlable_rooks = source_pos->castlable_rooks; 
