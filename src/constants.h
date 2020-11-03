@@ -26,8 +26,8 @@
 
 //settings for correspondence mode
 #define CORRESPONDENCE_MODE_THRESHOLD 86400E3 //time per move (ms) greater/equal than this will enable correspondence mode
-#define CSPOND_TIME_BASE 5E3
-#define CSPOND_TIME_INCREMENT 5E3 //gets added to base time if score is not sufficient 
+#define CSPOND_TIME_BASE 1E3
+#define CSPOND_TIME_INCREMENT 3E3 //gets added to base time if score is not sufficient 
 #define CSPOND_TIME_DECAY 0.99 //max time is base+sum(incr*decay^n,n,0,infinity)
 #define CSPOND_TRGT_DEPTHSCORE 5000 //check implementation in search.cpp for reference
 #define CSPOND_CONTEMPT 35 //centipawns added to top score when checking to see if search should be extended
