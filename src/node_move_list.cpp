@@ -15,6 +15,7 @@
 #define PROMO_MOVE_CONVOLUTE 	0x0001000100010001
 
 //16 bit move, SRC-DST-SPECIAL-PROMOPIECE
+//6-6-2-2 total 16
 
 
 using namespace std;
@@ -128,10 +129,7 @@ unsigned short node_move_list::get_move_from_string(string move_string)
 	char promos[4] = {'n','b','r','q'};
 	uint32_t i,j,promotion = 3;
 
-	idx = (7-(int(move_string[0])-97))+8*(atoi(&move_string[1])-1);
-	idx2 = (7-(int(move_string[2])-97))+8*(atoi(&move_string[3])-1);
-
-	move = (idx << SRC_SHIFT) + (idx2 << DST_SHIFT);
+	move = encode_move_srcdst(move_string);
 
 	for(i=0;i<get_num_moves();i++){
 		if((moves[i] & (SRC_MASK+DST_MASK)) == (move & (SRC_MASK+DST_MASK))){

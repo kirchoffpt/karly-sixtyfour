@@ -31,6 +31,7 @@ public:
 	bool move_to_front(unsigned short move);
 	void print_moves();
 	int contains(unsigned short move); //returns idx, -1 if not found
+	const unsigned short* data(){return moves;} //if explicit reading of moves is needed
 };
 
 

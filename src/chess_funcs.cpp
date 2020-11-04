@@ -195,3 +195,23 @@ int board_dist(int idx1, int idx2)
 	return x + y;
 }
 
+unsigned short encode_move_srcdst(string move_str) //input i.e. "e2e4"
+{
+	unsigned int idx, idx2;
+	unsigned short move;
+	char promos[4] = {'n','b','r','q'};
+	uint32_t i,j,promotion = 3;
+
+	if(move_str.length() < 4) return 0;
+
+	idx = (7-(int(move_str[0])-'a'))+8*(atoi(&move_str[1])-1);
+	idx2 = (7-(int(move_str[2])-'a'))+8*(atoi(&move_str[3])-1);
+
+	move = (idx << SRC_SHIFT) + (idx2 << DST_SHIFT);
+	return move;
+}
+
+unsigned short encode_move_srcdst(int src_idx, int dst_idx)
+{
+	return encode_move_srcdst(idx_to_coord(src_idx) + idx_to_coord(dst_idx));
+}

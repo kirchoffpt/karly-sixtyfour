@@ -105,6 +105,12 @@ TEST(ChessFuncs, FloodFillKingMaze) {
   EXPECT_EQ(flood_fill_king(0x0100000000000000,maze,&pos.MLUT,30),~maze);
 }
 
+TEST(ChessFuncs, EncodeSrcDst) {
+  EXPECT_EQ(encode_move_srcdst("h1h2"),8<<DST_SHIFT);
+  EXPECT_EQ(encode_move_srcdst("a8a1"),encode_move_srcdst(63,7));
+  EXPECT_EQ(encode_move_srcdst("e2e4"),(11<<SRC_SHIFT)+(27<<DST_SHIFT));
+}
+
 
 
 
