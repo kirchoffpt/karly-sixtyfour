@@ -4,7 +4,7 @@
 #include "bitops.h"
 #include "chess_funcs.h"
 
-#define U64 unsigned long long int
+#define U64 uint64_t
 
 using namespace std;
 

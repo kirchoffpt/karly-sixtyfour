@@ -8,7 +8,7 @@
 #include "chess_funcs.h"
 
 #ifndef U64
-#define U64 unsigned long long int
+#define U64 uint64_t
 #endif
 
 #define PROMO_MOVE_BUNDLE 		0x0007000600050004

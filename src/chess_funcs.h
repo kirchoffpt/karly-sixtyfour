@@ -2,7 +2,7 @@
 #include "constants.h"
 #include "chess_moves_lut.h"
 
-#define U64 unsigned long long int
+#define U64 uint64_t
 
 
 void print_bitboard(U64 board);

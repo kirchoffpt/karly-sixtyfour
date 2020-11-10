@@ -5,7 +5,7 @@
 #include "constants.h"
 
 #ifndef U64
-#define U64 unsigned long long int
+#define U64 uint64_t
 #endif
 
 //  A B C D E F G H

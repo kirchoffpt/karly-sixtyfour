@@ -3,10 +3,11 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include <cstdint>
 #include "chess_funcs.h"
 
 #ifndef U64
-#define U64 unsigned long long int
+#define U64 uint64_t
 #endif
 
 
@@ -22,7 +23,7 @@ ttable::ttable()
 U64 ttable::resize(U64 n_bytes)
 {
 	U64 n_elements = n_bytes/(sizeof(tt_entry));
-	n_elements = max((long long unsigned int)5,n_elements);
+	n_elements = max((U64)5,n_elements);
 	key_mask = n_elements;
 	tt.reserve(n_elements);
 	tt_entry invalid_entry = {0};

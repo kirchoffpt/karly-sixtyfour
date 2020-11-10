@@ -20,7 +20,7 @@ Always generate moves before evaluating or adding a move.
 #include "node_move_list.h"
 #include "constants.h"
 
-#define U64 unsigned long long int
+#define U64 uint64_t
 
 struct piece_list_struct 
 { 

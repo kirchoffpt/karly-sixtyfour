@@ -1,7 +1,9 @@
 #ifndef BITOPS_H
 #define BITOPS_H
 
-#define U64 unsigned long long int
+#include <cstdint>
+
+#define U64 uint64_t
 
 namespace bitops {
 

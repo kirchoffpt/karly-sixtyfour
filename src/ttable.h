@@ -2,7 +2,7 @@
 #define TTABLE_H
 
 #ifndef U64
-#define U64 unsigned long long int
+#define U64 uint64_t
 #endif
 
 #include <vector>
