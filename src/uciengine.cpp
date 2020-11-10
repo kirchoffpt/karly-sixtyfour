@@ -117,7 +117,7 @@ int main(int argc, char *argv[]){
 	rootpos = new chess_pos(token);
 	searcher = new search_handler(rootpos);
 	rootpos->generate_moves();
-
+	
 	if(LOG_UCI_INPUT){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;

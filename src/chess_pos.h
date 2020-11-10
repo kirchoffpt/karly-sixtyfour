@@ -66,14 +66,14 @@ class chess_pos {
 	int eval(); //moves must have been generated first
 	int mate_eval(); //moves must have been generated first
 	void add_move(uint16_t move); //moves must have been generated first
-	void add_move_to_next_node(uint16_t move); //copy this position into another and add move there
+	uint16_t generate_and_add_random(); //returns move added, 0 if none
 	void print_pos(bool);
 	void print_line();
 	void dump_pos(std::ofstream& ofile); //for debugging
 	void generate_moves(); 
 	void order_moves();
 	int order_moves_smart(); //returns number of moves from top not to reduce
-	void copy_pos(const chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
+	void copy_pos(const chess_pos& source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
 	uint16_t pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
@@ -81,13 +81,14 @@ class chess_pos {
 	int fwd_null_move();
 	void add_null_move();
 	unsigned int get_num_moves(); //undefined if used before move generation
-	uint16_t operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
+	uint16_t operator - (chess_pos const &c1); //A - B, returns LEGAL move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
 	std::string get_fen(); //generates FEN string
 	int clear_next_occs(); //follows linked list of positions clearing their piece occupations. returns total depth cleared. use to get seldepth (max depth searched) after a search
 							
 	private:
+	void add_move_to_next_node(uint16_t move); //copy this position into another and add move there
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
 	U64 create_pawn_pushes(U64 pawn_loc, int side);
 	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces

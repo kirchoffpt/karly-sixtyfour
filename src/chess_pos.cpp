@@ -43,20 +43,20 @@ bool chess_pos::operator == (chess_pos const &c1){
 	return true;
 }
 
-void chess_pos::copy_pos(const chess_pos* source_pos){
-	memcpy(pl, source_pos->pl, sizeof(pl));
-	memcpy(pin_rays, source_pos->pin_rays, sizeof(pin_rays));
-	memcpy(pieces, source_pos->pieces, sizeof(pieces));
-	memcpy(occ, source_pos->occ, sizeof(occ));
-	memcpy(piece_at, source_pos->piece_at, sizeof(piece_at));
+void chess_pos::copy_pos(const chess_pos& source_pos){
+	memcpy(pl, source_pos.pl, sizeof(pl));
+	memcpy(pin_rays, source_pos.pin_rays, sizeof(pin_rays));
+	memcpy(pieces, source_pos.pieces, sizeof(pieces));
+	memcpy(occ, source_pos.occ, sizeof(occ));
+	memcpy(piece_at, source_pos.piece_at, sizeof(piece_at));
 
-	zobrist_key = source_pos->zobrist_key;
-	ep_target_square = source_pos->ep_target_square;
-	castlable_rooks = source_pos->castlable_rooks; 
-	to_move = source_pos->to_move;
-	last_move_null = source_pos->last_move_null;
-	changed_squares = source_pos->changed_squares;
-	last_move_to_and_from = source_pos->last_move_to_and_from;
+	zobrist_key = source_pos.zobrist_key;
+	ep_target_square = source_pos.ep_target_square;
+	castlable_rooks = source_pos.castlable_rooks; 
+	to_move = source_pos.to_move;
+	last_move_null = source_pos.last_move_null;
+	changed_squares = source_pos.changed_squares;
+	last_move_to_and_from = source_pos.last_move_to_and_from;
 }
 
 void chess_pos::sort_piece_list()
@@ -208,7 +208,7 @@ chess_pos::chess_pos(string FEN)
 
 void chess_pos::add_move_to_next_node(uint16_t move)
 {
-	next->copy_pos(this);
+	next->copy_pos(*this);
 	next->add_move(move);
 }
 
@@ -1167,15 +1167,15 @@ void chess_pos::order_moves()
 
 int chess_pos::order_moves_smart()
 {
-	static chess_pos pos;
-	static int m_s[MAX_MOVES_IN_POS];
+	chess_pos pos;
+	int m_s[MAX_MOVES_IN_POS];
 	int noreduce = 0;
 	int i, color = 1-to_move*2;
 	uint16_t move;
 	int stand_pat = this->eval()*color, delta;
 	for(i = get_num_moves() - 1;i>=0;i--){
 		move = pos_move_list.get_move(i);
-		pos.copy_pos(this);
+		pos.copy_pos(*this);
 		pos.add_move(move);
 		pos.generate_moves();
 		delta = color*pos.eval() - stand_pat;
@@ -1533,7 +1533,7 @@ void chess_pos::generate_moves_deprecated()
 int chess_pos::fwd_null_move(){
 	if(next == NULL) return 0;
 	if(in_check || bitops::popcount64(occ[to_move]) < 4 || last_move_null) return 0;
-	next->copy_pos(this);
+	next->copy_pos(*this);
 	next->add_null_move();
 	return 1;
 }
@@ -1546,6 +1546,13 @@ void chess_pos::add_null_move(){
 	ep_target_square = 0;
 	last_move_check_evasion = 0;
 	changed_squares = 0;
+}
+
+uint16_t chess_pos::generate_and_add_random(){
+	generate_moves();
+	uint16_t move = pos_move_list.get_random_move();
+	if(move) add_move(move);
+	return move;
 }
 
 void chess_pos::add_move(uint16_t move)

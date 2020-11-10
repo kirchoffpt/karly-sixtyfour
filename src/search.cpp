@@ -215,7 +215,7 @@ void search_handler::search(){
 		for(i=n_root_moves-1;i>=0;i--){
 			move = rootpos->pos_move_list.get_move(i);
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
-			rootpos->next->copy_pos(rootpos);
+			rootpos->next->copy_pos(*rootpos);
 			rootpos->next->add_move(move);
 			if(allows_threefold(rootpos->next)){
 				score = 0;

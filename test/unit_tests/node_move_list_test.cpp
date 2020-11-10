@@ -43,7 +43,7 @@ protected:
 class NodeMoveListSmall: public ::testing::Test { 
 protected: 
 
-    std::shared_ptr<node_move_list> ml = std::shared_ptr<node_move_list>(new node_move_list());
+    std::unique_ptr<node_move_list> ml = std::unique_ptr<node_move_list>(new node_move_list());
 
     NodeMoveListSmall( ){ 
     } 
