@@ -15,8 +15,8 @@ chess_pos::chess_pos(){
 	prev = nullptr;
 }
 
-unsigned short chess_pos::operator - (chess_pos const &c1){
-	unsigned short move; 
+uint16_t chess_pos::operator - (chess_pos const &c1){
+	uint16_t move; 
 	chess_pos p1, p2;
 	p1 = *const_cast<chess_pos*>(&c1);
 	p1.next = &p2;
@@ -206,7 +206,7 @@ chess_pos::chess_pos(string FEN)
 	load_new_fen(FEN);
 }
 
-void chess_pos::add_move_to_next_node(unsigned short move)
+void chess_pos::add_move_to_next_node(uint16_t move)
 {
 	next->copy_pos(this);
 	next->add_move(move);
@@ -622,7 +622,7 @@ void chess_pos::generate_moves()
 	U64 ep_sq = ep_target_square;
 	uint32_t i,j, king_idx, e_king_idx,p_type,p_pinned;
 	unsigned long idx;
-	unsigned short move, src_square;
+	uint16_t move, src_square;
 	bool ep_check = false;
 	U64 Move_Compare;
 
@@ -1171,7 +1171,7 @@ int chess_pos::order_moves_smart()
 	static int m_s[MAX_MOVES_IN_POS];
 	int noreduce = 0;
 	int i, color = 1-to_move*2;
-	unsigned short move;
+	uint16_t move;
 	int stand_pat = this->eval()*color, delta;
 	for(i = get_num_moves() - 1;i>=0;i--){
 		move = pos_move_list.get_move(i);
@@ -1220,7 +1220,7 @@ void chess_pos::generate_moves_deprecated()
 	int pinned_sliders = 0;
 	U64 pinned_pawn_moves[8][2];
 	int pinned_pawns = 0;
-	unsigned short move, src_square;
+	uint16_t move, src_square;
 	bool promotion = false;
 	U64 can_castle;
 
@@ -1548,7 +1548,7 @@ void chess_pos::add_null_move(){
 	changed_squares = 0;
 }
 
-void chess_pos::add_move(unsigned short move)
+void chess_pos::add_move(uint16_t move)
 {
 	int src_idx = unsigned((move & SRC_MASK)>>SRC_SHIFT);
 	int dst_idx = unsigned((move & DST_MASK)>>DST_SHIFT);
@@ -1706,9 +1706,9 @@ void chess_pos::add_move(unsigned short move)
 	zobrist_key ^= z_key(castlable_rooks);
 }
 
-unsigned short chess_pos::pop_and_add()
+uint16_t chess_pos::pop_and_add()
 {
-	unsigned short move;
+	uint16_t move;
 	if(next == NULL) return 0;
 	move = pos_move_list.pop_move();
 	if(move == 0) return 0;
@@ -1716,9 +1716,9 @@ unsigned short chess_pos::pop_and_add()
 	return move;
 }
 
-unsigned short chess_pos::pop_and_add_capture()
+uint16_t chess_pos::pop_and_add_capture()
 {
-	unsigned short move;
+	uint16_t move;
 	if(next == NULL) return 0;
 	move = pos_move_list.pop_targeted_move(captures);
 	if(move > 1) add_move_to_next_node(move);

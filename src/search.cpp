@@ -93,7 +93,7 @@ int search_handler::num_repetitions(const z_key position){
 }
 
 bool search_handler::allows_threefold(const chess_pos* c1){
-	unsigned short move; 
+	uint16_t move; 
 	tt_entry entry = {0};
 	chess_pos p1, p2;
 	p1 = *const_cast<chess_pos*>(c1);
@@ -132,7 +132,7 @@ void search_handler::search(){
 	int to_move_sign;
 	int top_score, score, alpha, beta;
 	chess_pos* node_ptrs[MAX_DEPTH+1];
-	unsigned short move;
+	uint16_t move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
 	int to_move;
 	string info_str;
@@ -350,7 +350,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	int eval = SCORE_LO;
 	int a_cpy = a;
-	unsigned short move, b_move;
+	uint16_t move, b_move;
 	int moves_searched, noreduce_moves = MAX_MOVES_IN_POS;
 	tt_entry entry;
 	chess_pos* past_node = node;

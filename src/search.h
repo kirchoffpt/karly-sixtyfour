@@ -6,7 +6,7 @@
 #include "ttable.h"
 
 struct search_options{
-	unsigned short moves[MAX_MOVES_IN_POS];
+	uint16_t moves[MAX_MOVES_IN_POS];
 	int num_moves;
 	bool ponder;
 	int time[2];							
@@ -27,13 +27,13 @@ class search_handler{
 	search_options uci_s;
 	////
 	bool is_searching;
-	unsigned short best_move;
-	unsigned short ponder_move; //move that we think the enemy will play after ours
+	uint16_t best_move;
+	uint16_t ponder_move; //move that we think the enemy will play after ours
 	unsigned long long nodes_searched;
 	int overall_top_score; //top score over all searches for position
 	std::vector<z_key> past_positions;
 	int search_depth;
-	std::vector<unsigned short> principal_variation;
+	std::vector<uint16_t> principal_variation;
 
 	search_handler(chess_pos* rootpos);
 	~search_handler();

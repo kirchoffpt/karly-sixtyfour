@@ -42,7 +42,7 @@ void ttable::place(z_key z, tt_entry &t)
 	return;
 }
 
-unsigned short ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age)
+uint16_t ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth, uint16_t age)
 {
 	z_key key = full_key % key_mask;
 	if(tt[key].full_key == full_key){
@@ -75,7 +75,7 @@ int ttable::hashfull() const
 	return count/(tt.size()/100);
 }
 
-string ttable::extract_pv(const chess_pos* rpos, unsigned short first_move) const 
+string ttable::extract_pv(const chess_pos* rpos, uint16_t first_move) const 
 {
 	chess_pos pv_pos;
 	string pv = move_itos(first_move);

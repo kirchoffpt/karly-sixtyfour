@@ -16,7 +16,7 @@ using namespace std;
 
 void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
 	string token, s, fenstring;
-	unsigned short move = 0;
+	uint16_t move = 0;
 
 	while(searcher->is_searching){
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));

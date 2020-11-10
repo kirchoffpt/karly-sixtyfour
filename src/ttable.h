@@ -15,7 +15,7 @@ struct tt_entry{
 	int score;
 	short age;
 	short depth;
-	unsigned short best_move;
+	uint16_t best_move;
 	char node_type; //exact, upperbound, or lowerbound
 };
 
@@ -27,10 +27,10 @@ class ttable {
 	U64 max_elements;
 	ttable();
 	U64 resize(U64 n_bytes); //returns number of available table entries
-	unsigned short find(z_key full_key, int* score, int* alpha, int* beta, int depth, unsigned short age); //returns best move for position
+	uint16_t find(z_key full_key, int* score, int* alpha, int* beta, int depth, uint16_t age); //returns best move for position
 	void place(z_key z, tt_entry &t); 
 	int hashfull() const; //returns valid elements, slow
-	std::string extract_pv(const chess_pos* rpos, unsigned short first_move) const;
+	std::string extract_pv(const chess_pos* rpos, uint16_t first_move) const;
 	void dump_table(std::ostream &os);
 };
 

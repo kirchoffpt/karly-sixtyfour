@@ -28,20 +28,20 @@ node_move_list::node_move_list()
 	srand(time(NULL));
 }
 
-void node_move_list::push_move(unsigned short move)
+void node_move_list::push_move(uint16_t move)
 {
 	moves[++iterator] = move;
 	return;
 }
 
-void node_move_list::push_promo_move(unsigned short move)
+void node_move_list::push_promo_move(uint16_t move)
 {
 	*(U64*)(moves + iterator + 1) = PROMO_MOVE_BUNDLE + (U64)(move)*PROMO_MOVE_CONVOLUTE;
 	iterator += 4;
 	return;
 }				
 
-unsigned short node_move_list::pop_move()
+uint16_t node_move_list::pop_move()
 {
 	if(iterator >= 0){
 		return moves[iterator--];
@@ -50,10 +50,10 @@ unsigned short node_move_list::pop_move()
 	}
 }
 
-unsigned short node_move_list::pop_targeted_move(U64 targets)
+uint16_t node_move_list::pop_targeted_move(U64 targets)
 {
 	int i;
-	unsigned short move_temp;
+	uint16_t move_temp;
 
 	if(iterator >= 0){
 		for(i=get_num_moves()-1;i>=0;i--){
@@ -70,7 +70,7 @@ unsigned short node_move_list::pop_targeted_move(U64 targets)
 	}
 }
 
-unsigned short node_move_list::get_move(int move_list_idx)
+uint16_t node_move_list::get_move(int move_list_idx)
 {
 	if((move_list_idx >= 0) && (move_list_idx <= iterator)){
 		return moves[move_list_idx];
@@ -79,7 +79,7 @@ unsigned short node_move_list::get_move(int move_list_idx)
 	}
 }
 
-unsigned short node_move_list::get_random_move()
+uint16_t node_move_list::get_random_move()
 {
 	if(iterator < 0) return 0;
 	return moves[rand() % (iterator+1)];
@@ -101,7 +101,7 @@ void node_move_list::sort_moves_by_scores(int* score_list)
 {
 	int i,j,max_idx;
 	int score, max_score = SCORE_LO;
-	unsigned short move_temp;
+	uint16_t move_temp;
 
 	for(j=get_num_moves()-1;j>0;j--){
 		max_score = SCORE_LO;
@@ -122,10 +122,10 @@ void node_move_list::sort_moves_by_scores(int* score_list)
 	return;
 }
 
-unsigned short node_move_list::get_move_from_string(string move_string)
+uint16_t node_move_list::get_move_from_string(string move_string)
 {
 	unsigned int idx, idx2;
-	unsigned short move;
+	uint16_t move;
 	char promos[4] = {'n','b','r','q'};
 	uint32_t i,j,promotion = 3;
 
@@ -137,7 +137,7 @@ unsigned short node_move_list::get_move_from_string(string move_string)
 				for(j=0;j<4;j++){
 					if(move_string[4] == promos[j]) promotion = j;
 				}
-				move += (unsigned short)(PROMO + promotion);
+				move += (uint16_t)(PROMO + promotion);
 				return move;
 			} else {
 				return moves[i];
@@ -149,7 +149,7 @@ unsigned short node_move_list::get_move_from_string(string move_string)
 
 void node_move_list::randomize_move_order(){
 	int j,rand_idx;
-	unsigned short move_temp;
+	uint16_t move_temp;
 
 	for(j=get_num_moves()-1;j>0;j--){
 		rand_idx = rand() % (iterator+1);
@@ -165,7 +165,7 @@ void node_move_list::swap_moves(int idx1, int idx2){
 	return; 
 }
 
-bool node_move_list::swap_to_front(unsigned short move){
+bool node_move_list::swap_to_front(uint16_t move){
 	int i = get_num_moves()-1;
 	if(moves[i--] == move) return true;
 	for(;i>=0;i--){
@@ -177,7 +177,7 @@ bool node_move_list::swap_to_front(unsigned short move){
 	return false;
 }
 
-bool node_move_list::move_to_front(unsigned short move){
+bool node_move_list::move_to_front(uint16_t move){
 	int i = get_num_moves()-1;
 	int j, chksum = 0; //for debug since memcpy on overlapped objects is undefined
 	if(DEBUG){
@@ -213,7 +213,7 @@ void node_move_list::print_moves(){
 	return;
 }
 
-int node_move_list::contains(unsigned short move){
+int node_move_list::contains(uint16_t move){
 	int i = get_num_moves()-1;
 	for(;i>=0;i--){
 		if(moves[i] == move) break;

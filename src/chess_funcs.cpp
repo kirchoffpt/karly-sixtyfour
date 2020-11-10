@@ -115,14 +115,14 @@ string idx_to_coord(int idx)
 	return coord;
 }
 
-void print_move(unsigned short move)
+void print_move(uint16_t move)
 {
 	cout << move_itos(move);
 }
 
-string move_itos(unsigned short move)
+string move_itos(uint16_t move)
 {
-	unsigned short x;
+	uint16_t x;
 	if(move == 0) return "0000";
 	string s = "";
 	s += idx_to_coord((move & SRC_MASK) >> SRC_SHIFT);
@@ -203,10 +203,10 @@ int board_dist(int idx1, int idx2)
 	return x + y;
 }
 
-unsigned short encode_move_srcdst(string move_str) //input i.e. "e2e4"
+uint16_t encode_move_srcdst(string move_str) //input i.e. "e2e4"
 {
 	unsigned int idx, idx2;
-	unsigned short move;
+	uint16_t move;
 	char promos[4] = {'n','b','r','q'};
 	uint32_t i,j,promotion = 3;
 
@@ -219,7 +219,7 @@ unsigned short encode_move_srcdst(string move_str) //input i.e. "e2e4"
 	return move;
 }
 
-unsigned short encode_move_srcdst(int src_idx, int dst_idx)
+uint16_t encode_move_srcdst(int src_idx, int dst_idx)
 {
 	return encode_move_srcdst(idx_to_coord(src_idx) + idx_to_coord(dst_idx));
 }

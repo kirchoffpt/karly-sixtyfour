@@ -33,7 +33,7 @@ struct piece_list_struct
 
 class chess_pos {
 	public:
-	unsigned short ply = 0; //should set to what depth this node will be
+	uint16_t ply = 0; //should set to what depth this node will be
 	piece_list_struct pl[2][MAX_PIECES_PER_SIDE];
 	U64 pin_rays[2][8]; //8 for each king, 0-7, E,SE,S,SW,W,NW,N,NE
 	U64 pieces[2][6]; 
@@ -65,8 +65,8 @@ class chess_pos {
 	int is_quiet();
 	int eval(); //moves must have been generated first
 	int mate_eval(); //moves must have been generated first
-	void add_move(unsigned short move); //moves must have been generated first
-	void add_move_to_next_node(unsigned short move); //copy this position into another and add move there
+	void add_move(uint16_t move); //moves must have been generated first
+	void add_move_to_next_node(uint16_t move); //copy this position into another and add move there
 	void print_pos(bool);
 	void print_line();
 	void dump_pos(std::ofstream& ofile); //for debugging
@@ -76,12 +76,12 @@ class chess_pos {
 	void copy_pos(const chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
-	unsigned short pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
-	unsigned short pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
+	uint16_t pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node
+	uint16_t pop_and_add_capture(); //returns 0 if no moves, returns 1 if no captures
 	int fwd_null_move();
 	void add_null_move();
 	unsigned int get_num_moves(); //undefined if used before move generation
-	unsigned short operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
+	uint16_t operator - (chess_pos const &c1); //A - B, returns legal move that gets from B to A. returns 0 if none. not very fast.
 	bool operator == (chess_pos const &c1); //checks position equivalency only
 	void sort_piece_list(); //sort pieces to remove ambiguities between fen and fen+moves input methods. also influences move ordering. use at root only.
 	std::string get_fen(); //generates FEN string
