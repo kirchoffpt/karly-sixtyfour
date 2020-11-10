@@ -1,5 +1,6 @@
 #include "chess_pos.h"
 #include <chrono>
+#include "chess_funcs.h"
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 

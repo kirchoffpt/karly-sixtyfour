@@ -1,4 +1,12 @@
-
+#include <cmath>
+#include <cstdio>
+#include <iomanip>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <bitset>
+#include <fstream>
+#include <ctime>
 #include "chess_funcs.h"
 #include "bitops.h"
 

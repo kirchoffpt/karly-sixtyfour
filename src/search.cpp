@@ -1,4 +1,8 @@
+#include <thread>
+#include <chrono>
+#include <cstring>
 #include "search.h"
+#include "chess_funcs.h"
 
 #define TABLE_SIZE 256E6
 #define LMR_LIMIT 3

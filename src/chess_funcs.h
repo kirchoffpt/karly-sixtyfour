@@ -1,13 +1,4 @@
-#include <cmath>
-#include <cstdio>
-#include <iomanip>
-#include <vector>
-#include <iostream>
-#include <algorithm>
-#include <bitset>
-#include <fstream>
 #include <string>
-#include <ctime>
 #include "constants.h"
 #include "chess_moves_lut.h"
 

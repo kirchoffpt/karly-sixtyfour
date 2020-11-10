@@ -1,5 +1,4 @@
 #include <memory>
-#include <iostream>
 #include <vector>
 #include "node_move_list.h"
 #include "chess_funcs.h"
@@ -18,7 +17,7 @@ U64 concat_shorts(unsigned short a, unsigned short b, unsigned short c, unsigned
 class NodeMoveListFull: public ::testing::Test { 
 protected: 
 
-    std::shared_ptr<node_move_list> ml = std::shared_ptr<node_move_list>(new node_move_list());
+    std::unique_ptr<node_move_list> ml = std::unique_ptr<node_move_list>(new node_move_list());
     unsigned short top_move; //top of list
 
     NodeMoveListFull( ){ 
@@ -117,7 +116,7 @@ TEST_F(NodeMoveListFull, MoveToFrontRandomChksum) {
     
     //perform many random moves to front
     //assert that no moves are lost or changed
-    for(int i=0; i<100000; i++){
+    for(int i=0; i<1E6; i++){
         ml->move_to_front(ml->get_random_move());
     }
 
@@ -198,13 +197,6 @@ TEST_F(NodeMoveListSmall, PopAnyTarget) {
     ml->pop_targeted_move(~(U64)0);
     EXPECT_EQ(ml->get_num_moves(), 0);
 }
-
-
-
-	// unsigned short pop_targeted_move(U64 targets); //pops first move with a dst in targets. returns 0 if no moves in list, returns 1 if no targeted move available
-	// unsigned short get_move_from_string(std::string move_string);
-	// void randomize_move_order();
-
 
 
 

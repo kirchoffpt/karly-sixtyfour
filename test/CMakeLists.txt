@@ -1,19 +1,20 @@
 
 file(GLOB TEST_SRC
-    "*test.cpp"
+    "./unit_tests/*test.cpp"
 )
 
-add_executable(testall gtest_main.cpp ${TEST_SRC})
+add_executable(utest gtest_main.cpp ${TEST_SRC})
     
-target_include_directories(testall PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(testall PRIVATE gtest)
-target_link_libraries(testall PRIVATE Threads::Threads)
-target_link_libraries(testall PRIVATE k64lib)
-set_target_properties(testall PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+target_include_directories(utest PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(utest PRIVATE gtest)
+target_link_libraries(utest PRIVATE Threads::Threads)
+target_link_libraries(utest PRIVATE k64lib)
+set_target_properties(utest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
 
 add_test(
   NAME
-    all_tests
+    utest
   COMMAND
-    ${CMAKE_BINARY_DIR}/testall
+    ${CMAKE_BINARY_DIR}/utest
   )

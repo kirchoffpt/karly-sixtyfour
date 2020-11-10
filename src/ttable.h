@@ -5,10 +5,10 @@
 #define U64 unsigned long long int
 #endif
 
-#include "constants.h"
 #include <vector>
 #include <string>
 #include "chess_pos.h"
+#include "constants.h"
 
 struct tt_entry{
 	z_key full_key;

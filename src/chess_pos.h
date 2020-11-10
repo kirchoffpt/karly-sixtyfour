@@ -12,22 +12,13 @@ Always generate moves before evaluating or adding a move.
 #define CHESS_POS_H
 
 #include <cmath>
-#include <time.h>
-#include <cstdio>
-#include <iomanip>
 #include <vector>
 #include <iostream>
-#include <algorithm>
-#include <bitset>
 #include <fstream>
 #include <string>
-#include <bit>
-#include "assert.h"
-#include <ctime>
 #include "chess_moves_lut.h"
 #include "node_move_list.h"
 #include "constants.h"
-#include "chess_funcs.h"
 
 #define U64 unsigned long long int
 
@@ -82,7 +73,7 @@ class chess_pos {
 	void generate_moves(); 
 	void order_moves();
 	int order_moves_smart(); //returns number of moves from top not to reduce
-	void copy_pos(chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
+	void copy_pos(const chess_pos* source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
 	unsigned short pop_and_add(); //applies top most move, decrements number of moves, and COPIES POS TO NEXT NODE. returns move or 0 when out of moves or no next node

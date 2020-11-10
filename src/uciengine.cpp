@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>  
 #include <cstring>
+#include <thread>
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 #define FILEOUT "uci_input_log.txt"

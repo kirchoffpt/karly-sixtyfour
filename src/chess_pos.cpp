@@ -1,6 +1,8 @@
+#include <cstring>
+#include <algorithm>
 #include "chess_pos.h"
 #include "bitops.h"
-#include <cstring>
+#include "chess_funcs.h"
 
 #define U64 unsigned long long int
 
@@ -41,7 +43,7 @@ bool chess_pos::operator == (chess_pos const &c1){
 	return true;
 }
 
-void chess_pos::copy_pos(chess_pos* source_pos){
+void chess_pos::copy_pos(const chess_pos* source_pos){
 	memcpy(pl, source_pos->pl, sizeof(pl));
 	memcpy(pin_rays, source_pos->pin_rays, sizeof(pin_rays));
 	memcpy(pieces, source_pos->pieces, sizeof(pieces));
@@ -55,12 +57,6 @@ void chess_pos::copy_pos(chess_pos* source_pos){
 	last_move_null = source_pos->last_move_null;
 	changed_squares = source_pos->changed_squares;
 	last_move_to_and_from = source_pos->last_move_to_and_from;
-
-	if(DEBUG){ 
-		assert(to_move == source_pos->to_move);
-		assert(castlable_rooks == source_pos->castlable_rooks);
-		assert(ep_target_square == source_pos->ep_target_square);
-	}
 }
 
 void chess_pos::sort_piece_list()
@@ -178,10 +174,6 @@ void chess_pos::load_new_fen(string FEN)
 	for(i=0;i<6;i++){
 		occ[0] |= pieces[0][i];
 		occ[1] |= pieces[1][i];
-	}
-	if(DEBUG){
-		assert(bitops::popcount64(occ[WHITE]) <= MAX_PIECES_PER_SIDE);
-		assert(bitops::popcount64(occ[BLACK]) <= MAX_PIECES_PER_SIDE);
 	}
 	for(i=0;i<8;i++){
 		pin_rays[0][i] = 0;
@@ -1569,10 +1561,6 @@ void chess_pos::add_move(unsigned short move)
 	zobrist_key ^= z_key(castlable_rooks);
 	zobrist_key ^= MLUT.get_zobrist_piece(to_move,piece_type,src_idx);
 	zobrist_key ^= MLUT.get_zobrist_btm();
-
-	if(DEBUG){
-		assert(src_square != dst_square);
-	}
 
 	if(dst_square & occ[!to_move]){
 		last_move_capture = 1;

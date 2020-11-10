@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include "chess_funcs.h"
 
 #ifndef U64
 #define U64 unsigned long long int

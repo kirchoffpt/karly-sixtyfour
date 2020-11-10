@@ -27,8 +27,8 @@ public:
 	unsigned short get_move_from_string(std::string move_string);
 	void randomize_move_order();
 	void swap_moves(int idx1, int idx2);
-	bool swap_to_front(unsigned short move);
-	bool move_to_front(unsigned short move);
+	bool swap_to_front(unsigned short move); //simple swapping of elements
+	bool move_to_front(unsigned short move); //preserves order of other elements
 	void print_moves();
 	int contains(unsigned short move); //returns idx, -1 if not found
 	const unsigned short* data(){return moves;} //if explicit reading of moves is needed

@@ -1,5 +1,3 @@
-#define DEBUG 0
-
 #define LOG_UCI_INPUT 1
 #define FILEOUT "uci_input_log.txt"
 #define MAX_MOVE_TIME_USAGE 0.25
@@ -35,6 +33,8 @@
 ////////////////////////////////////////////
 //below values should not be changed lightly
 ////////////////////////////////////////////
+
+#define DEBUG 0 //deprecated
 
 typedef unsigned long long z_key;
 
