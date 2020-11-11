@@ -10,7 +10,7 @@
 #define MOVE_3 0x1ff0
 #define MOVE_4 0x03f0
 
-U64 concat_shorts(unsigned short a, unsigned short b, unsigned short c, unsigned short d){
+U64 concat_shorts(uint16_t a, uint16_t b, uint16_t c, uint16_t d){
     return ((U64)d << 48) + ((U64)c << 32) + ((U64)b << 16) + (U64)a;
 }
 
@@ -18,7 +18,7 @@ class NodeMoveListFull: public ::testing::Test {
 protected: 
 
     std::unique_ptr<node_move_list> ml = std::unique_ptr<node_move_list>(new node_move_list());
-    unsigned short top_move; //top of list
+    uint16_t top_move; //top of list
 
     NodeMoveListFull( ){ 
     } 
@@ -85,7 +85,7 @@ TEST_F(NodeMoveListFull, ResetGetPush) {
 
 TEST_F(NodeMoveListFull, PopMove) {
     int n = ml->get_num_moves();
-    unsigned short move = ml->pop_move();
+    uint16_t move = ml->pop_move();
     EXPECT_EQ(ml->get_num_moves(),n-1);
     EXPECT_EQ(move, top_move);
     while(move = ml->pop_move()){}
@@ -107,7 +107,7 @@ TEST_F(NodeMoveListFull, ContainsRandom) {
 //*important test since memcpy is used in a technically undefined way*
 TEST_F(NodeMoveListFull, MoveToFrontRandomChksum) {
     unsigned long long chksum = 0;
-    unsigned short chkxor = 0;
+    uint16_t chkxor = 0;
 
     for(int i=0; i<ml->get_num_moves(); i++){
         chksum += ml->get_move(i);

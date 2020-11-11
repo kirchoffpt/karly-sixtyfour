@@ -16,33 +16,31 @@ using namespace std;
 
 ttable::ttable()
 {
-	tt.reserve(0);
-	tt.clear();
+	resize(0);
 }
 
 U64 ttable::resize(U64 n_bytes)
 {
+	this->clear();
 	U64 n_elements = n_bytes/(sizeof(tt_entry));
-	n_elements = max((U64)5,n_elements);
+	n_elements = max((U64)256,n_elements);
 	key_mask = n_elements;
 	tt.reserve(n_elements);
 	tt_entry invalid_entry = {0};
 	tt.resize(n_elements, invalid_entry);
-	max_elements = n_elements;
 	return n_elements;
 }
 
-void ttable::place(z_key z, tt_entry &t)
+void ttable::place(const tt_entry &t)
 {
-	z_key key = z % key_mask;
+	z_key key = t.full_key % key_mask;
 	tt_entry curr = tt[key];
 	if((curr.age >= t.age) && (curr.node_type > t.node_type)) return;
-	t.full_key = z;
 	tt[key] = t;
 	return;
 }
 
-uint16_t ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth, uint16_t age)
+uint16_t ttable::find(z_key full_key, int* score, int* alpha, int* beta, int depth, short age) const
 {
 	z_key key = full_key % key_mask;
 	if(tt[key].full_key == full_key){
@@ -72,37 +70,35 @@ int ttable::hashfull() const
 	for(i=0;i<tt.size();i++){
 		if(tt[i].age != 0) count++;
 	}
-	return count/(tt.size()/100);
+	return count/(tt.size()/1E6);
 }
 
-string ttable::extract_pv(const chess_pos* rpos, uint16_t first_move) const 
+string ttable::extract_pv(chess_pos rpos, uint16_t first_move) const 
 {
-	chess_pos pv_pos;
 	string pv = move_itos(first_move);
 	std::vector<z_key> past_pos;
 	std::vector<z_key>::iterator it;
 	z_key key, hkey;
-	pv_pos = *const_cast<chess_pos*>(rpos);
 	int idx;
 
-	past_pos.push_back(pv_pos.zobrist_key);
-	pv_pos.generate_moves();
-	pv_pos.add_move(first_move);
+	past_pos.push_back(rpos.zobrist_key);
+	rpos.generate_moves();
+	rpos.add_move(first_move);
 
 	while(true){
-		if((it = std::find(past_pos.begin(), past_pos.end(), pv_pos.zobrist_key)) != past_pos.end()) {
+		if((it = std::find(past_pos.begin(), past_pos.end(), rpos.zobrist_key)) != past_pos.end()) {
 		    //repeated position in PV
 		    idx = std::distance(it, past_pos.end());
 		    pv += "\nLOOP IN PV LENGTH-" + to_string(idx);
 		    break;
 		}
-		past_pos.push_back(pv_pos.zobrist_key);
-		key = pv_pos.zobrist_key;
+		past_pos.push_back(rpos.zobrist_key);
+		key = rpos.zobrist_key;
 		hkey = key % key_mask;
 		if(tt[hkey].full_key == key && tt[hkey].node_type == PVNODE){
-			pv_pos.generate_moves();
-			if(pv_pos.pos_move_list.swap_to_front(tt[hkey].best_move)){ //if move list contains this move
-				pv_pos.add_move(tt[hkey].best_move);
+			rpos.generate_moves();
+			if(rpos.pos_move_list.swap_to_front(tt[hkey].best_move)){ //if move list contains this move
+				rpos.add_move(tt[hkey].best_move);
 				pv += " " + move_itos(tt[hkey].best_move);
 			} else {
 				goto exit_pv_loop;
@@ -132,4 +128,16 @@ void ttable::dump_table(ostream &os){
 		}
 	}
 	return;
+}
+
+void ttable::clear(){
+	this->tt.clear();
+}
+
+U64 ttable::get_bytes() const{
+	return tt.size()*sizeof(tt_entry); //bytes
+}
+
+U64 ttable::size() const{
+	return tt.size(); 
 }

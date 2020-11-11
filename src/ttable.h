@@ -21,16 +21,19 @@ struct tt_entry{
 
 class ttable {
 	z_key key_mask = ~z_key(0);
+	std::vector<tt_entry> tt;
+	void clear();
 	
 	public:
-	std::vector<tt_entry> tt;
-	U64 max_elements;
 	ttable();
-	U64 resize(U64 n_bytes); //returns number of available table entries
-	uint16_t find(z_key full_key, int* score, int* alpha, int* beta, int depth, uint16_t age); //returns best move for position
-	void place(z_key z, tt_entry &t); 
-	int hashfull() const; //returns valid elements, slow
-	std::string extract_pv(const chess_pos* rpos, uint16_t first_move) const;
+	U64 resize(U64 n_bytes); //clears table, returns number of available table entries
+	U64 get_bytes() const;
+	void reset(){ resize(get_bytes()); };
+	U64 size() const;
+	uint16_t find(z_key full_key, int* score, int* alpha, int* beta, int depth, short age) const; //returns best move for position
+	void place(const tt_entry &t); 
+	int hashfull() const; //returns valid elements per million, slow
+	std::string extract_pv(chess_pos rpos, uint16_t first_move) const;
 	void dump_table(std::ostream &os);
 };
 

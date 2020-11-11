@@ -34,7 +34,6 @@ void search_handler::reset(){
 	search_id = 0;
 	best_move = 0;
 	ponder_move = 0;
-	TT->tt.clear();
 	TT->resize(TABLE_SIZE);
 	return;	
 }
@@ -45,7 +44,6 @@ void search_handler::go(){
 	search_id++;
 	overall_top_score = SCORE_LO;
 	if(CLEAR_TTABLE_BEFORE_SEARCH){
-		TT->tt.clear();
 		TT->resize(TABLE_SIZE);
 	}
 	thread search_thread(&search_handler::search,this);
@@ -101,11 +99,12 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 	p1.generate_moves();
 	while( (move = p1.pop_and_add()) ){
 		if (num_repetitions(p2.zobrist_key) >= 2){
+			entry.full_key = p2.zobrist_key;
 			entry.age = search_id;
 			entry.node_type = PVNODE;
 			entry.depth = MAX_DEPTH;
 			entry.score = 0;
-			TT->place(p2.zobrist_key, entry);
+			TT->place(entry);
 			//cout << "info string " << move_itos(move) << " will draw after " << move_itos(*p1-*rootpos) << endl;
 			break;
 		}
@@ -116,11 +115,12 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 bool search_handler::is_threefold(const chess_pos* c1){
 	tt_entry entry = {0};
 	if (num_repetitions(c1->zobrist_key) >= 2){
+		entry.full_key = c1->zobrist_key;
 		entry.age = search_id;
 		entry.node_type = PVNODE;
 		entry.depth = MAX_DEPTH;
 		entry.score = 0;
-		TT->place(c1->zobrist_key, entry);
+		TT->place(entry);
 		return true;
 	}
 	return false;
@@ -280,7 +280,7 @@ void search_handler::search(){
 		info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
 		info_str += " time " + to_string(int(total_time));
 		//info_str += " hashfull " + to_string(TT->hashfull());
-		info_str += " pv " + TT->extract_pv(rootpos, best_move);
+		info_str += " pv " + TT->extract_pv(*rootpos, best_move);
 		cout << info_str + "\n";
 		if(timed && top_score >= CHECKMATE-MATE_BUFFER){
 			break;
@@ -307,7 +307,7 @@ void search_handler::stop(){
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
 
-	cout << "PV " + TT->extract_pv(rootpos, best_move) + "\n";
+	cout << "PV " + TT->extract_pv(*rootpos, best_move) + "\n";
 	fflush(stdout);
 
 
@@ -427,7 +427,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
     done:
 
-    //entry into transposition tabl-
+    //entry into transposition table
+	entry.full_key = this_key;
     entry.depth = depth;
     entry.score = a;
     entry.age = search_id;
@@ -439,7 +440,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
     } else {
     	entry.node_type = PVNODE;
     }
-    TT->place(this_key, entry);
+    TT->place(entry);
 
     return a;
 }

@@ -117,7 +117,7 @@ int main(int argc, char *argv[]){
 	rootpos = new chess_pos(token);
 	searcher = new search_handler(rootpos);
 	rootpos->generate_moves();
-	
+
 	if(LOG_UCI_INPUT){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;
@@ -153,7 +153,8 @@ int main(int argc, char *argv[]){
 		} else if(token == "showfen"){
 			cout << rootpos->get_fen() << endl;
 		} else if(token == "hashfull"){
-			cout << to_string(searcher->get_ttable()->hashfull()) + "%" << endl;
+			cout << to_string((float)(searcher->get_ttable()->hashfull())/1E4) + " % of "
+			+ to_string((float)(searcher->get_ttable()->get_bytes())/1E6) + " MB" << endl;
 		} else if(token == "quit" || token == "exit"){
 			searcher->stop();
 			break;

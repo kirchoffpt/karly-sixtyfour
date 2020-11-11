@@ -206,10 +206,11 @@ bool node_move_list::move_to_front(uint16_t move){
 
 void node_move_list::print_moves(){
 	int i = get_num_moves()-1;
+	cout << get_num_moves() << " moves... ";
 	for(;i>=0;i--){
-		cout << move_itos(moves[i]) + " | ";
+		cout << move_itos(moves[i]) + " ";
 	}
-	cout << get_num_moves() << endl;
+	cout << endl;
 	return;
 }
 
