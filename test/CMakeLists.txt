@@ -5,6 +5,10 @@ file(GLOB TEST_SRC
 
 add_executable(utest gtest_main.cpp ${TEST_SRC})
 add_executable(movet gtest_main.cpp move_gen_test.cpp)
+add_executable(perft perft.cpp)
+
+target_include_directories(perft PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(perft PRIVATE k64lib)
     
 target_include_directories(utest PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(utest PRIVATE gtest)
@@ -15,7 +19,7 @@ target_include_directories(movet PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(movet PRIVATE gtest)
 target_link_libraries(movet PRIVATE k64lib)
 
-set_target_properties(utest movet PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set_target_properties(utest movet perft PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 
 add_test(

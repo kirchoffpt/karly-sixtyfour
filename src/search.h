@@ -18,7 +18,8 @@ struct search_options{
 
 class search_handler{
 	private:
-	chess_pos* rootpos;
+	const chess_pos* source_pos;
+	chess_pos* rootpos; //our copy of source pos
 	ttable* TT;
 	unsigned int search_id = 0;
 	
@@ -35,7 +36,7 @@ class search_handler{
 	int search_depth;
 	std::vector<uint16_t> principal_variation;
 
-	search_handler(chess_pos* rootpos);
+	search_handler(const chess_pos* rootpos);
 	~search_handler();
 	void go(); //launches search() threads
 	void reset();
@@ -45,8 +46,8 @@ class search_handler{
 	int quiesce(chess_pos* node, int depth, int color, int a, int b);
 	int pvs(chess_pos* node, int depth, int color, int a, int b);
 	int num_repetitions(const z_key position);
-	bool allows_threefold(const chess_pos* c1);
-	bool is_threefold(const chess_pos* c1);
+	bool allows_threefold(const chess_pos& c1);
+	bool is_threefold(const chess_pos& c1);
 	const ttable* get_ttable(){return TT;};
 };
 

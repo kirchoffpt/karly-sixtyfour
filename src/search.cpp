@@ -3,6 +3,7 @@
 #include <cstring>
 #include "search.h"
 #include "chess_funcs.h"
+#include "postree.h"
 
 #define TABLE_SIZE 256E6
 #define LMR_LIMIT 3
@@ -11,9 +12,8 @@
 
 using namespace std;
 
-search_handler::search_handler(chess_pos* pos){
-	rootpos = pos;
-	rootpos->ply = 0;
+search_handler::search_handler(const chess_pos* pos){
+	source_pos = pos;
 	search_id = 0; //incrememt before searching
 	principal_variation.reserve(MAX_DEPTH);
 	TT = new ttable;
@@ -90,11 +90,11 @@ int search_handler::num_repetitions(const z_key position){
 	return count;
 }
 
-bool search_handler::allows_threefold(const chess_pos* c1){
+bool search_handler::allows_threefold(const chess_pos& c1){
 	uint16_t move; 
 	tt_entry entry = {0};
 	chess_pos p1, p2;
-	p1 = *const_cast<chess_pos*>(c1);
+	p1 = c1;
 	p1.next = &p2;
 	p1.generate_moves();
 	while( (move = p1.pop_and_add()) ){
@@ -112,10 +112,10 @@ bool search_handler::allows_threefold(const chess_pos* c1){
 	return is_threefold(c1);
 }
 
-bool search_handler::is_threefold(const chess_pos* c1){
+bool search_handler::is_threefold(const chess_pos& c1){
 	tt_entry entry = {0};
-	if (num_repetitions(c1->zobrist_key) >= 2){
-		entry.full_key = c1->zobrist_key;
+	if (num_repetitions(c1.zobrist_key) >= 2){
+		entry.full_key = c1.zobrist_key;
 		entry.age = search_id;
 		entry.node_type = PVNODE;
 		entry.depth = MAX_DEPTH;
@@ -140,21 +140,8 @@ void search_handler::search(){
 	float max_time, t1, t2, cspond_time_incr;
 	bool timed;
 	std::chrono::steady_clock::time_point start, end;
-
-	i = MAX_DEPTH;
-	node_ptrs[i--] = new chess_pos;
-	for(;i>=0;i--){
-		node_ptrs[i] = new chess_pos;
-		node_ptrs[i]->next = node_ptrs[i+1];
-	}
-	rootpos->next = node_ptrs[0];
-	node_ptrs[0]->prev = rootpos;
-	for(i=1;i<=MAX_DEPTH;i++){
-		node_ptrs[i]->prev = node_ptrs[i-1];
-	}
-	for(i=0;i<MAX_DEPTH+1;i++){
-		node_ptrs[i]->ply = i+1;
-	}
+	postree tree(*source_pos, MAX_DEPTH);
+	rootpos = tree.root();
 
 	rootpos->generate_moves();
 	n_root_moves = rootpos->get_num_moves();
@@ -217,7 +204,7 @@ void search_handler::search(){
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(*rootpos);
 			rootpos->next->add_move(move);
-			if(allows_threefold(rootpos->next)){
+			if(allows_threefold(*(rootpos->next))){
 				score = 0;
 				nodes_searched++;
 			} else {
@@ -291,10 +278,6 @@ void search_handler::search(){
 	}
 
 	exit_search:
-
-	for(i=0;i<=MAX_DEPTH;i++){
-		delete node_ptrs[i];
-	}
 
 	if(is_searching && !uci_s.movetime) stop();
 	return;

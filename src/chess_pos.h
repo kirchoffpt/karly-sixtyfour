@@ -13,6 +13,7 @@ Always generate moves before evaluating or adding a move.
 
 #include <cmath>
 #include <vector>
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <string>
