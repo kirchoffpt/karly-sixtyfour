@@ -1,7 +1,7 @@
 # Karly64 
 Chess engine written in C++11
 
-Version 0.9.x
+Version 1.0.x
 
 A 64-bit, mostly [UCI](http://wbec-ridderkerk.nl/html/UCIProtocol.html) compliant, AB minimax engine. Elo is approximately 2000 depending on the time control and various other factors. This engine is a hobby project and is being written completely from scratch.
 
@@ -19,6 +19,8 @@ cmake .
 make
 ./karly64
 ```
+
+If it doesn't like the CXX20 standard it may need to be changed to CXX11. CXX20 is on for std::popcount but it's not needed.
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
 ## TEST
