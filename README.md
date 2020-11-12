@@ -13,7 +13,7 @@ The project started as more low-level C style with C++ classes thrown in but I'm
 
 ## BUILD
 Just cmake and build. The cmake is setup to download googletest automatically. Should work for both g++ and msvc.
-If on linux just run the following in the root folder:
+For example, if on linux, just run the following in the root folder:
 ```
 cmake .
 make
@@ -22,13 +22,13 @@ make
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
 ## TEST
-After building just use ctest or manually run testall for a more detailed breakdown. May be slightly different depending on the build type.
+After building just use ctest or manually run them (utest and movet) for a more detailed breakdown. May be slightly different depending on the build type.
 
-There is also a perft executable (counts moves of different positions to certain depths) that will probably be deprecated.
+There is also a perft executable (counts moves of different positions to certain depths) but I don't suggest trying to use it.
 
 ## USAGE
 
-This is a command line engine and does not come with its own gui. Arena chess works quite well.
+This is a command line engine and does not come with its own gui. [Arena chess](http://www.playwitharena.de/) works quite well.
 There is currently no gameplay mode but using the engine in the command line can most easily be done with the following:
 
   * `go`
