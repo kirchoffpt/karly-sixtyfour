@@ -19,8 +19,6 @@ cmake .
 make
 ./karly64
 ```
-
-If it doesn't like the CXX20 standard it may need to be changed to CXX11. CXX20 is on for std::popcount but it's not needed.
 I can share the dockerfile for full deployment of a lichess bot if anyone wants it.
 
 ## TEST
