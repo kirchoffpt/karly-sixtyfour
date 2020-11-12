@@ -6,8 +6,8 @@
 //DEBUG 2- previously used for move generation debugging
 
 #define EVAL_GRAIN	4
-#define MAX_AB_DEPTH 4
-#define MAX_Q_DEPTH 4 
+#define MAX_AB_DEPTH 64
+#define MAX_Q_DEPTH 64 
 #define Q_DELTA_WINDOW 256
 #define P_MAT	128
 #define N_MAT	782
