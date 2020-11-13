@@ -2,6 +2,7 @@
 //linked list of chess pos
 
 #include "postree.h"
+#include <algorithm>
 
 postree::postree(chess_pos rootpos, int max_depth){
 

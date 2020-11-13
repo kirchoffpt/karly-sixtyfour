@@ -1,6 +1,7 @@
 #include <thread>
 #include <chrono>
 #include <cstring>
+#include <algorithm>
 #include "search.h"
 #include "chess_funcs.h"
 #include "postree.h"

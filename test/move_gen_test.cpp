@@ -57,6 +57,7 @@ TEST_P(MoveGenTestP, Perft) {
     EXPECT_EQ(run_perft(std::get<0>(GetParam()) , std::get<1>(GetParam())), std::get<2>(GetParam()));
 }
 
+//from https://www.chessprogramming.org/Perft_Results
 INSTANTIATE_TEST_CASE_P(
         MoveGenTest,
         MoveGenTestP,
