@@ -5,10 +5,12 @@
 #include "immintrin.h"
 #include <intrin.h>
 #ifdef _WIN64
-#include <bit>
+//Cxx20 header
+//#include <bit>
 #endif
 #else
-#include <bit>
+//Cxx20 header
+//#include <bit>
 #endif
 
 #include<iostream>
@@ -83,12 +85,13 @@ unsigned char bitops::bscanr64(unsigned long* index, U64 mask)
 unsigned int bitops::popcount64(U64 mask)
 {
     #ifdef __linux__
-    #ifdef __cpp_lib_bitops
+    //#ifdef __cpp_lib_bitops
         //CXX20
-        return std::popcount(mask);
-    #else
+        //return std::popcount(mask);
+        //the above compiles to the below function on linux anyway
+    //#else
         return __builtin_popcountll(mask);
-    #endif
+    //#endif
     #elif _WIN32
     #ifdef _WIN64
         //MSVC does not support CXX20 popcount at this moment
