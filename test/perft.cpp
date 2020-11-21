@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 		rootpos->generate_moves();
 		if(argc > 1){
 			for(x=0;x<rootpos->get_num_moves();x++){
-				print_move(rootpos->pos_move_list.get_move(x));
+				print_move(rootpos->mList.get_move(x));
 				cout << endl;
 			}
 		}

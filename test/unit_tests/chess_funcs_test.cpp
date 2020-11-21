@@ -1,7 +1,6 @@
 #include <limits.h>
 #include "chess_funcs.h"
 #include "constants.h"
-#include "chess_pos.h"
 #include "gtest/gtest.h"
 
 //mostly minimal testing for various functions
@@ -82,17 +81,13 @@ TEST(ChessFuncs, BitToIdxRollingTest) {
 }
 
 TEST(ChessFuncs, FloodFillKing) {
-  chess_pos pos; //create chess pos for lookup table to avoid generating extra lookup tables
-
-  // U64 flood_fill_king(U--64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int depth); //gives all the squares a king could travel to given so many moves in a row
-  EXPECT_EQ(flood_fill_king(0x1,0x0,&pos.MLUT,10),DARK_SQUARES | LIGHT_SQUARES);
-  EXPECT_EQ(flood_fill_king(0x1,G_FILE,&pos.MLUT,10),H_FILE);
-  EXPECT_EQ(flood_fill_king(0x80,LIGHT_SQUARES,&pos.MLUT,10),DARK_SQUARES);
-  EXPECT_EQ(flood_fill_king(0x8000000000000000,DARK_SQUARES,&pos.MLUT,10),LIGHT_SQUARES);
+  EXPECT_EQ(flood_fill_king(0x1,0x0,10),DARK_SQUARES | LIGHT_SQUARES);
+  EXPECT_EQ(flood_fill_king(0x1,G_FILE,10),H_FILE);
+  EXPECT_EQ(flood_fill_king(0x80,LIGHT_SQUARES,10),DARK_SQUARES);
+  EXPECT_EQ(flood_fill_king(0x8000000000000000,DARK_SQUARES,10),LIGHT_SQUARES);
 }
 
 TEST(ChessFuncs, FloodFillKingMaze) {
-  chess_pos pos; //create chess pos for lookup table to avoid generating extra lookup tables
   U64 maze = 0x007F228AFA027E00;
   //  .......x
   //  .1111111
@@ -102,7 +97,7 @@ TEST(ChessFuncs, FloodFillKingMaze) {
   //  ......1.
   //  .111111.
   //  ........
-  EXPECT_EQ(flood_fill_king(0x0100000000000000,maze,&pos.MLUT,30),~maze);
+  EXPECT_EQ(flood_fill_king(0x0100000000000000,maze,30),~maze);
 }
 
 TEST(ChessFuncs, EncodeSrcDst) {

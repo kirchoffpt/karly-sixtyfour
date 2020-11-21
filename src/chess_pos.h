@@ -53,8 +53,8 @@ class chess_pos {
 	U64 changed_squares;
 	U64 last_move_to_and_from;
 	U64 ctrl[2];
-	U64 target_squares[2];
-	node_move_list pos_move_list;
+	U64 targ[2];
+	node_move_list mList;
 	chess_pos* next; //next node
 	chess_pos* prev; //prev node, for getting eval deltas
 	int last_move_null = 0;

@@ -9,6 +9,7 @@
 #include <ctime>
 #include "chess_funcs.h"
 #include "bitops.h"
+#include "chess_pos.h"
 
 using namespace std;
 
@@ -174,7 +175,7 @@ int get_ray_dir(int a, int b) //a,b indexes
 	return -1;
 }
 
-U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int depth)
+U64 flood_fill_king(U64 king_loc, U64 enemy_control, int depth)
 {
 	U64 fill = king_loc;
 	U64 temp, done_sq = 0;
@@ -185,7 +186,7 @@ U64 flood_fill_king(U64 king_loc, U64 enemy_control, chess_mask_LUT* mlut, int d
 		done_sq |= temp;
 		while(bitops::bscanf64(&idx, temp)){
 			temp ^= (U64)1 << idx;
-			fill |= mlut->get_move_mask(KING,idx);
+			fill |= chess_pos::MLUT.get_move_mask(KING,idx);
 		}
 		fill &= ~enemy_control;
 		if(fill == done_sq) break;

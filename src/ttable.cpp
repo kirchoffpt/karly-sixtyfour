@@ -97,7 +97,7 @@ string ttable::extract_pv(chess_pos rpos, uint16_t first_move) const
 		hkey = key % key_mask;
 		if(tt[hkey].full_key == key && tt[hkey].node_type == PVNODE){
 			rpos.generate_moves();
-			if(rpos.pos_move_list.swap_to_front(tt[hkey].best_move)){ //if move list contains this move
+			if(rpos.mList.swap_to_front(tt[hkey].best_move)){ //if move list contains this move
 				rpos.add_move(tt[hkey].best_move);
 				pv += " " + move_itos(tt[hkey].best_move);
 			} else {

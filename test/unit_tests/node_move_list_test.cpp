@@ -157,7 +157,10 @@ TEST_F(NodeMoveListSmall, MoveToFront) {
     EXPECT_EQ(ml->pop_move(),MOVE_4);
 }
 
-TEST_F(NodeMoveListSmall, SortByList) {
+TEST_F(NodeMoveListSmall, SortByList) { 
+    //sort needs to preserve order of elements with same score
+    //since some later scores may just be bounds
+    //std::sort would fail
     std::vector<int> s_list = {0,1,2,3};
     ml->sort_moves_by_scores(s_list.data());
     EXPECT_EQ(*(U64*)ml->data(), concat_shorts(MOVE_1,MOVE_2,MOVE_3,MOVE_4));

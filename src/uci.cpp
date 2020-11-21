@@ -1,3 +1,4 @@
+#include "uci.h"
 #include "chess_pos.h"
 #include "constants.h"
 #include "search.h"
@@ -14,7 +15,7 @@
 
 using namespace std;
 
-void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
+void uci::uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
 	string token, s, fenstring;
 	uint16_t move = 0;
 
@@ -47,7 +48,7 @@ void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searche
 	searcher->past_positions.push_back(rootpos->zobrist_key);
 	if(s == "moves" || (is >> token && token == "moves")){
 		while(is >> token){
-			move = rootpos->pos_move_list.get_move_from_string(token);
+			move = rootpos->mList.get_move_from_string(token);
 			if(move != 0){
 				rootpos->add_move(move);
 				rootpos->generate_moves();
@@ -60,7 +61,7 @@ void uci_position(istringstream& is, chess_pos* rootpos, search_handler* searche
 	//rootpos->print_pos(true);
 }
 
-void uci_go(istringstream& is, search_handler* searcher){
+void uci::uci_go(istringstream& is, search_handler* searcher){
 	string token;
 	int i;
 	search_options uci_s = {0};
@@ -97,9 +98,7 @@ void uci_go(istringstream& is, search_handler* searcher){
 }
 
 
-int main(int argc, char *argv[]){
-
-
+void uci::init(int argc, char *argv[]){
 	string cmd, token;
 	ofstream ofs;
 	chess_pos *rootpos;
@@ -149,7 +148,7 @@ int main(int argc, char *argv[]){
 		} else if(token == "showpos"){
 			rootpos->print_pos(false);
 		} else if(token == "showmoves"){
-			rootpos->pos_move_list.print_moves();
+			rootpos->mList.print_moves();
 		} else if(token == "showfen"){
 			cout << rootpos->get_fen() << endl;
 		} else if(token == "hashfull"){
@@ -171,5 +170,4 @@ int main(int argc, char *argv[]){
 	delete rootpos;
 	delete searcher;
 	ofs.close();
-	return 0;
 }

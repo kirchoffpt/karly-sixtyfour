@@ -188,11 +188,11 @@ void search_handler::search(){
 	//begin search loop
 	//if only one move available just make it, skip output
 	if(n_root_moves == 1){
-		best_move = rootpos->pos_move_list.pop_move();
+		best_move = rootpos->mList.pop_move();
 		goto exit_search;
 	}
 
-	best_move = rootpos->pos_move_list.get_random_move();
+	best_move = rootpos->mList.get_random_move();
     total_time = 1;
     nodes_searched = 0;
 
@@ -201,7 +201,7 @@ void search_handler::search(){
 		alpha = SCORE_LO;
 		beta =  SCORE_HI;
 		for(i=n_root_moves-1;i>=0;i--){
-			move = rootpos->pos_move_list.get_move(i);
+			move = rootpos->mList.get_move(i);
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(*rootpos);
 			rootpos->next->add_move(move);
@@ -274,7 +274,7 @@ void search_handler::search(){
 			break;
 		}
 		fflush(stdout);
-		rootpos->pos_move_list.sort_moves_by_scores(move_scores);
+		rootpos->mList.sort_moves_by_scores(move_scores);
 		if(uci_s.depth_limit && (search_depth >= uci_s.depth_limit)) goto exit_search;
 	}
 
@@ -379,7 +379,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 	} else {
 		node->order_moves();
 	}
-	if(b_move) node->pos_move_list.move_to_front(b_move);
+	if(b_move) node->mList.move_to_front(b_move);
 
 	//principal variation search (first move)
 	if( (b_move = node->pop_and_add()) ){

@@ -42,7 +42,6 @@ private:
 	z_key zobrist_black_to_move;
 
 public:
-
 	chess_mask_LUT();
 	U64 get_move_mask(int piece,int index); //piece from 0-6 (white_p,n,b,r,q,k,black_p), idx from 0-63
 	U64 get_pawn_attack_mask(int side, int index); //0 white, 1 black

@@ -14,7 +14,7 @@ target_sources(
 )
 
 configure_file(k64config.h.in k64config.h)
-add_executable(karly64 uciengine.cpp)
+add_executable(karly64 main.cpp uci.cpp)
 target_link_libraries(karly64 PRIVATE Threads::Threads)
 target_link_libraries(karly64 PRIVATE k64lib)
 target_include_directories(karly64 PUBLIC

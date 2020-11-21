@@ -444,7 +444,7 @@ void chess_pos::init_targets(int side)
 
 	e_controlled_sq = 0;
 
-	pos_move_list.reset_num_moves();	
+	mList.reset_num_moves();	
 
 	allies &= ~allied_pawns;
 
@@ -626,12 +626,12 @@ void chess_pos::generate_moves()
 	bool ep_check = false;
 	U64 Move_Compare;
 
-	pos_move_list.reset_num_moves();
+	mList.reset_num_moves();
 
 	if(DEBUG >= 2){
 		generate_moves_deprecated();
 		Move_Compare = captures;
-		pos_move_list.reset_num_moves();
+		mList.reset_num_moves();
 	}
 
 	in_check = 0;
@@ -992,7 +992,7 @@ void chess_pos::generate_moves()
 	while(bitops::bscanf64( &idx, u)){
 		u ^= (U64)1<<idx;
 		move = src_square + (idx << DST_SHIFT);
-		pos_move_list.push_move(move);
+		mList.push_move(move);
 	}
 
 	v = occ[0] | occ[1];
@@ -1006,7 +1006,7 @@ void chess_pos::generate_moves()
 				while(bitops::bscanf64( &idx, u)){
 					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
-					pos_move_list.push_move(move);
+					mList.push_move(move);
 				}
 			} else {
 				u = pl[to_move][i].targets;
@@ -1017,11 +1017,11 @@ void chess_pos::generate_moves()
 					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
-						pos_move_list.push_move(move+ENPAS);
+						mList.push_move(move+ENPAS);
 					} else if(((U64)1<<idx) & PROMOTION_RANKS){
-						pos_move_list.push_promo_move(move);
+						mList.push_promo_move(move);
 					} else {
-						pos_move_list.push_move(move);
+						mList.push_move(move);
 					}
 				}
 			}
@@ -1057,7 +1057,7 @@ void chess_pos::generate_moves()
 					move = (king_idx << SRC_SHIFT) + (QSCW_KING_IDX << DST_SHIFT);
 				}
 			}
-			pos_move_list.push_move(move+CASTL);
+			mList.push_move(move+CASTL);
 		}
 	} else if(in_check == 1){
 		//king_attacker_ray &= ~king_loc;
@@ -1073,7 +1073,7 @@ void chess_pos::generate_moves()
 					while(bitops::bscanf64( &idx, u)){
 						u ^= (U64)1<<idx;
 						move = src_square + (idx << DST_SHIFT);
-						pos_move_list.push_move(move);
+						mList.push_move(move);
 					}
 			} else {
 				u = pl[to_move][i].targets;
@@ -1089,11 +1089,11 @@ void chess_pos::generate_moves()
 					u ^= (U64)1<<idx;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
-						pos_move_list.push_move(move+ENPAS);
+						mList.push_move(move+ENPAS);
 					} else if(((U64)1<<idx) & PROMOTION_RANKS){
-						pos_move_list.push_promo_move(move);
+						mList.push_promo_move(move);
 					} else {
-						pos_move_list.push_move(move);
+						mList.push_move(move);
 					}
 				}
 			}
@@ -1102,8 +1102,8 @@ void chess_pos::generate_moves()
 
 	ctrl[to_move] = ally_ctrl;
 	ctrl[!to_move] = enem_ctrl;
-	target_squares[to_move] = ally_targ;
-	target_squares[!to_move] = enem_targ;
+	targ[to_move] = ally_targ;
+	targ[!to_move] = enem_targ;
 	captures = ally_targ & occ[!to_move];
 	changed_squares = 0;
 	last_move_to_and_from = 0;
@@ -1159,8 +1159,8 @@ void chess_pos::order_moves()
 	int i,j;
 	j = get_num_moves();
 	for(i=j-1;i>=0;i--){
-		if(((U64)1<<((pos_move_list.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
-			pos_move_list.swap_moves(i,(j--)-1);
+		if(((U64)1<<((mList.get_move(i) & DST_MASK) >> DST_SHIFT)) & captures){
+			mList.swap_moves(i,(j--)-1);
 		} 
 	}
 }
@@ -1174,7 +1174,7 @@ int chess_pos::order_moves_smart()
 	uint16_t move;
 	int stand_pat = this->eval()*color, delta;
 	for(i = get_num_moves() - 1;i>=0;i--){
-		move = pos_move_list.get_move(i);
+		move = mList.get_move(i);
 		pos.copy_pos(*this);
 		pos.add_move(move);
 		pos.generate_moves();
@@ -1183,7 +1183,7 @@ int chess_pos::order_moves_smart()
 		m_s[i] = delta;
 		if(delta > (P_MAT*3)/2) noreduce++;
 	}
-	pos_move_list.sort_moves_by_scores(m_s);
+	mList.sort_moves_by_scores(m_s);
 	return noreduce;	
 }
 
@@ -1236,7 +1236,7 @@ void chess_pos::generate_moves_deprecated()
 	e_controlled_sq = 0;
 	a_controlled_sq = 0;
 
-	pos_move_list.reset_num_moves();	
+	mList.reset_num_moves();	
 
 	allies &= ~allied_pawns;
 
@@ -1400,14 +1400,14 @@ void chess_pos::generate_moves_deprecated()
 				move = src_square + (idx2 << DST_SHIFT);
 				if(promotion){
 					move += PROMO;
-					pos_move_list.push_move(move+N_PROMO);
-					pos_move_list.push_move(move+B_PROMO);
-					pos_move_list.push_move(move+R_PROMO);
-					pos_move_list.push_move(move+Q_PROMO);
+					mList.push_move(move+N_PROMO);
+					mList.push_move(move+B_PROMO);
+					mList.push_move(move+R_PROMO);
+					mList.push_move(move+Q_PROMO);
 				} else if(ep_target_square && (((U64)1<<idx2) == ep_target_square)){
-					pos_move_list.push_move(move+ENPAS);
+					mList.push_move(move+ENPAS);
 				} else {
-					pos_move_list.push_move(move);
+					mList.push_move(move);
 				}
 			}
 			//cout << "piece: " << piece_itos(attacking_piece) << endl;
@@ -1426,14 +1426,14 @@ void chess_pos::generate_moves_deprecated()
 				move = src_square + (idx2 << DST_SHIFT);
 				if(promotion){
 					move += PROMO;
-					pos_move_list.push_move(move+N_PROMO);
-					pos_move_list.push_move(move+B_PROMO);
-					pos_move_list.push_move(move+R_PROMO);
-					pos_move_list.push_move(move+Q_PROMO);
+					mList.push_move(move+N_PROMO);
+					mList.push_move(move+B_PROMO);
+					mList.push_move(move+R_PROMO);
+					mList.push_move(move+Q_PROMO);
 				} else if(ep_target_square && (((U64)1<<idx2) == ep_target_square)){
-					pos_move_list.push_move(move+ENPAS);
+					mList.push_move(move+ENPAS);
 				} else {
-					pos_move_list.push_move(move);
+					mList.push_move(move);
 				}
 			}
 		}
@@ -1458,7 +1458,7 @@ void chess_pos::generate_moves_deprecated()
 			while(bitops::bscanf64( &idx2, u)){
 				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
-				pos_move_list.push_move(move);
+				mList.push_move(move);
 			}
 
 			//cout << "piece: " << piece_itos(attacking_piece) << endl;
@@ -1473,7 +1473,7 @@ void chess_pos::generate_moves_deprecated()
 			while(bitops::bscanf64( &idx2, u)){
 				u ^= (U64)1<<idx2;
 				move = src_square + (idx2 << DST_SHIFT);
-				pos_move_list.push_move(move);
+				mList.push_move(move);
 			}
 		}
 	}
@@ -1492,7 +1492,7 @@ void chess_pos::generate_moves_deprecated()
 	while(bitops::bscanf64( &idx2, u)){
 		u ^= (U64)1<<idx2;
 		move = src_square + (idx2 << DST_SHIFT);
-		pos_move_list.push_move(move);
+		mList.push_move(move);
 	}
 
 	if(in_check == 0){
@@ -1520,7 +1520,7 @@ void chess_pos::generate_moves_deprecated()
 					move = src_square + (QSCW_KING_IDX << DST_SHIFT);
 				}
 			}
-			pos_move_list.push_move(move+CASTL);
+			mList.push_move(move+CASTL);
 		}
 	}
 
@@ -1550,7 +1550,7 @@ void chess_pos::add_null_move(){
 
 uint16_t chess_pos::generate_and_add_random(){
 	generate_moves();
-	uint16_t move = pos_move_list.get_random_move();
+	uint16_t move = mList.get_random_move();
 	if(move) add_move(move);
 	return move;
 }
@@ -1717,7 +1717,7 @@ uint16_t chess_pos::pop_and_add()
 {
 	uint16_t move;
 	if(next == NULL) return 0;
-	move = pos_move_list.pop_move();
+	move = mList.pop_move();
 	if(move == 0) return 0;
 	add_move_to_next_node(move);
 	return move;
@@ -1727,7 +1727,7 @@ uint16_t chess_pos::pop_and_add_capture()
 {
 	uint16_t move;
 	if(next == NULL) return 0;
-	move = pos_move_list.pop_targeted_move(captures);
+	move = mList.pop_targeted_move(captures);
 	if(move > 1) add_move_to_next_node(move);
 	return move;
 }
@@ -1825,7 +1825,7 @@ void chess_pos::dump_pos(ofstream& ofs) //for debugging
 		}
 		ofs << "occ" << occ[i];
 		ofs << "ctrl" << ctrl[i];
-		ofs << "targ" << target_squares[i];
+		ofs << "targ" << targ[i];
 	}
 	ofs << " capt" << captures;
 	ofs << " lmce" << last_move_check_evasion;
@@ -1833,7 +1833,7 @@ void chess_pos::dump_pos(ofstream& ofs) //for debugging
 	ofs << " chsq" << changed_squares;
 	ofs << " lmtf" << last_move_to_and_from;
 	for(i=0;i<get_num_moves();i++){
-		ofs << "	" << move_itos(pos_move_list.get_move(i));
+		ofs << "	" << move_itos(mList.get_move(i));
 	}
 	ofs << endl;
 }
@@ -1948,7 +1948,7 @@ int chess_pos::mate_eval()
 
 unsigned int chess_pos::get_num_moves()
 {
-	return pos_move_list.get_num_moves();
+	return mList.get_num_moves();
 }
  
 
@@ -1987,21 +1987,21 @@ int chess_pos::eval()
 
 	if(abs(material_diff) >= 5*P_MAT && material_sum <= 2*Q_MAT){
 
-		eval -= 2*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],ctrl[WHITE]|occ[BLACK]|occ[WHITE],&MLUT,6)));
-		eval += 2*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],ctrl[BLACK]|occ[WHITE]|occ[BLACK],&MLUT,6)));
+		eval -= 2*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],ctrl[WHITE]|occ[BLACK]|occ[WHITE],6)));
+		eval += 2*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],ctrl[BLACK]|occ[WHITE]|occ[BLACK],6)));
 		eval += -material_diff/(P_MAT)*board_dist(wking,bking);
 
 	} else {
 
 		eval += 2*((int(bitops::popcount64(ctrl[WHITE] & CENTER)) - int(bitops::popcount64(ctrl[BLACK] & CENTER))));
 
-		eval += 4*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[WHITE]));
-		eval -= 4*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],&MLUT,3) & ctrl[BLACK]));
-		eval += 2*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],&MLUT,2) & occ[WHITE]));
-		eval -= 2*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],&MLUT,2) & occ[BLACK]));
+		eval += 4*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],occ[BLACK]|occ[WHITE],3) & ctrl[WHITE]));
+		eval -= 4*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|occ[WHITE],3) & ctrl[BLACK]));
+		eval += 2*int(bitops::popcount64(flood_fill_king(pieces[WHITE][KING],occ[BLACK]|ctrl[BLACK],2) & occ[WHITE]));
+		eval -= 2*int(bitops::popcount64(flood_fill_king(pieces[BLACK][KING],occ[WHITE]|ctrl[WHITE],2) & occ[BLACK]));
 
-		woffense = int(bitops::popcount64(target_squares[WHITE]&occ[BLACK])) - int(bitops::popcount64(target_squares[BLACK]&occ[BLACK]));
-		boffense = int(bitops::popcount64(target_squares[BLACK]&occ[WHITE])) - int(bitops::popcount64(target_squares[WHITE]&occ[WHITE]));
+		woffense = int(bitops::popcount64(targ[WHITE]&occ[BLACK])) - int(bitops::popcount64(targ[BLACK]&occ[BLACK]));
+		boffense = int(bitops::popcount64(targ[BLACK]&occ[WHITE])) - int(bitops::popcount64(targ[WHITE]&occ[WHITE]));
 
 		eval += (woffense-boffense);
 
