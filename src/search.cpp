@@ -142,7 +142,7 @@ void search_handler::search(){
 	bool timed;
 	std::chrono::steady_clock::time_point start, end;
 	postree tree(*source_pos, MAX_DEPTH);
-	rootpos = tree.root();
+	chess_pos* rootpos = tree.root();
 
 	rootpos->generate_moves();
 	n_root_moves = rootpos->get_num_moves();
@@ -291,7 +291,7 @@ void search_handler::stop(){
 	cout << "bestmove " + move_itos(best_move) + "\n";
 	fflush(stdout);
 
-	cout << "PV " + TT->extract_pv(*rootpos, best_move) + "\n";
+	cout << "PV " + TT->extract_pv(*source_pos, best_move) + "\n";
 	fflush(stdout);
 
 

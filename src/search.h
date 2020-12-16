@@ -19,7 +19,6 @@ struct search_options{
 class search_handler{
 	private:
 	const chess_pos* source_pos;
-	chess_pos* rootpos; //our copy of source pos
 	ttable* TT;
 	unsigned int search_id = 0;
 	
