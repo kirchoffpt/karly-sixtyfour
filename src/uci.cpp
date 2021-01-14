@@ -9,17 +9,25 @@
 #include <ctime>  
 #include <cstring>
 #include <thread>
+#include <cmath>
+#include <iomanip>
 
 #define STARTPOS "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 #define FILEOUT "uci_input_log.txt"
 
 using namespace std;
 
+uci::uci(){
+	//add options here, see uci protocol
+	//http://wbec-ridderkerk.nl/html/UCIProtocol.html
+	options["Hash"] = uci_option("Hash","spin","32","1","512",{});
+}
+
 void uci::uci_position(istringstream& is, chess_pos* rootpos, search_handler* searcher){
 	string token, s, fenstring;
 	uint16_t move = 0;
 
-	while(searcher->is_searching){
+	if(searcher->is_searching){
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		if(searcher->is_searching){
 			//search handler is clearly still searching do not load another position
@@ -97,6 +105,64 @@ void uci::uci_go(istringstream& is, search_handler* searcher){
 	return;
 }
 
+void uci::uci_getoptions(){
+	for(auto option : options){
+		auto &o = option.second;
+		string s = "";
+		s += "option";
+		s += " name " + o.option_name; 
+		s += " type " + o.option_type; 
+		s += " default " + o.option_default; 
+		s += " min " + o.option_min; 
+		s += " max " + o.option_max; 
+		s += "\n";
+		cout << s; 
+	}
+}
+
+void uci::uci_setoption(std::istringstream& is, search_handler* searcher){
+
+	string token;
+	uci_option o;
+	int val = 0, mn = 0, mx = 0;
+
+	if(searcher->is_searching){
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		//quick retry
+		if(searcher->is_searching){
+			//search handler still searching
+			return;
+		}
+	}
+
+	is >> token;
+	if(token != "name") return;
+	is >> token;
+	auto it = this->options.find(token);
+  	if (it == options.end()) return;
+	o = it->second;
+	is >> token;
+	if(token == "value"){
+		is >> token;
+		val = std::stoi(token);
+	}
+
+	if(o.option_type == "spin"){
+		mn = std::stoi(o.option_min);
+		mx = std::stoi(o.option_max);
+		val = std::max(mn, val);
+		val = std::min(mx, val);
+	}
+
+
+	//do specific things for an option
+	if(o.option_name == "Hash"){
+		searcher->set_hash_size(val);
+	} //else
+
+
+}
+
 
 void uci::init(int argc, char *argv[]){
 	string cmd, token;
@@ -115,6 +181,7 @@ void uci::init(int argc, char *argv[]){
 
 	rootpos = new chess_pos(token);
 	searcher = new search_handler(rootpos);
+	searcher->set_hash_size(std::stoi(options["Hash"].option_default));
 	rootpos->generate_moves();
 
 	if(LOG_UCI_INPUT){
@@ -134,6 +201,7 @@ void uci::init(int argc, char *argv[]){
 		if(token == "uci"){
 			cout << "id name karly64 " + version_str + "\n";
 			cout << "id author Paul Kirchoff\n";
+			uci_getoptions();
 			cout << "uciok\n";
 		} else if(token == "isready"){
 			cout << "readyok\n";
@@ -151,9 +219,13 @@ void uci::init(int argc, char *argv[]){
 			rootpos->mList.print_moves();
 		} else if(token == "showfen"){
 			cout << rootpos->get_fen() << endl;
+		} else if(token == "option"){
+			uci_getoptions();
+		} else if(token == "setoption"){
+			uci_setoption(is, searcher);
 		} else if(token == "hashfull"){
-			cout << to_string((float)(searcher->get_ttable()->hashfull())/1E4) + " % of "
-			+ to_string((float)(searcher->get_ttable()->get_bytes())/1E6) + " MB" << endl;
+			cout << std::fixed << std::setprecision(3) << (float)(searcher->get_ttable()->hashfull())/1E4 << " % of "
+			<< std::setprecision(0) << nearbyint((float)(searcher->get_ttable()->get_bytes())/1E6) << " MB" << endl;
 		} else if(token == "quit" || token == "exit"){
 			searcher->stop();
 			break;

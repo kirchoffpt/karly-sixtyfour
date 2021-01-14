@@ -6,7 +6,7 @@
 #include "chess_funcs.h"
 #include "postree.h"
 
-#define TABLE_SIZE 256E6
+#define TABLE_SIZE 1024 //bytes
 #define LMR_LIMIT 3
 #define LMR_DEPTH_REDUCTION 2
 #define Q_SEARCH_DEPTH search_depth
@@ -14,11 +14,11 @@
 using namespace std;
 
 search_handler::search_handler(const chess_pos* pos){
+	is_searching = false;
 	source_pos = pos;
 	search_id = 0; //incrememt before searching
 	principal_variation.reserve(MAX_DEPTH);
 	TT = new ttable;
-	TT->resize(TABLE_SIZE);
 	reset();
 	return;
 }
@@ -28,6 +28,12 @@ search_handler::~search_handler(){
 	return;
 }
 
+void search_handler::set_hash_size(int MB){
+	if(is_searching) return;
+	hash_size = 1E6*MB;
+	reset();
+}
+
 void search_handler::reset(){
 	is_searching = false;
 	std::memset(&uci_s, 0, sizeof(search_options));
@@ -35,7 +41,7 @@ void search_handler::reset(){
 	search_id = 0;
 	best_move = 0;
 	ponder_move = 0;
-	TT->resize(TABLE_SIZE);
+	TT->resize(hash_size);
 	return;	
 }
 

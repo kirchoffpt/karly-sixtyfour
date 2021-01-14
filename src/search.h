@@ -21,6 +21,7 @@ class search_handler{
 	const chess_pos* source_pos;
 	ttable* TT;
 	unsigned int search_id = 0;
+	int hash_size = 1;
 	
 	public:
 	//// UCI settings
@@ -47,6 +48,7 @@ class search_handler{
 	int num_repetitions(const z_key position);
 	bool allows_threefold(const chess_pos& c1);
 	bool is_threefold(const chess_pos& c1);
+	void set_hash_size(int MB);
 	const ttable* get_ttable(){return TT;};
 };
 
