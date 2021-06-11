@@ -35,4 +35,5 @@ There is currently no gameplay mode but using the engine in the command line can
   * `stop`
   * to add a move (or many) use something like `pos pos moves e2e4 e7e5`
   * `showpos` / `showmoves`
+  * `help` for a list of commands
 
