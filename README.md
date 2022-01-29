@@ -1,4 +1,4 @@
-# Karly64 
+# Karly64 [![CMake](https://github.com/kirchoffpt/karly-sixtyfour/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/kirchoffpt/karly-sixtyfour/actions/workflows/cmake.yml) 
 Chess engine written in C++11
 
 Version 1.0.x
