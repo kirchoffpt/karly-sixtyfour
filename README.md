@@ -7,7 +7,7 @@ A 64-bit, mostly [UCI](http://wbec-ridderkerk.nl/html/UCIProtocol.html) complian
 
 **Play it [here](https://lichess.org/@/karly64)!** Lichess account needed (free).
 
-I left the old readme if anyone actually wants to read that stuff. Most things in the engine are pretty standard however a lot of implementation was done with little reference. The move generation algorithm is pretty clever (incrementally updates list of moves as most legal moves stay the same after a single piece is moved) and very fast but its overall performance criticality is questionable; It will also make your eyes bleed. 
+Most things in the engine are pretty standard however a lot of implementation was done with little reference because it was a lot more fun that way. The move generation algorithm is pretty clever (incrementally updates list of moves as most legal moves stay the same after a single piece is moved) and very fast but its overall performance criticality is questionable; It will also make your eyes bleed. 
 
 The project started as more low-level C style with C++ classes thrown in but I'm currently in the process of refactoring, adding tests, and just generally messing with things.
 
