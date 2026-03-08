@@ -24,6 +24,8 @@ struct uci_option{
 
 class uci {
     std::map<std::string, uci_option> options;
+    bool quiet = false;
+    bool log_enabled = false;
 
     public:
     uci();

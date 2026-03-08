@@ -173,38 +173,53 @@ void uci::init(int argc, char *argv[]){
 	std::chrono::steady_clock::time_point start_t, curr_t;
 	string version_str = to_string(karly64_VERSION_MAJOR) + "." + to_string(karly64_VERSION_MINOR) + "." + to_string(karly64_VERSION_PATCH);
 	string build_str = CMAKE_BUILD_TYPE;
+	string fen_arg = STARTPOS;
 
 	start_t = std::chrono::steady_clock::now();
 
-	if(argc > 1) token = argv[1];
-	else token = STARTPOS;
+	for(int i = 1; i < argc; i++){
+		string arg = argv[i];
+		if(arg == "--quiet" || arg == "-q"){
+			quiet = true;
+		} else if(arg == "--log"){
+			log_enabled = true;
+		} else {
+			fen_arg = arg;
+		}
+	}
 
-	rootpos = new chess_pos(token);
+	rootpos = new chess_pos(fen_arg);
 	searcher = new search_handler(rootpos);
 	searcher->set_hash_size(std::stoi(options["Hash"].option_default));
 	rootpos->generate_moves();
 
-	if(LOG_UCI_INPUT){
+	if(log_enabled){
 		ofs = ofstream(FILEOUT, ofstream::app);
 		ofs << endl << ctime(&system_time) << endl;
 	}
 
-    cout <<	"KARLY64v" + version_str;
-	if(build_str.length() > 0) cout << " Build: " + build_str;
-	cout << endl;
+	if(!quiet){
+		cout << "KARLY64v" + version_str;
+		if(build_str.length() > 0) cout << " Build: " + build_str;
+		cout << endl;
+	}
 
 	while(getline(cin,cmd)){
 		istringstream is(cmd);
 		curr_t = std::chrono::steady_clock::now();
-		ofs << std::chrono::duration_cast<std::chrono::microseconds>(curr_t - start_t).count() << "->	"<< cmd << endl;
+		if(log_enabled){
+			ofs << std::chrono::duration_cast<std::chrono::microseconds>(curr_t - start_t).count() << "->	" << cmd << endl;
+		}
 		if(!(is >> token)) continue;
 		if(token == "uci"){
 			cout << "id name karly64 " + version_str + "\n";
 			cout << "id author Paul Kirchoff\n";
 			uci_getoptions();
 			cout << "uciok\n";
+			cout.flush();
 		} else if(token == "isready"){
 			cout << "readyok\n";
+			cout.flush();
 		} else if(token == "position" || token == "pos"){
 			uci_position(is, rootpos, searcher);
 		} else if(token == "go"){
@@ -233,8 +248,9 @@ void uci::init(int argc, char *argv[]){
 			cout << "position [fen <fenstring> | startpos | pos]  moves <move1> .... <movei>" << endl;
 			cout << "go wtime <x> btime <y> depth <d> movetime <t>" << endl;
 			cout << "uci isready stop ucinewgame showpos showmoves showfen quit" << endl;
+			cout << "flags: --quiet/-q (suppress banner), --log (enable input log to " << FILEOUT << ")" << endl;
 			cout << "*see standard uci protocol for more info on some of the above commands*" << endl;
-		} else {
+		} else if(!quiet){
 			cout << "type help for list of commands..." << endl;
 		}
 	}
