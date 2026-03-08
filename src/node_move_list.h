@@ -5,6 +5,7 @@
 #define U64 uint64_t
 #endif
 
+#include <cstdint>
 #include "constants.h"
 #include <string>
 

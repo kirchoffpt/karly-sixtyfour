@@ -1,6 +1,7 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <cstdint>
 #include "chess_pos.h"
 #include "constants.h"
 #include "ttable.h"

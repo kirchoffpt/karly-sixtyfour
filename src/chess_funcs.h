@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <cstdint>
+#include <fstream>
 #include "constants.h"
 
 #define U64 uint64_t

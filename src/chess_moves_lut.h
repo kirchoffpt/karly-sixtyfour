@@ -1,6 +1,7 @@
 #ifndef CHESS_MOVES_LUT_H
 #define CHESS_MOVES_LUT_H
 
+#include <cstdint>
 #include <map>
 #include "constants.h"
 

@@ -5,6 +5,7 @@
 #define U64 uint64_t
 #endif
 
+#include <cstdint>
 #include <vector>
 #include <string>
 #include "chess_pos.h"
