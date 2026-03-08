@@ -11,6 +11,7 @@ Always generate moves before evaluating or adding a move.
 #ifndef CHESS_POS_H
 #define CHESS_POS_H
 
+#include <cstdint>
 #include <cmath>
 #include <vector>
 #include <memory>
@@ -74,6 +75,7 @@ class chess_pos {
 	void generate_moves(); 
 	void order_moves();
 	int order_moves_smart(); //returns number of moves from top not to reduce
+	int order_moves_mvvlva(); //returns number of moves from top not to reduce (MVV-LVA)
 	void copy_pos(const chess_pos& source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
@@ -93,7 +95,6 @@ class chess_pos {
 	void store_init_targets(U64 piece_loc, U64 targets, int pinned); //into piece list
 	U64 create_pawn_pushes(U64 pawn_loc, int side);
 	U64 prune_blocked_moves(int piece_type, int center, U64* move_mask, U64 blockers); //returns bitboard of blocking pieces
-	void generate_moves_deprecated(); //deprecated, but should generate moves correctly
 	void init_targets(int side);
 	void init_piece_list();
 	void init_zobrist();
