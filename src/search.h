@@ -23,6 +23,8 @@ class search_handler{
 	ttable* TT;
 	unsigned int search_id = 0;
 	int hash_size = 1;
+	z_key ply_keys[MAX_DEPTH + 5];
+	uint16_t killers[MAX_DEPTH + 5][2];
 	
 	public:
 	//// UCI settings

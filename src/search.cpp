@@ -141,6 +141,7 @@ void search_handler::search(){
 	chess_pos* node_ptrs[MAX_DEPTH+1];
 	uint16_t move;
 	int move_scores[MAX_MOVES_IN_POS] = {0};
+	bool move_is_draw[MAX_MOVES_IN_POS] = {false};
 	int to_move;
 	string info_str;
 	float t, total_time;
@@ -201,6 +202,16 @@ void search_handler::search(){
 	best_move = rootpos->mList.get_random_move();
     total_time = 1;
     nodes_searched = 0;
+	memset(killers, 0, sizeof(killers));
+	memset(ply_keys, 0, sizeof(ply_keys));
+	memset(move_is_draw, 0, sizeof(move_is_draw));
+
+	for(i = 0; i < n_root_moves; i++){
+		move = rootpos->mList.get_move(i);
+		rootpos->next->copy_pos(*rootpos);
+		rootpos->next->add_move(move);
+		move_is_draw[i] = allows_threefold(*(rootpos->next));
+	}
 
 	for(search_depth=min(MAX_AB_DEPTH,1);search_depth <= MAX_AB_DEPTH;search_depth++){
 		top_score = SCORE_LO;
@@ -211,7 +222,7 @@ void search_handler::search(){
 			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
 			rootpos->next->copy_pos(*rootpos);
 			rootpos->next->add_move(move);
-			if(allows_threefold(*(rootpos->next))){
+			if(move_is_draw[i]){
 				score = 0;
 				nodes_searched++;
 			} else {
@@ -340,27 +351,23 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	int eval = SCORE_LO;
 	int a_cpy = a;
-	uint16_t move, b_move;
+	uint16_t move, tt_move, b_move = 0;
 	int moves_searched, noreduce_moves = MAX_MOVES_IN_POS;
 	tt_entry entry;
-	chess_pos* past_node = node;
 
 	nodes_searched++;
 
-	//check for repeated position
-	unsigned long long this_key = node->zobrist_key;
-	while(past_node->ply > 1){
-		past_node = past_node->prev->prev; //go back two positions each time
-		if(past_node->zobrist_key == this_key){
-			return 0;
-		}
+	// Fix 2: array-based repetition detection
+	z_key this_key = node->zobrist_key;
+	ply_keys[node->ply] = this_key;
+	for(int p = node->ply - 2; p >= 0; p -= 2){
+		if(ply_keys[p] == this_key) return 0;
 	}
 
-	node->generate_moves(); //must generate moves for eval;
+	node->generate_moves();
 
 	if((node->in_check) && (depth < 3)) depth++;
 
-    //enter quiescence search at horizon nodes
 	if(depth <= 0){
 		if(node->captures > 0){
 			return quiesce(node,Q_SEARCH_DEPTH,color,a,b);
@@ -368,69 +375,123 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		return color*node->eval();
 	}
 
-	//transposition table lookup
-	b_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
+	tt_move = TT->find(node->zobrist_key, &eval, &a, &b, depth, search_id);
 	if(eval != SCORE_LO) return eval;
 
-	//forward null move pruning
 	if( ENABLE_NULL_MOVE_PRUNING && (depth >= 4) && node->fwd_null_move()){
 		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
 		if(eval >= b) return eval;
-		eval = SCORE_LO; //null move failed to produce a cut off
+		eval = SCORE_LO;
 	}
 
-	//move ordering
-	if(depth > LMR_LIMIT){
-		noreduce_moves = node->order_moves_smart();
+	// Fix 1: try TT move first, before ordering
+	if(tt_move && node->mList.swap_to_front(tt_move)){
+		node->pop_and_add();
+		eval = -pvs(node->next, depth - 1, -color, -b, -a);
+		if(eval > a){ a = eval; b_move = tt_move; }
+		if(a >= b) goto done;
+		moves_searched = 1;
+
+		// Fix 3: try killer moves before ordering remaining moves
+		for(int k = 0; k < 2; k++){
+			uint16_t killer = killers[node->ply][k];
+			if(killer && killer != tt_move && node->mList.swap_to_front(killer)){
+				node->pop_and_add();
+				eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
+				if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+				if(eval > a){ a = eval; b_move = killer; }
+				if(a >= b){
+					killers[node->ply][1] = killers[node->ply][0];
+					killers[node->ply][0] = killer;
+					goto done;
+				}
+				moves_searched++;
+			}
+		}
+
+		// order remaining moves and continue
+		if(depth > LMR_LIMIT){
+			noreduce_moves = node->order_moves_smart();
+		} else {
+			node->order_moves();
+		}
+
+		while( (move = node->pop_and_add()) ){
+			if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
+				eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
+			} else {
+				eval = a + 1;
+			}
+			if(eval > a){
+				eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
+				if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+			}
+			if(eval > a){
+				a = eval;
+				b_move = move;
+			}
+			if(a >= b){
+				killers[node->ply][1] = killers[node->ply][0];
+				killers[node->ply][0] = move;
+				break;
+			}
+		}
+
 	} else {
-		node->order_moves();
+		// No TT move: use ordering as before
+		if(depth > LMR_LIMIT){
+			noreduce_moves = node->order_moves_smart();
+		} else {
+			node->order_moves();
+		}
+
+		// first move with full window
+		if( (move = node->pop_and_add()) ){
+			eval = -pvs(node->next, depth - 1, -color, -b, -a);
+			if(eval > a){ a = eval; b_move = move; }
+			if(a >= b) goto done;
+		} else {
+			return color*node->mate_eval();
+		}
+		moves_searched = 1;
+
+		while( (move = node->pop_and_add()) ){
+			if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
+				eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
+			} else {
+				eval = a + 1;
+			}
+			if(eval > a){
+				eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
+				if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
+			}
+			if(eval > a){
+				a = eval;
+				b_move = move;
+			}
+			if(a >= b){
+				killers[node->ply][1] = killers[node->ply][0];
+				killers[node->ply][0] = move;
+				break;
+			}
+		}
 	}
-	if(b_move) node->mList.move_to_front(b_move);
 
-	//principal variation search (first move)
-	if( (b_move = node->pop_and_add()) ){
-		eval = -pvs(node->next, depth - 1, -color, -b,-a);
-		a = max(a, eval);
-        if(a >= b) goto done;
-	} else {
-		return color*node->mate_eval();
-	}
-	moves_searched = 1;
+	done:
 
-	//null window searches (later moves)
-    while( (move = node->pop_and_add()) ){
-    	if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
-    		eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
-    	} else {
-    		eval = a + 1;
-    	}
-    	if(eval > a){
-	    	eval = -pvs(node->next, depth - 1, -color, -a - 1, -a);
-	        if((a < eval) && (eval < b)) eval = -pvs(node->next, depth - 1, -color, -b, -eval);
-    	}
-        if(eval > a){
-        	a = eval;
-        	b_move = move;
-        }
-        if(a >= b) break;
-    }
-
-    done:
-
-    //entry into transposition table
 	entry.full_key = this_key;
-    entry.depth = depth;
-    entry.score = a;
-    entry.age = search_id;
-    entry.best_move = b_move;
-    if(a <= a_cpy){
-    	entry.node_type = ALLNODE;
-    } else if(a >= b){
-    	entry.node_type = CUTNODE;
-    } else {
-    	entry.node_type = PVNODE;
-    }
-    TT->place(entry);
+	entry.depth = depth;
+	entry.score = a;
+	entry.age = search_id;
+	entry.best_move = b_move;
+	if(a <= a_cpy){
+		entry.node_type = ALLNODE;
+	} else if(a >= b){
+		entry.node_type = CUTNODE;
+	} else {
+		entry.node_type = PVNODE;
+	}
+	TT->place(entry);
 
-    return a;
+	return a;
 }
