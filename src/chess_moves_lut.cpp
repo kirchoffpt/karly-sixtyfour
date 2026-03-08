@@ -433,7 +433,7 @@ chess_mask_LUT::chess_mask_LUT() {
 			bool found = false;
 			while(!found) {
 				U64 candidate = sparse_rand(seed);
-				if(__builtin_popcountll((rook_magic[sq].mask * candidate) >> 56) < 6) continue;
+				if(bitops::popcount64((rook_magic[sq].mask * candidate) >> 56) < 6) continue;
 				for(int n = 0; n < size; n++) rook_table[sq][n] = 0;
 				found = true;
 				for(int n = 0; n < size && found; n++) {
@@ -462,7 +462,7 @@ chess_mask_LUT::chess_mask_LUT() {
 			bool found = false;
 			while(!found) {
 				U64 candidate = sparse_rand(seed);
-				if(__builtin_popcountll((bishop_magic[sq].mask * candidate) >> 56) < 6) continue;
+				if(bitops::popcount64((bishop_magic[sq].mask * candidate) >> 56) < 6) continue;
 				for(int n = 0; n < size; n++) bishop_table[sq][n] = 0;
 				found = true;
 				for(int n = 0; n < size && found; n++) {
