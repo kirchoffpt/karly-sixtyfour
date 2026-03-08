@@ -1662,16 +1662,5 @@ int chess_pos::eval()
 
 	eval += ((3*P_MAT)/2)*(int(bitops::popcount64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(bitops::popcount64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
 
-	// Hanging piece penalty: attacked by enemy, not defended by friendly
-	{
-		U64 white_hanging = occ[WHITE] & ctrl[BLACK] & ~ctrl[WHITE] & ~pieces[WHITE][KING];
-		U64 black_hanging = occ[BLACK] & ctrl[WHITE] & ~ctrl[BLACK] & ~pieces[BLACK][KING];
-		static const int hanging_penalty[KING] = {P_MAT/2, N_MAT/2, B_MAT/2, R_MAT/2, Q_MAT/2};
-		for(int pt = PAWN; pt < KING; pt++){
-			eval -= hanging_penalty[pt] * int(bitops::popcount64(white_hanging & pieces[WHITE][pt]));
-			eval += hanging_penalty[pt] * int(bitops::popcount64(black_hanging & pieces[BLACK][pt]));
-		}
-	}
-
 	return EVAL_GRAIN*(eval/EVAL_GRAIN);
 }

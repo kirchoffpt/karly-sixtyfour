@@ -8,11 +8,8 @@
 
 #define TABLE_SIZE 1024 //bytes
 #define LMR_LIMIT 3
-#define LMR_DEPTH_REDUCTION 1
+#define LMR_DEPTH_REDUCTION 2
 #define Q_SEARCH_DEPTH search_depth
-#define ASPIRATION_WINDOW 50
-#define FUTILITY_MARGIN_D1 (P_MAT + P_MAT/2)  // ~192cp: prune hopeless depth-1 nodes
-#define FUTILITY_MARGIN_D2 (N_MAT)             // ~782cp: prune hopeless depth-2 nodes
 
 using namespace std;
 
@@ -149,7 +146,6 @@ void search_handler::search(){
 	float t, total_time;
 	float max_time, t1, t2, cspond_time_incr;
 	bool timed;
-	int prev_score = 0;
 	std::chrono::steady_clock::time_point start, end;
 	postree tree(*source_pos, MAX_DEPTH);
 	chess_pos* rootpos = tree.root();
@@ -207,90 +203,65 @@ void search_handler::search(){
     nodes_searched = 0;
 
 	for(search_depth=min(MAX_AB_DEPTH,1);search_depth <= MAX_AB_DEPTH;search_depth++){
+		top_score = SCORE_LO;
+		alpha = SCORE_LO;
+		beta =  SCORE_HI;
+		for(i=n_root_moves-1;i>=0;i--){
+			move = rootpos->mList.get_move(i);
+			//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
+			rootpos->next->copy_pos(*rootpos);
+			rootpos->next->add_move(move);
+			if(allows_threefold(*(rootpos->next))){
+				score = 0;
+				nodes_searched++;
+			} else {
+				start = std::chrono::steady_clock::now();
 
-		int asp_alpha = (search_depth >= 4) ? prev_score - ASPIRATION_WINDOW : (int)SCORE_LO;
-		int asp_beta  = (search_depth >= 4) ? prev_score + ASPIRATION_WINDOW : (int)SCORE_HI;
-
-		bool asp_done = false;
-		while(!asp_done && is_searching){
-
-			top_score = SCORE_LO;
-			alpha = asp_alpha;
-			beta  = asp_beta;
-			memset(move_scores, 0, sizeof(move_scores));
-
-			for(i=n_root_moves-1;i>=0;i--){
-				move = rootpos->mList.get_move(i);
-				//if((14<<SRC_SHIFT) + (6<<DST_SHIFT) != move) continue;
-				rootpos->next->copy_pos(*rootpos);
-				rootpos->next->add_move(move);
-				if(allows_threefold(*(rootpos->next))){
-					score = 0;
-					nodes_searched++;
+				if(i==n_root_moves-1){
+					score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -alpha);
 				} else {
-					start = std::chrono::steady_clock::now();
+					score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -alpha-1, -alpha);
+		        	if((alpha < score) && (score < beta)) score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -score);
+	        	}
+				if(search_depth > 2) alpha = max(alpha, score);
 
-					if(i==n_root_moves-1){
-						score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -alpha);
-					} else {
-						score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -alpha-1, -alpha);
-			        	if((alpha < score) && (score < beta)) score = -pvs(rootpos->next, search_depth-1,-to_move_sign, -beta, -score);
-		        	}
-					if(search_depth > 2) alpha = max(alpha, score);
-
-					end = std::chrono::steady_clock::now();
-					t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-					total_time += t;
-				}
-				move_scores[i] = score;
-
-				if(score > top_score){
-					top_score = score;
-					overall_top_score = max(overall_top_score, top_score);
-					best_move = move;
-				}
-
-				if(!is_searching) goto exit_search;
-
-				if(total_time > 10 && (move == best_move || score != top_score)){
-					info_str = "info";
-					info_str +=  " depth " + to_string(search_depth);
-					info_str += " currmove " + move_itos(move);
-					//info_str += " currmovenumber " + to_string(n_root_moves-i);
-					if(abs(score) >= CHECKMATE-MATE_BUFFER){
-						info_str += " score mate " + to_string(int((abs(CHECKMATE)-abs(score)+1)/2*(abs(score)/score)));
-					} else {
-						info_str += " score cp " + to_string(score);
-					}
-					info_str += " nodes " + to_string(nodes_searched);
-					info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
-					info_str += " time " + to_string(int(total_time));
-					//info_str += " hashfull " + to_string(TT->hashfull());
-					if(is_searching) cout << info_str + "\n";
-				}
-
-				fflush(stdout);
-
-				if(timed && top_score >= CHECKMATE-MATE_BUFFER){
-					break;
-				}
+				end = std::chrono::steady_clock::now();
+				t = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+				total_time += t;
+			}
+			move_scores[i] = score;
+			
+			if(score > top_score){
+				top_score = score;
+				overall_top_score = max(overall_top_score, top_score);
+				best_move = move;
 			}
 
-			if(!is_searching) break;
+			if(!is_searching) goto exit_search; 
 
-			if(top_score <= asp_alpha && asp_alpha > (int)SCORE_LO){
-				// Fail-low: open the window downward and re-search
-				asp_alpha = (int)SCORE_LO;
-			} else if(top_score >= asp_beta && asp_beta < (int)SCORE_HI){
-				// Fail-high: open the window upward and re-search
-				asp_beta = (int)SCORE_HI;
-			} else {
-				asp_done = true;
+			if(total_time > 10 && (move == best_move || score != top_score)){
+				info_str = "info";
+				info_str +=  " depth " + to_string(search_depth);
+				info_str += " currmove " + move_itos(move);
+				//info_str += " currmovenumber " + to_string(n_root_moves-i);
+				if(abs(score) >= CHECKMATE-MATE_BUFFER){
+					info_str += " score mate " + to_string(int((abs(CHECKMATE)-abs(score)+1)/2*(abs(score)/score)));
+				} else {
+					info_str += " score cp " + to_string(score);
+				}
+				info_str += " nodes " + to_string(nodes_searched);
+				info_str +=  " nps " + to_string(1000*int(nodes_searched/total_time));
+				info_str += " time " + to_string(int(total_time));
+				//info_str += " hashfull " + to_string(TT->hashfull());
+				if(is_searching) cout << info_str + "\n";
+			}
+
+			fflush(stdout);
+
+			if(timed && top_score >= CHECKMATE-MATE_BUFFER){
+				break;
 			}
 		}
-
-		prev_score = top_score;
-
 		info_str = "info";
 		info_str +=  " depth " + to_string(search_depth);
 		info_str += " seldepth " + to_string(rootpos->clear_next_occs()-search_depth);
@@ -349,12 +320,9 @@ int search_handler::quiesce(chess_pos* node, int depth, int color, int a, int b)
 	}
 
 	eval = color*node->eval(); //stand pat score "do nothing eval"
-	if(node->captures == 0 || depth == 0) return eval;
+	if(node->captures == 0 || depth == 0) return eval; 
 	if(eval >= b) return eval;
 	a = max(a, eval);
-
-	// Delta pruning: if stand-pat + a large margin still can't raise alpha, prune
-	if(eval + Q_DELTA_WINDOW < a) return a;
 
 	node->order_moves();
 	
@@ -390,7 +358,7 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 
 	node->generate_moves(); //must generate moves for eval;
 
-	if(node->in_check) depth++; // extend search when in check at any depth
+	if((node->in_check) && (depth < 3)) depth++;
 
     //enter quiescence search at horizon nodes
 	if(depth <= 0){
@@ -409,13 +377,6 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		eval = -pvs(node->next, depth/2-2, -color, -b,-b + 1);
 		if(eval >= b) return eval;
 		eval = SCORE_LO; //null move failed to produce a cut off
-	}
-
-	//futility pruning: at low depths, if static eval + margin can't reach alpha, skip
-	if(!node->in_check && depth <= 2 && abs(a) < CHECKMATE - MATE_BUFFER && node->captures == 0){
-		int static_eval = color * node->eval();
-		int margin = (depth == 1) ? FUTILITY_MARGIN_D1 : FUTILITY_MARGIN_D2;
-		if(static_eval + margin < a) return static_eval;
 	}
 
 	//move ordering
