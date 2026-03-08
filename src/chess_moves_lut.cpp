@@ -3,6 +3,7 @@
 #include <random>
 #include "constants.h"
 #include "chess_moves_lut.h"
+#include "bitops.h"
 
 #define INCLUDE_CENTER false
 
@@ -34,6 +35,67 @@ U64 reverse_U64(U64 x){ //slow
 	}
 
 	return y;
+}
+
+static U64 magic_rook_mask(int sq) {
+    U64 mask = 0;
+    int r = sq / 8, f = sq % 8;
+    for(int i = r+1; i <= 6; i++) mask |= (1ULL << (i*8+f));
+    for(int i = r-1; i >= 1; i--) mask |= (1ULL << (i*8+f));
+    for(int i = f+1; i <= 6; i++) mask |= (1ULL << (r*8+i));
+    for(int i = f-1; i >= 1; i--) mask |= (1ULL << (r*8+i));
+    return mask;
+}
+
+static U64 magic_bishop_mask(int sq) {
+    U64 mask = 0;
+    int r = sq / 8, f = sq % 8;
+    for(int i=1; r+i<=6 && f+i<=6; i++) mask |= (1ULL << ((r+i)*8+(f+i)));
+    for(int i=1; r+i<=6 && f-i>=1; i++) mask |= (1ULL << ((r+i)*8+(f-i)));
+    for(int i=1; r-i>=1 && f+i<=6; i++) mask |= (1ULL << ((r-i)*8+(f+i)));
+    for(int i=1; r-i>=1 && f-i>=1; i++) mask |= (1ULL << ((r-i)*8+(f-i)));
+    return mask;
+}
+
+static U64 magic_rook_attacks_slow(int sq, U64 occ) {
+    U64 attacks = 0;
+    int r = sq / 8, f = sq % 8;
+    for(int i=r+1; i<=7; i++) { U64 b=(1ULL<<(i*8+f)); attacks|=b; if(b&occ) break; }
+    for(int i=r-1; i>=0; i--) { U64 b=(1ULL<<(i*8+f)); attacks|=b; if(b&occ) break; }
+    for(int i=f+1; i<=7; i++) { U64 b=(1ULL<<(r*8+i)); attacks|=b; if(b&occ) break; }
+    for(int i=f-1; i>=0; i--) { U64 b=(1ULL<<(r*8+i)); attacks|=b; if(b&occ) break; }
+    return attacks;
+}
+
+static U64 magic_bishop_attacks_slow(int sq, U64 occ) {
+    U64 attacks = 0;
+    int r = sq / 8, f = sq % 8;
+    for(int i=1; r+i<=7&&f+i<=7; i++) { U64 b=(1ULL<<((r+i)*8+(f+i))); attacks|=b; if(b&occ) break; }
+    for(int i=1; r+i<=7&&f-i>=0; i++) { U64 b=(1ULL<<((r+i)*8+(f-i))); attacks|=b; if(b&occ) break; }
+    for(int i=1; r-i>=0&&f+i<=7; i++) { U64 b=(1ULL<<((r-i)*8+(f+i))); attacks|=b; if(b&occ) break; }
+    for(int i=1; r-i>=0&&f-i>=0; i++) { U64 b=(1ULL<<((r-i)*8+(f-i))); attacks|=b; if(b&occ) break; }
+    return attacks;
+}
+
+static U64 index_to_occ(int index, int bits, U64 mask) {
+    U64 occ = 0;
+    for(int i = 0; i < bits; i++) {
+        unsigned long idx;
+        bitops::bscanf64(&idx, mask);
+        mask &= mask - 1;
+        if(index & (1 << i)) occ |= (1ULL << idx);
+    }
+    return occ;
+}
+
+static U64 sparse_rand(uint64_t& seed) {
+    auto rng = [&]() -> uint64_t {
+        seed ^= seed >> 12;
+        seed ^= seed << 25;
+        seed ^= seed >> 27;
+        return seed * 2685821657736338717ULL;
+    };
+    return rng() & rng() & rng();
 }
 
 chess_mask_LUT::chess_mask_LUT() {
@@ -351,6 +413,68 @@ chess_mask_LUT::chess_mask_LUT() {
 		en_passant_attackers[i] = temp;
 	}
 
+	// Magic bitboard initialization
+	for(int sq = 0; sq < 64; sq++) {
+		// Rook
+		{
+			rook_magic[sq].mask = magic_rook_mask(sq);
+			rook_magic[sq].table = rook_table[sq];
+			int bits = 0;
+			U64 m = rook_magic[sq].mask;
+			while(m) { bits++; m &= m-1; }
+			rook_magic[sq].shift = 64 - bits;
+			int size = 1 << bits;
+			U64 occs[4096], atks[4096];
+			for(int n = 0; n < size; n++) {
+				occs[n] = index_to_occ(n, bits, rook_magic[sq].mask);
+				atks[n] = magic_rook_attacks_slow(sq, occs[n]);
+			}
+			uint64_t seed = 728364523ULL + sq * 1234567ULL;
+			bool found = false;
+			while(!found) {
+				U64 candidate = sparse_rand(seed);
+				if(__builtin_popcountll((rook_magic[sq].mask * candidate) >> 56) < 6) continue;
+				for(int n = 0; n < size; n++) rook_table[sq][n] = 0;
+				found = true;
+				for(int n = 0; n < size && found; n++) {
+					int idx = (int)(((occs[n] & rook_magic[sq].mask) * candidate) >> rook_magic[sq].shift);
+					if(rook_table[sq][idx] == 0) rook_table[sq][idx] = atks[n];
+					else if(rook_table[sq][idx] != atks[n]) found = false;
+				}
+				if(found) rook_magic[sq].magic = candidate;
+			}
+		}
+		// Bishop
+		{
+			bishop_magic[sq].mask = magic_bishop_mask(sq);
+			bishop_magic[sq].table = bishop_table[sq];
+			int bits = 0;
+			U64 m = bishop_magic[sq].mask;
+			while(m) { bits++; m &= m-1; }
+			bishop_magic[sq].shift = 64 - bits;
+			int size = 1 << bits;
+			U64 occs[512], atks[512];
+			for(int n = 0; n < size; n++) {
+				occs[n] = index_to_occ(n, bits, bishop_magic[sq].mask);
+				atks[n] = magic_bishop_attacks_slow(sq, occs[n]);
+			}
+			uint64_t seed = 123456789ULL + sq * 987654321ULL;
+			bool found = false;
+			while(!found) {
+				U64 candidate = sparse_rand(seed);
+				if(__builtin_popcountll((bishop_magic[sq].mask * candidate) >> 56) < 6) continue;
+				for(int n = 0; n < size; n++) bishop_table[sq][n] = 0;
+				found = true;
+				for(int n = 0; n < size && found; n++) {
+					int idx = (int)(((occs[n] & bishop_magic[sq].mask) * candidate) >> bishop_magic[sq].shift);
+					if(bishop_table[sq][idx] == 0) bishop_table[sq][idx] = atks[n];
+					else if(bishop_table[sq][idx] != atks[n]) found = false;
+				}
+				if(found) bishop_magic[sq].magic = candidate;
+			}
+		}
+	}
+
 }
 
 U64 chess_mask_LUT::get_move_mask(int piece_type, int piece_position)
@@ -411,4 +535,14 @@ U64 chess_mask_LUT::get_zobrist_piece(int side, int piece_type, int idx)
 U64 chess_mask_LUT::get_zobrist_btm()
 {
 	return zobrist_black_to_move;
+}
+
+U64 chess_mask_LUT::get_rook_attacks(int sq, U64 occ) const {
+    const MagicEntry& m = rook_magic[sq];
+    return m.table[((occ & m.mask) * m.magic) >> m.shift];
+}
+
+U64 chess_mask_LUT::get_bishop_attacks(int sq, U64 occ) const {
+    const MagicEntry& m = bishop_magic[sq];
+    return m.table[((occ & m.mask) * m.magic) >> m.shift];
 }

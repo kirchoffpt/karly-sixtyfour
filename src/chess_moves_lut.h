@@ -23,6 +23,13 @@ U64 reverse_U64(U64 x);
 
 //lookup table for pseudo legal moves on a clear board but including pawn attacks. does not include castling
 
+struct MagicEntry {
+    U64 mask;
+    U64 magic;
+    int shift;
+    U64* table;
+};
+
 class chess_mask_LUT {
 
 private:
@@ -41,6 +48,10 @@ private:
 	std::map<U64,U64> sliding_rays;
 	z_key zobrist_piece[2][6][64];
 	z_key zobrist_black_to_move;
+	MagicEntry rook_magic[64];
+	MagicEntry bishop_magic[64];
+	U64 rook_table[64][4096];
+	U64 bishop_table[64][512];
 
 public:
 	chess_mask_LUT();
@@ -56,6 +67,8 @@ public:
 	U64 get_en_passant_attackers(int index);
 	U64 get_zobrist_piece(int side, int piece_type, int idx);
 	U64 get_zobrist_btm();
+	U64 get_rook_attacks(int sq, U64 occ) const;
+	U64 get_bishop_attacks(int sq, U64 occ) const;
 };
 
 

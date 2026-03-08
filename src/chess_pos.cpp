@@ -771,12 +771,17 @@ void chess_pos::generate_moves()
 		U64& piece_targets = pl[to_move][i].targets;
 		U64& piece_control = pl[to_move][i].ctrl_sq;
 		was_pinned = pl[to_move][i].pinned;
-		idx = bit_to_idx(piece_loc);
 		if(piece_loc & partial_pins[to_move]){ //piece is on a partial pin ray that changed, generate moves for this piece
+			idx = bit_to_idx(piece_loc);
 			if(piece_type != PAWN){
-				u = MLUT.get_move_mask(piece_type,idx);
-				u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-				piece_control = u | u_temp;
+				if(piece_type == ROOK)
+					piece_control = MLUT.get_rook_attacks(idx, m);
+				else if(piece_type == BISHOP)
+					piece_control = MLUT.get_bishop_attacks(idx, m);
+				else if(piece_type == QUEEN)
+					piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+				else
+					piece_control = MLUT.get_move_mask(piece_type, idx);
 				if(piece_loc & actual_pins[to_move]){
 					pl[to_move][i].pinned = 1;
 					piece_targets = piece_control & pin_rays[to_move][get_ray_dir(king_idx,idx)];
@@ -798,11 +803,17 @@ void chess_pos::generate_moves()
 			}
 
 		} else if(piece_targets & changed_squares){ //last move changed squares in this pieces targets, generate moves for this piece
+			idx = bit_to_idx(piece_loc);
 			pl[to_move][i].pinned = 0;
 			if(piece_type != PAWN){
-				u = MLUT.get_move_mask(piece_type,idx);
-				u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-				piece_control = u | u_temp;
+				if(piece_type == ROOK)
+					piece_control = MLUT.get_rook_attacks(idx, m);
+				else if(piece_type == BISHOP)
+					piece_control = MLUT.get_bishop_attacks(idx, m);
+				else if(piece_type == QUEEN)
+					piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+				else
+					piece_control = MLUT.get_move_mask(piece_type, idx);
 				piece_targets = piece_control;
 			} else {
 				u = MLUT.get_pawn_attack_mask(to_move,idx);
@@ -811,11 +822,17 @@ void chess_pos::generate_moves()
 				piece_targets = u;
 			}
 		} else if(was_pinned){
+			idx = bit_to_idx(piece_loc);
 			if(piece_loc & unpins){
 				if(piece_type != PAWN){
-					u = MLUT.get_move_mask(piece_type,idx);
-					u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-					piece_control = u | u_temp;
+					if(piece_type == ROOK)
+						piece_control = MLUT.get_rook_attacks(idx, m);
+					else if(piece_type == BISHOP)
+						piece_control = MLUT.get_bishop_attacks(idx, m);
+					else if(piece_type == QUEEN)
+						piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+					else
+						piece_control = MLUT.get_move_mask(piece_type, idx);
 					piece_targets = piece_control;
 				} else {
 					u = MLUT.get_pawn_attack_mask(to_move,idx);
@@ -824,9 +841,14 @@ void chess_pos::generate_moves()
 					piece_targets = u;
 				}
 			} else if((piece_type != PAWN) && (piece_control & changed_squares)){
-				u = MLUT.get_move_mask(piece_type,idx);
-				u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-				piece_control = u | u_temp;
+				if(piece_type == ROOK)
+					piece_control = MLUT.get_rook_attacks(idx, m);
+				else if(piece_type == BISHOP)
+					piece_control = MLUT.get_bishop_attacks(idx, m);
+				else if(piece_type == QUEEN)
+					piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+				else
+					piece_control = MLUT.get_move_mask(piece_type, idx);
 			}
 		}
 		ally_ctrl |= piece_control;
@@ -853,12 +875,17 @@ void chess_pos::generate_moves()
 		U64& piece_targets = pl[!to_move][i].targets;
 		U64& piece_control = pl[!to_move][i].ctrl_sq;
 		was_pinned = pl[!to_move][i].pinned;
-		idx = bit_to_idx(piece_loc);
 		if(piece_loc & partial_pins[!to_move]){ //piece is on a partial pin ray that changed, generate moves for this piece
+			idx = bit_to_idx(piece_loc);
 			if(piece_type != PAWN){
-				u = MLUT.get_move_mask(piece_type,idx);
-				u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-				piece_control = u | u_temp;
+				if(piece_type == ROOK)
+					piece_control = MLUT.get_rook_attacks(idx, m);
+				else if(piece_type == BISHOP)
+					piece_control = MLUT.get_bishop_attacks(idx, m);
+				else if(piece_type == QUEEN)
+					piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+				else
+					piece_control = MLUT.get_move_mask(piece_type, idx);
 				if(piece_loc & actual_pins[!to_move]){
 					pl[!to_move][i].pinned = 1;
 					piece_targets = piece_control & pin_rays[!to_move][get_ray_dir(e_king_idx,idx)];
@@ -880,11 +907,17 @@ void chess_pos::generate_moves()
 			}
 
 		} else if(piece_targets & changed_squares){ //last move changed squares in this pieces targets, generate moves for this piece
+			idx = bit_to_idx(piece_loc);
 			pl[!to_move][i].pinned = 0;
 			if(piece_type != PAWN){
-				u = MLUT.get_move_mask(piece_type,idx);
-				u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-				piece_control = u | u_temp;
+				if(piece_type == ROOK)
+					piece_control = MLUT.get_rook_attacks(idx, m);
+				else if(piece_type == BISHOP)
+					piece_control = MLUT.get_bishop_attacks(idx, m);
+				else if(piece_type == QUEEN)
+					piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+				else
+					piece_control = MLUT.get_move_mask(piece_type, idx);
 				piece_targets = piece_control;
 			} else {
 				u = MLUT.get_pawn_attack_mask(!to_move,idx);
@@ -893,12 +926,18 @@ void chess_pos::generate_moves()
 				piece_targets = u;
 			}
 		} else if(was_pinned){
+			idx = bit_to_idx(piece_loc);
 			if(changed_squares & e_king_loc){ //piece is not pinned anymore , generate moves
 				pl[!to_move][i].pinned = 0;
 				if(piece_type != PAWN){
-					u = MLUT.get_move_mask(piece_type,idx);
-					u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-					piece_control = u | u_temp;
+					if(piece_type == ROOK)
+						piece_control = MLUT.get_rook_attacks(idx, m);
+					else if(piece_type == BISHOP)
+						piece_control = MLUT.get_bishop_attacks(idx, m);
+					else if(piece_type == QUEEN)
+						piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+					else
+						piece_control = MLUT.get_move_mask(piece_type, idx);
 					piece_targets = piece_control;
 				} else {
 					u = MLUT.get_pawn_attack_mask(!to_move,idx);
@@ -908,9 +947,14 @@ void chess_pos::generate_moves()
 				}
 			} else if(piece_control & changed_squares){ //although piece is pinned control squares must be updated
 				if(piece_type != PAWN){
-					u = MLUT.get_move_mask(piece_type,idx);
-					u_temp = prune_blocked_moves(piece_type, idx, &u, m);
-					piece_control = u | u_temp;
+					if(piece_type == ROOK)
+						piece_control = MLUT.get_rook_attacks(idx, m);
+					else if(piece_type == BISHOP)
+						piece_control = MLUT.get_bishop_attacks(idx, m);
+					else if(piece_type == QUEEN)
+						piece_control = MLUT.get_rook_attacks(idx, m) | MLUT.get_bishop_attacks(idx, m);
+					else
+						piece_control = MLUT.get_move_mask(piece_type, idx);
 				}
 			}
 		}
@@ -962,7 +1006,7 @@ void chess_pos::generate_moves()
 	src_square = king_idx << SRC_SHIFT;
 
 	while(bitops::bscanf64( &idx, u)){
-		u ^= (U64)1<<idx;
+		u &= u-1;
 		move = src_square + (idx << DST_SHIFT);
 		mList.push_move(move);
 	}
@@ -975,7 +1019,7 @@ void chess_pos::generate_moves()
 				u = pl[to_move][i].targets;
 				u &= ~occ[to_move];
 				while(bitops::bscanf64( &idx, u)){
-					u ^= (U64)1<<idx;
+					u &= u-1;
 					move = src_square + (idx << DST_SHIFT);
 					mList.push_move(move);
 				}
@@ -984,7 +1028,7 @@ void chess_pos::generate_moves()
 				u &= ~(v & ~pl[to_move][i].ctrl_sq);
 				u &= ~(pl[to_move][i].ctrl_sq & ~(occ[!to_move] | ep_sq));
 				while(bitops::bscanf64( &idx, u)){
-					u ^= (U64)1<<idx;
+					u &= u-1;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
 						mList.push_move(move+ENPAS);
@@ -1004,7 +1048,7 @@ void chess_pos::generate_moves()
 			can_castle = castlable_rooks & 0x00000000000000FF;
 		}
 		while(bitops::bscanf64( &idx, can_castle)){
-			can_castle ^= (U64)1<<idx;
+			can_castle &= can_castle-1;
 			if(king_idx > idx){
 				if(to_move){
 					if(KSCB_CHECK & enem_ctrl) continue;
@@ -1037,7 +1081,7 @@ void chess_pos::generate_moves()
 					u &= ~occ[to_move];
 					u &= king_attacker_ray;
 					while(bitops::bscanf64( &idx, u)){
-						u ^= (U64)1<<idx;
+						u &= u-1;
 						move = src_square + (idx << DST_SHIFT);
 						mList.push_move(move);
 					}
@@ -1051,7 +1095,7 @@ void chess_pos::generate_moves()
 					u &= king_attacker_ray;
 				}
 				while(bitops::bscanf64( &idx, u)){
-					u ^= (U64)1<<idx;
+					u &= u-1;
 					move = src_square + (idx << DST_SHIFT);
 					if(ep_sq >> idx == 1){
 						mList.push_move(move+ENPAS);
