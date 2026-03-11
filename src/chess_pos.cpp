@@ -1134,7 +1134,7 @@ void chess_pos::order_moves()
 	}
 }
 
-int chess_pos::order_moves_smart()
+int chess_pos::order_moves_smart(int history[][64][64], int piece_history[][6][64])
 {
 	chess_pos pos;
 	int m_s[MAX_MOVES_IN_POS];
@@ -1144,13 +1144,20 @@ int chess_pos::order_moves_smart()
 	int stand_pat = this->eval()*color, delta;
 	for(i = get_num_moves() - 1;i>=0;i--){
 		move = mList.get_move(i);
+		int src = (move & SRC_MASK) >> SRC_SHIFT;
+		int dst = (move & DST_MASK) >> DST_SHIFT;
 		pos.copy_pos(*this);
 		pos.add_move(move);
 		pos.generate_moves();
 		delta = color*pos.eval() - stand_pat;
 		delta = (delta+(pos.in_check*R_MAT));
-		m_s[i] = delta;
 		if(delta > (P_MAT*3)/2) noreduce++;
+		// Add history as a small bonus to break ties among similar-scoring quiet moves
+		if(history && delta < P_MAT){
+			int pt = piece_at[src]; if(pt > KING) pt = PAWN;
+			delta += (history[to_move][src][dst] + piece_history[to_move][pt][dst]) / 64;
+		}
+		m_s[i] = delta;
 	}
 	mList.sort_moves_by_scores(m_s);
 	return noreduce;
@@ -1194,6 +1201,38 @@ int chess_pos::order_moves_mvvlva()
 
     mList.sort_moves_by_scores(scores);
     return num_noreduce;
+}
+
+int chess_pos::order_moves_history(int history[][64][64], int piece_history[][6][64])
+{
+	static const int mvv_lva_val[6] = {P_MAT, N_MAT, B_MAT, R_MAT, Q_MAT, 10000};
+	int scores[MAX_MOVES_IN_POS];
+	int num_moves = get_num_moves();
+	int num_noreduce = 0;
+
+	for(int i = 0; i < num_moves; i++){
+		uint16_t move = mList.get_move(i);
+		int dst = (move & DST_MASK) >> DST_SHIFT;
+		int src = (move & SRC_MASK) >> SRC_SHIFT;
+		int special = move & SPECIAL_MASK;
+		int pt = piece_at[src]; if(pt > KING) pt = PAWN; // normalize B_PAWN->PAWN
+
+		if(((U64)1 << dst) & occ[!to_move]){
+			scores[i] = mvv_lva_val[piece_at[dst]] * 10 - mvv_lva_val[pt] + 1000000;
+			num_noreduce++;
+		} else if(special == ENPAS){
+			scores[i] = P_MAT * 10 - P_MAT + 1000000;
+			num_noreduce++;
+		} else if(special == PROMO){
+			scores[i] = Q_MAT + 1000000;
+			num_noreduce++;
+		} else {
+			scores[i] = history[to_move][src][dst] + piece_history[to_move][pt][dst];
+		}
+	}
+
+	mList.sort_moves_by_scores(scores);
+	return num_noreduce;
 }
 
 U64 chess_pos::create_pawn_pushes(U64 pawn_loc, int side)
@@ -1705,6 +1744,27 @@ int chess_pos::eval()
 	}
 
 	eval += ((3*P_MAT)/2)*(int(bitops::popcount64(pieces[WHITE][PAWN] & (RANK_8 + RANK_7 + RANK_6))) - int(bitops::popcount64(pieces[BLACK][PAWN] & (RANK_1 + RANK_2 + RANK_3))));
+
+	// Bishop pair bonus
+	if(B >= 2) eval += 50;
+	if(b >= 2) eval -= 50;
+
+	// Passed pawn bonus — skip entirely if no pawn has reached rank 4+ (white) or rank 5- (black)
+	if((pieces[WHITE][PAWN] & (RANK_4|RANK_5|RANK_6|RANK_7)) || (pieces[BLACK][PAWN] & (RANK_2|RANK_3|RANK_4|RANK_5))){
+		static const int pp_bonus[8] = {0, 0, 5, 15, 30, 60, 120, 0};
+		U64 wp = pieces[WHITE][PAWN];
+		U64 bp = pieces[BLACK][PAWN];
+		U64 bp_front = bp | ((bp & ~H_FILE) >> 1) | ((bp & ~A_FILE) << 1);
+		bp_front |= bp_front >> 8; bp_front |= bp_front >> 16; bp_front |= bp_front >> 32;
+		U64 white_passed = wp & ~bp_front;
+		U64 wp_front = wp | ((wp & ~H_FILE) >> 1) | ((wp & ~A_FILE) << 1);
+		wp_front |= wp_front << 8; wp_front |= wp_front << 16; wp_front |= wp_front << 32;
+		U64 black_passed = bp & ~wp_front;
+		U64 pp = white_passed;
+		while(pp){ int sq = bit_to_idx(pp); pp &= pp-1; eval += pp_bonus[sq >> 3]; }
+		pp = black_passed;
+		while(pp){ int sq = bit_to_idx(pp); pp &= pp-1; eval -= pp_bonus[7 - (sq >> 3)]; }
+	}
 
 	return EVAL_GRAIN*(eval/EVAL_GRAIN);
 }

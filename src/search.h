@@ -25,6 +25,8 @@ class search_handler{
 	int hash_size = 1;
 	z_key ply_keys[MAX_DEPTH + 5];
 	uint16_t killers[MAX_DEPTH + 5][2];
+	int history[2][64][64];      // history[side][src][dst], updated on quiet beta cutoffs
+	int piece_history[2][6][64]; // piece_history[side][piece_type][dst], same update
 	
 	public:
 	//// UCI settings

@@ -21,7 +21,10 @@ target_include_directories(karly64 PUBLIC
                            "${CMAKE_CURRENT_BINARY_DIR}"
                            )
 
-set_target_properties(karly64 PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set_target_properties(karly64 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    OUTPUT_NAME "karly64-${PROJECT_VERSION}"
+)
 
 
 	

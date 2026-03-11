@@ -41,6 +41,8 @@ void search_handler::reset(){
 	search_id = 0;
 	best_move = 0;
 	ponder_move = 0;
+	std::memset(history, 0, sizeof(history));
+	std::memset(piece_history, 0, sizeof(piece_history));
 	TT->resize(hash_size);
 	return;	
 }
@@ -410,14 +412,11 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		}
 
 		// order remaining moves and continue
-		if(depth > LMR_LIMIT){
-			noreduce_moves = node->order_moves_smart();
-		} else {
-			node->order_moves();
-		}
+		noreduce_moves = node->order_moves_smart(history, piece_history);
 
 		while( (move = node->pop_and_add()) ){
-			if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
+			bool is_cap = (node->occ[!node->to_move] >> ((move & DST_MASK) >> DST_SHIFT)) & 1;
+			if(!is_cap && (moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
 				eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
 			} else {
 				eval = a + 1;
@@ -431,6 +430,12 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 				b_move = move;
 			}
 			if(a >= b){
+				if(!is_cap){
+					int src = (move&SRC_MASK)>>SRC_SHIFT, dst = (move&DST_MASK)>>DST_SHIFT;
+					int pt = node->piece_at[src]; if(pt > KING) pt = PAWN;
+					history[node->to_move][src][dst] += depth*depth;
+					piece_history[node->to_move][pt][dst] += depth*depth;
+				}
 				killers[node->ply][1] = killers[node->ply][0];
 				killers[node->ply][0] = move;
 				break;
@@ -438,12 +443,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		}
 
 	} else {
-		// No TT move: use ordering as before
-		if(depth > LMR_LIMIT){
-			noreduce_moves = node->order_moves_smart();
-		} else {
-			node->order_moves();
-		}
+		// No TT move
+		noreduce_moves = node->order_moves_smart(history, piece_history);
 
 		// first move with full window
 		if( (move = node->pop_and_add()) ){
@@ -456,7 +457,8 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 		moves_searched = 1;
 
 		while( (move = node->pop_and_add()) ){
-			if((moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
+			bool is_cap = (node->occ[!node->to_move] >> ((move & DST_MASK) >> DST_SHIFT)) & 1;
+			if(!is_cap && (moves_searched++ >= noreduce_moves/2) && (depth > LMR_LIMIT)){
 				eval = -pvs(node->next, depth - 1 - LMR_DEPTH_REDUCTION, -color, -a - 1, -a);
 			} else {
 				eval = a + 1;
@@ -470,6 +472,12 @@ int search_handler::pvs(chess_pos* node, int depth, int color, int a, int b){
 				b_move = move;
 			}
 			if(a >= b){
+				if(!is_cap){
+					int src = (move&SRC_MASK)>>SRC_SHIFT, dst = (move&DST_MASK)>>DST_SHIFT;
+					int pt = node->piece_at[src]; if(pt > KING) pt = PAWN;
+					history[node->to_move][src][dst] += depth*depth;
+					piece_history[node->to_move][pt][dst] += depth*depth;
+				}
 				killers[node->ply][1] = killers[node->ply][0];
 				killers[node->ply][0] = move;
 				break;

@@ -74,8 +74,9 @@ class chess_pos {
 	void dump_pos(std::ofstream& ofile); //for debugging
 	void generate_moves(); 
 	void order_moves();
-	int order_moves_smart(); //returns number of moves from top not to reduce
+	int order_moves_smart(int history[][64][64] = nullptr, int piece_history[][6][64] = nullptr); //returns number of moves from top not to reduce
 	int order_moves_mvvlva(); //returns number of moves from top not to reduce (MVV-LVA)
+	int order_moves_history(int history[][64][64], int piece_history[][6][64]); //MVV-LVA for captures + history heuristic for quiets
 	void copy_pos(const chess_pos& source_pos); //copies only position info for a search. much faster than assignment operator
 	int is_material_draw(); // KvK, KBvK, KNvK, KdarkBvKlightB
 	int piece_at_idx(int idx, int side); //returns -1 if none
